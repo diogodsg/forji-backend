@@ -1,0 +1,42 @@
+// Prisma schema for Forge backend authentication and user management
+// Run `npx prisma migrate dev --name init` after editing
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PullRequest {
+  id              Int       @id
+  number          Int?      @map("number")
+  nodeId          String?   @map("node_id")
+  user            String?   @map("user")
+  title           String?
+  createdAt       DateTime? @map("created_at")
+  updatedAt       DateTime? @map("updated_at")
+  closedAt        DateTime? @map("closed_at")
+  mergedAt        DateTime? @map("merged_at")
+  body            String?
+  repo            String?
+  state           String?
+  lastReviewedAt  DateTime? @map("last_reviewed_at")
+  reviewText      String?   @map("review_text")
+  totalAdditions  Int?      @map("total_additions")
+  totalDeletions  Int?      @map("total_deletions")
+  totalChanges    Int?      @map("total_changes")
+
+  @@map("pull_requests")
+}
