@@ -43,16 +43,16 @@ export function PrList({
           allowEmpty
         />
       </div>
-  <div className="overflow-x-auto rounded-xl border border-surface-300 bg-white/70 backdrop-blur shadow-soft">
+      <div className="overflow-x-auto rounded-xl border border-surface-300 bg-white/70 backdrop-blur shadow-soft">
         <table className="w-full text-sm">
           <thead>
-    <tr className="text-xs uppercase tracking-wide text-gray-500 border-b border-surface-300/80">
+            <tr className="text-xs uppercase tracking-wide text-gray-500 border-b border-surface-300/80">
               <th className="text-left px-3 py-2 font-medium">Título</th>
               <th className="text-left px-3 py-2 font-medium">Repo</th>
               <th className="text-left px-3 py-2 font-medium">Criado</th>
               <th className="text-left px-3 py-2 font-medium">T. Merge</th>
               <th className="text-left px-3 py-2 font-medium">Status</th>
-              <th className="text-left px-3 py-2 font-medium">+/-</th>
+              <th className="text-left px-3 py-2 font-medium">Linhas</th>
               <th className="text-left px-3 py-2 font-medium">Arquivos</th>
             </tr>
           </thead>
@@ -93,7 +93,41 @@ export function PrList({
                     <StatusBadge state={pr.state} />
                   </td>
                   <td className="px-3 py-2 text-gray-700">
-                    {pr.lines_added}/-{pr.lines_deleted}
+                    <div className="flex flex-col gap-1 min-w-[90px]">
+                      <div className="flex items-center gap-1 text-[10px] font-medium">
+                        <span className="px-1 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">
+                          +{pr.lines_added}
+                        </span>
+                        <span className="px-1 rounded bg-rose-50 text-rose-600 border border-rose-200">
+                          -{pr.lines_deleted}
+                        </span>
+                        <span className="px-1 rounded bg-slate-50 text-slate-500 border border-slate-200">
+                          {pr.lines_added - pr.lines_deleted >= 0 ? "+" : ""}
+                          {pr.lines_added - pr.lines_deleted}
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-surface-200 relative overflow-hidden">
+                        {(() => {
+                          const added = pr.lines_added || 0;
+                          const deleted = pr.lines_deleted || 0;
+                          const total = added + deleted;
+                          const addPct = total ? (added / total) * 100 : 0;
+                          const delPct = total ? (deleted / total) * 100 : 0;
+                          return (
+                            <>
+                              <div
+                                className="absolute left-0 top-0 h-full bg-emerald-400/70"
+                                style={{ width: addPct + "%" }}
+                              />
+                              <div
+                                className="absolute right-0 top-0 h-full bg-rose-400/70"
+                                style={{ width: delPct + "%" }}
+                              />
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-3 py-2 text-gray-700">
                     {pr.files_changed}
@@ -149,7 +183,9 @@ function StatusBadge({ state }: { state: string }) {
     merged: "bg-indigo-50 text-indigo-700 border-indigo-200",
   };
   return (
-    <span className={`text-[10px] font-medium px-2 py-1 rounded-full border ${map[state]}`}>
+    <span
+      className={`text-[10px] font-medium px-2 py-1 rounded-full border ${map[state]}`}
+    >
       {state}
     </span>
   );

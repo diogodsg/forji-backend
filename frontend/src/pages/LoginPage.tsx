@@ -1,29 +1,39 @@
 import React, { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 
-interface LoginProps {
-  onLogin: (username: string) => void;
-}
-
-export default function LoginPage({ onLogin }: LoginProps) {
-  const [username, setUsername] = useState("");
+export default function LoginPage() {
+  const { login, register } = useAuth();
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      setError("Preencha usuário e senha.");
+    if (
+      !email.trim() ||
+      !password.trim() ||
+      (mode === "register" && !name.trim())
+    ) {
+      setError("Preencha os campos.");
       return;
     }
     setError("");
     setLoading(true);
-    // Simula pequena latência para feedback
-    setTimeout(() => {
-      onLogin(username.trim());
+    try {
+      if (mode === "login") {
+        await login(email.trim(), password);
+      } else {
+        await register({ name: name.trim(), email: email.trim(), password });
+      }
+    } catch (err: any) {
+      setError(err.message || "Erro");
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
 
   const inputBase =
@@ -69,24 +79,43 @@ export default function LoginPage({ onLogin }: LoginProps) {
                 className="relative bg-white/80 backdrop-blur-sm border border-surface-300 rounded-xl shadow-sm p-8 flex flex-col gap-5"
               >
                 <div className="space-y-1 text-center mb-2">
-                  <h2 className="text-xl font-semibold">Entrar</h2>
+                  <h2 className="text-xl font-semibold">
+                    {mode === "login" ? "Entrar" : "Criar conta"}
+                  </h2>
                   <p className="text-xs text-gray-500">
-                    Use qualquer credencial para demo
+                    {mode === "login"
+                      ? "Entre com suas credenciais"
+                      : "Registre para continuar"}
                   </p>
                 </div>
 
+                {mode === "register" && (
+                  <div className="space-y-1">
+                    <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+                      Nome
+                    </label>
+                    <input
+                      type="text"
+                      className={inputBase}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Seu nome"
+                      aria-label="Nome"
+                    />
+                  </div>
+                )}
                 <div className="space-y-1">
                   <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
-                    Usuário
+                    Email
                   </label>
                   <input
-                    type="text"
+                    type="email"
                     className={inputBase}
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     autoFocus
-                    placeholder="seu.nome"
-                    aria-label="Usuário"
+                    placeholder="voce@exemplo.com"
+                    aria-label="Email"
                   />
                 </div>
 
@@ -133,11 +162,31 @@ export default function LoginPage({ onLogin }: LoginProps) {
                   {loading && (
                     <span className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
                   )}
-                  {loading ? "Entrando..." : "Entrar"}
+                  {loading
+                    ? mode === "login"
+                      ? "Entrando..."
+                      : "Registrando..."
+                    : mode === "login"
+                    ? "Entrar"
+                    : "Registrar"}
                 </button>
 
-                <div className="pt-2 text-[10px] text-gray-400 text-center">
-                  Autenticação fictícia. Sessão salva localmente.
+                <div className="pt-2 text-[10px] text-gray-400 text-center space-y-2">
+                  <div>
+                    {mode === "login"
+                      ? "Autenticação via API."
+                      : "Registro cria usuário no banco."}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode((m) => (m === "login" ? "register" : "login"));
+                      setError("");
+                    }}
+                    className="text-indigo-600 hover:text-indigo-700 text-[10px] font-medium"
+                  >
+                    {mode === "login" ? "Criar conta" : "Já tenho conta"}
+                  </button>
                 </div>
               </form>
             </div>
