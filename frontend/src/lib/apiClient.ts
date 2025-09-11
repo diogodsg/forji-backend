@@ -29,7 +29,13 @@ export async function api<T = unknown>(
     throw new Error(text || `HTTP ${res.status}`);
   }
   if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  const text = await res.text();
+  if (!text) return undefined as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch (e) {
+    throw new Error(`Invalid JSON response for ${path}`);
+  }
 }
 
 export function storeToken(token: string) {

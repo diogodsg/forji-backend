@@ -7,6 +7,7 @@ import type {
 } from "../types/pdi";
 import { PdiView } from "./PdiView";
 import { useLocalPdi } from "../hooks/useLocalPdi";
+import { api } from "../lib/apiClient";
 import { CompetenciesSection } from "./CompetenciesSection";
 import { MilestonesSection } from "./MilestonesSection";
 import { KeyResultsSection } from "./KeyResultsSection";
@@ -17,7 +18,10 @@ interface Props {
 }
 
 export const EditablePdiView: React.FC<Props> = ({ initialPlan }) => {
-  const { plan, setPlan, dirty, reset } = useLocalPdi(initialPlan);
+  // Desabilitar storage local quando integrado ao backend
+  const { plan, setPlan, dirty, reset } = useLocalPdi(initialPlan, {
+    enableStorage: false,
+  });
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [working, setWorking] = useState<PdiPlan>(plan);
 
@@ -31,9 +35,48 @@ export const EditablePdiView: React.FC<Props> = ({ initialPlan }) => {
     setMode("view");
   };
 
-  const save = () => {
-    setPlan({ ...working, updatedAt: new Date().toISOString() });
-    setMode("view");
+  const [saving, setSaving] = useState(false);
+  const save = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        competencies: working.competencies,
+        milestones: working.milestones,
+        krs: working.krs || [],
+        records: working.records,
+      };
+      let saved;
+      try {
+        saved = await api<any>("/pdi/me", {
+          method: "PATCH",
+          auth: true,
+          body: JSON.stringify(payload),
+        });
+      } catch (e: any) {
+        // Se plano não existir ainda, fazer POST /pdi
+        if (e.message.includes("404")) {
+          saved = await api<any>("/pdi", {
+            method: "POST",
+            auth: true,
+            body: JSON.stringify(payload),
+          });
+        } else {
+          throw e;
+        }
+      }
+      setPlan({
+        userId: String(saved.userId),
+        competencies: saved.competencies,
+        milestones: saved.milestones,
+        krs: saved.krs || [],
+        records: saved.records,
+        createdAt: saved.createdAt || working.createdAt,
+        updatedAt: saved.updatedAt || new Date().toISOString(),
+      });
+      setMode("view");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateWorking = (patch: Partial<PdiPlan>) => {
@@ -169,9 +212,10 @@ export const EditablePdiView: React.FC<Props> = ({ initialPlan }) => {
             </button>
             <button
               onClick={save}
-              className="px-3 py-1.5 rounded bg-emerald-600 text-white text-xs hover:bg-emerald-500"
+              disabled={saving}
+              className="px-3 py-1.5 rounded bg-emerald-600 text-white text-xs disabled:opacity-50 hover:bg-emerald-500"
             >
-              Salvar
+              {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
         )}

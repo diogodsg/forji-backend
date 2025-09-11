@@ -1,11 +1,11 @@
-import React, {
+import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
-import type { ReactNode, ReactElement } from "react";
+import type { ReactNode } from "react";
 import { api, storeToken, clearToken } from "../lib/apiClient";
 
 interface User {

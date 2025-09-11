@@ -6,6 +6,7 @@ import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { PrsService } from "./prs.service";
+import { PdiService } from "./pdi.service";
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { PrsService } from "./prs.service";
     }),
   ],
   controllers: [PrsController, PdiController, AuthController],
-  providers: [AuthService, JwtAuthGuard, PrsService],
+  providers: [AuthService, JwtAuthGuard, PrsService, PdiService],
 })
 export class AppModule {}

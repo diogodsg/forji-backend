@@ -1,60 +1,65 @@
 import {
   Controller,
   Get,
-  Post,
   Put,
   Delete,
   Body,
   Param,
   UseGuards,
+  Post,
+  Patch,
+  Req,
+  ParseIntPipe,
 } from "@nestjs/common";
-import { MockAuthGuard } from "./mock-auth.guard";
-
-// Tipos básicos (simples)
-interface Pdi {
-  id: number;
-  userId: number;
-  competencies: string[];
-  milestones: string[];
-  keyResults: string[];
-}
-
-let pdis: Pdi[] = [
-  {
-    id: 1,
-    userId: 1,
-    competencies: ["React", "TypeScript"],
-    milestones: ["M1"],
-    keyResults: ["KR1"],
-  },
-];
+import { JwtAuthGuard } from "./jwt-auth.guard";
+import { NotFoundException } from "@nestjs/common";
+import { PdiService, PdiPlanDto as RawPlanDto } from "./pdi.service";
+import { PdiPlanDto, PartialPdiPlanDto } from "./pdi.dto";
 
 @Controller("pdi")
-@UseGuards(MockAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class PdiController {
+  constructor(private readonly pdiService: PdiService) {}
+
+  // Get current user's plan
+  @Get("me")
+  async me(@Req() req: any) {
+    const plan = await this.pdiService.getByUser(req.user.id);
+    if (!plan) throw new NotFoundException();
+    return plan;
+  }
+
+  // Get another user's plan (could add role checks later)
   @Get(":userId")
-  findOne(@Param("userId") userId: string) {
-    return pdis.find((pdi) => pdi.userId === +userId);
+  async get(@Param("userId", ParseIntPipe) userId: number) {
+    const plan = await this.pdiService.getByUser(userId);
+    if (!plan) throw new NotFoundException();
+    return plan;
   }
 
+  // Create or fully replace plan for current user
   @Post()
-  create(@Body() pdi: Omit<Pdi, "id">) {
-    const newPdi = { ...pdi, id: Date.now() };
-    pdis.push(newPdi);
-    return newPdi;
+  upsert(@Req() req: any, @Body() body: PdiPlanDto) {
+    return this.pdiService.upsert(req.user.id, body as RawPlanDto);
   }
 
+  // Full update by explicit userId (admin / future role check)
   @Put(":userId")
-  update(@Param("userId") userId: string, @Body() pdi: Partial<Pdi>) {
-    const idx = pdis.findIndex((p) => p.userId === +userId);
-    if (idx === -1) return null;
-    pdis[idx] = { ...pdis[idx], ...pdi };
-    return pdis[idx];
+  replace(
+    @Param("userId", ParseIntPipe) userId: number,
+    @Body() body: PdiPlanDto
+  ) {
+    return this.pdiService.upsert(userId, body as RawPlanDto);
+  }
+
+  // Partial update (patch) for current user
+  @Patch("me")
+  patchMe(@Req() req: any, @Body() partial: PartialPdiPlanDto) {
+    return this.pdiService.patch(req.user.id, partial as any);
   }
 
   @Delete(":userId")
-  remove(@Param("userId") userId: string) {
-    pdis = pdis.filter((pdi) => pdi.userId !== +userId);
-    return { deleted: true };
+  remove(@Param("userId", ParseIntPipe) userId: number) {
+    return this.pdiService.delete(userId);
   }
 }

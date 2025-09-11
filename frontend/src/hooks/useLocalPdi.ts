@@ -13,12 +13,19 @@ export function loadStoredPdi(): PdiPlan | null {
   }
 }
 
-export function useLocalPdi(initial: PdiPlan) {
-  const [plan, setPlan] = useState<PdiPlan>(() => loadStoredPdi() ?? initial);
+type Options = {
+  enableStorage?: boolean; // default true
+};
+
+export function useLocalPdi(initial: PdiPlan, opts: Options = {}) {
+  const enableStorage = opts.enableStorage ?? true;
+  const [plan, setPlan] = useState<PdiPlan>(() =>
+    enableStorage ? loadStoredPdi() ?? initial : initial
+  );
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
-    if (dirty) {
+    if (dirty && enableStorage) {
       try {
         localStorage.setItem(
           STORAGE_KEY,
@@ -28,7 +35,7 @@ export function useLocalPdi(initial: PdiPlan) {
         /* ignore */
       }
     }
-  }, [plan, dirty]);
+  }, [plan, dirty, enableStorage]);
 
   const updatePlan = useCallback(
     <K extends keyof PdiPlan>(key: K, value: PdiPlan[K]) => {
@@ -50,12 +57,14 @@ export function useLocalPdi(initial: PdiPlan) {
   const reset = useCallback(() => {
     setPlan(initial);
     setDirty(false);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
+    if (enableStorage) {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
     }
-  }, [initial]);
+  }, [initial, enableStorage]);
 
   return { plan, setPlan: replacePlan, updatePlan, dirty, reset };
 }

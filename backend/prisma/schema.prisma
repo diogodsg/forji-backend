@@ -17,6 +17,7 @@ model User {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  pdiPlan   PdiPlan?
 }
 
 model PullRequest {
@@ -39,4 +40,18 @@ model PullRequest {
   totalChanges    Int?      @map("total_changes")
 
   @@map("pull_requests")
+}
+
+// PDI Plan persisted as JSON blobs for fast iteration.
+// Later this can be normalized into separate tables.
+model PdiPlan {
+  id           Int       @id @default(autoincrement())
+  user         User      @relation(fields: [userId], references: [id])
+  userId       Int       @unique
+  competencies String[]  // text[] of competencies
+  milestones   Json      // PdiMilestone[]
+  krs          Json?     // PdiKeyResult[]
+  records      Json      // PdiCompetencyRecord[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
