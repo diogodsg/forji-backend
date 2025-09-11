@@ -1,23 +1,29 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
-const navItems = [
+const baseNavItems = [
   { to: "/me/prs", label: "PRs", icon: "<>" },
-  { to: "/me/pdi", label: "PDI", icon: "⚑" },
-  { to: "/users/123/prs", label: "Manager", icon: "★" },
+  { to: "/me/pdi", label: "PDI", icon: "\u2691" },
 ];
 
 export function Sidebar({
   userName,
   onLogout,
+  showManager,
 }: {
   userName: string;
   onLogout: () => void;
+  showManager?: boolean;
 }) {
   const location = useLocation();
   const initial = userName?.[0]?.toUpperCase() || "U";
+  const navItems = React.useMemo(() => {
+    return showManager
+      ? [...baseNavItems, { to: "/manager", label: "Manager", icon: "\u2605" }]
+      : baseNavItems;
+  }, [showManager]);
   return (
-    <aside className="hidden md:flex flex-col w-60 border-r border-surface-300/70 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/55">
+    <aside className="hidden md:flex h-screen flex-col flex-none w-60 border-r border-surface-300/70 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/55">
       <div className="h-14 flex items-center px-4 border-b border-surface-300/60">
         <div className="flex items-center gap-2 select-none">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-600 to-sky-500 text-white font-bold flex items-center justify-center text-sm shadow-sm">
@@ -33,7 +39,7 @@ export function Sidebar({
           </div>
         </div>
       </div>
-      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto min-h-0">
         <SectionLabel>Principal</SectionLabel>
         {navItems.map((item) => (
           <NavItem

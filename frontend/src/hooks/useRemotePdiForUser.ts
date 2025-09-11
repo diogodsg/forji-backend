@@ -1,0 +1,46 @@
+import { useCallback, useEffect, useState } from "react";
+import { api } from "../lib/apiClient";
+import type { PdiPlan } from "../types/pdi";
+
+export function useRemotePdiForUser(userId?: number) {
+  const [plan, setPlan] = useState<PdiPlan | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api<any>(`/pdi/${userId}`, { auth: true });
+      if (data) {
+        const planData: PdiPlan = {
+          userId: String(data.userId),
+          competencies: data.competencies || [],
+          milestones: data.milestones || [],
+          krs: data.krs || [],
+          records: data.records || [],
+          createdAt: data.createdAt || new Date().toISOString(),
+          updatedAt: data.updatedAt || new Date().toISOString(),
+        };
+        setPlan(planData);
+      } else {
+        setPlan(null);
+      }
+    } catch (e: any) {
+      if (/404/.test(e.message)) {
+        setPlan(null);
+      } else {
+        setError(e.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { plan, loading, error, refresh: load };
+}

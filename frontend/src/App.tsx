@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MyPrsPage } from "./pages/MyPrsPage";
 import { ManagerPrsPage } from "./pages/ManagerPrsPage";
+import { ManagerDashboardPage } from "./pages/ManagerDashboardPage";
 import { MyPdiPage } from "./pages/MyPdiPage";
 import LoginPage from "./pages/LoginPage";
 import React from "react";
@@ -24,12 +25,17 @@ function InnerApp() {
   const { user, logout } = useAuth();
   if (!user) return <LoginPage />;
   return (
-    <AppLayout userName={user.name} onLogout={logout}>
+    <AppLayout
+      userName={user.name}
+      onLogout={logout}
+      showManager={!!user.isManager}
+    >
       <Routes>
         <Route path="/" element={<MyPrsPage />} />
         <Route path="/me/prs" element={<MyPrsPage />} />
         <Route path="/me/pdi" element={<MyPdiPage />} />
         <Route path="/users/:userId/prs" element={<ManagerPrsPage />} />
+        <Route path="/manager" element={<ManagerDashboardPage />} />
       </Routes>
     </AppLayout>
   );

@@ -18,6 +18,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   pdiPlan   PdiPlan?
+
+  // Many-to-many self relation: users can have multiple managers and manage multiple reports
+  managers User[] @relation("UserManagers")
+  reports  User[] @relation("UserManagers")
+
+  // One-to-many: PRs owned by this user (optional linkage)
+  pullRequests PullRequest[]
 }
 
 model PullRequest {
@@ -38,6 +45,10 @@ model PullRequest {
   totalAdditions  Int?      @map("total_additions")
   totalDeletions  Int?      @map("total_deletions")
   totalChanges    Int?      @map("total_changes")
+
+  // Optional link to an application user (for manager filtering)
+  ownerUserId     Int?
+  ownerUser       User?     @relation(fields: [ownerUserId], references: [id])
 
   @@map("pull_requests")
 }

@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 interface TopBarProps {
   userName: string;
   onLogout: () => void;
+  showManager?: boolean;
 }
 
-export function TopBar({ userName, onLogout }: TopBarProps) {
+export function TopBar({ userName, onLogout, showManager }: TopBarProps) {
   const navigate = useNavigate();
 
   // Keyboard shortcuts (g p, g d, g m, ctrl/cmd+k placeholder)
@@ -27,23 +28,23 @@ export function TopBar({ userName, onLogout }: TopBarProps) {
         const k = e.key.toLowerCase();
         if (k === "p") navigate("/me/prs");
         if (k === "d") navigate("/me/pdi");
-        if (k === "m") navigate("/users/123/prs");
+        if (k === "m" && showManager) navigate("/manager");
       }
     }
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [navigate]);
+  }, [navigate, showManager]);
 
   const initial = userName?.[0]?.toUpperCase() || "U";
   return (
-    <div className="md:hidden flex items-center justify-between h-14 px-4 border-b border-surface-300/70 bg-white/75 backdrop-blur sticky top-0 z-40">
+    <div className="md:hidden flex-none flex items-center justify-between h-14 px-4 border-b border-surface-300/70 bg-white/75 backdrop-blur sticky top-0 z-40">
       <span className="font-semibold tracking-tight text-gray-800 text-lg select-none">
         forge<span className="text-indigo-500">·</span>
       </span>
       <div className="flex items-center gap-3">
         <button
           className="text-[11px] text-gray-500 border border-surface-300 rounded px-2 py-1 hover:bg-surface-200"
-          title="Atalho: g p / g d / g m"
+          title={showManager ? "Atalho: g p / g d / g m" : "Atalho: g p / g d"}
           onClick={() => navigate("/me/prs")}
         >
           PRs

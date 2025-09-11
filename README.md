@@ -1,14 +1,14 @@
 # Forge
 
-Plataforma (MVP) para acompanhar Pull Requests e evolução de PDI com autenticação, backend NestJS + PostgreSQL/Prisma e frontend React.
+Plataforma (MVP) para acompanhar Pull Requests e evolução de PDI com autenticação, backend NestJS + PostgreSQL/Prisma e frontend React, incluindo dashboard de manager (PRs + PDI dos subordinados).
 
 ## Visão Geral
 
 Arquitetura full‑stack:
 
-- Backend NestJS: autenticação JWT, Postgres (Docker) via Prisma, endpoints para PRs e (em progresso) PDI.
-- Frontend React 19 + TypeScript (Vite) com Tailwind; layout com Sidebar + top bar mobile; fluxo de login/registro.
-- Persistência real de usuários e Pull Requests; PDI ainda mock local (fase seguinte).
+- Backend NestJS: autenticação JWT, Postgres (Docker) via Prisma, endpoints para PRs e PDI persistente.
+- Frontend React 19 + TypeScript (Vite) com Tailwind; layout com Sidebar + top bar mobile; fluxo de login/registro; tela de Manager.
+- Persistência real de usuários, Pull Requests e PDI (milestones/KRs/records como JSON no Prisma).
 
 Hoje a aplicação permite:
 
@@ -16,14 +16,17 @@ Hoje a aplicação permite:
 - Manter sessão (token + /auth/me)
 - Listar PRs persistidos do usuário (/me/prs) (ou fallback mock se vazio)
 - Ver detalhes de um PR com resumo de IA e checklist (ainda não persistente)
-- Visualizar e editar PDI (/me/pdi) com:
+- Visualizar e editar PDI (/me/pdi) com persistência no backend:
   - Competências técnicas
   - Milestones / encontros
   - Tarefas (próximos passos) por encontro
   - Sugestões (IA placeholder) por encontro
   - Key Results opcionais (KR) com critérios de sucesso e ações de melhoria
   - Registros de evolução (nível antes/depois + evidências)
-- Visualização "manager" mock (/users/:userId/prs) reutilizando a lista de PRs
+- Visualização de manager com abas PRs | PDI dos subordinados (`/manager`)
+- Relação de gestão M:N (um usuário pode ter vários managers, e um manager vários reports)
+- Lista de subordinados do manager (`/auth/my-reports`)
+- Filtro de PRs por dono via query `?ownerUserId=` com checagem de permissão (manager ou dono)
 - Navegação aprimorada com Sidebar (logo, seções) e avatar com logout
 
 ## Stack
@@ -40,6 +43,7 @@ Backend:
 - NestJS + JWT (jsonwebtoken via `@nestjs/jwt`)
 - Prisma ORM + PostgreSQL (container Docker)
 - bcryptjs (hash de senha)
+- PDI persistido no modelo `PdiPlan` (campos JSON para milestones/KRs/records)
 
 Infra / Dev:
 
@@ -51,7 +55,7 @@ Infra / Dev:
 ```
 src/
   components/        -> Componentes reutilizáveis (PrList, PrDetailDrawer, PdiView, EditablePdiView, etc)
-  pages/             -> Páginas de rota (MyPrsPage, MyPdiPage, ManagerPrsPage)
+  pages/             -> Páginas de rota (MyPrsPage, MyPdiPage, ManagerDashboardPage)
   mocks/             -> Dados mock (prs.ts, pdi.ts)
   types/             -> Tipagens (pr.ts, pdi.ts)
   index.css          -> Estilos globais (Tailwind)
@@ -60,18 +64,33 @@ src/
   components/nav/    -> Sidebar / TopBar / (futuro: CommandPalette)
 
 backend/
-  prisma/schema.prisma -> Modelos User e PullRequest
+  prisma/schema.prisma -> Modelos User, PullRequest e PdiPlan
   src/                 -> Auth, PRs, guards, controllers
   docker-compose.yml   -> Postgres
 ```
 
 ## Rotas Frontend
 
-| Rota                 | Descrição                       |
-| -------------------- | ------------------------------- |
-| `/` / `/me/prs`      | Lista de PRs (autenticado)      |
-| `/me/pdi`            | Página de acompanhamento do PDI |
-| `/users/:userId/prs` | Modo "manager" (read-only)      |
+| Rota            | Descrição                                                  |
+| --------------- | ---------------------------------------------------------- |
+| `/` / `/me/prs` | Lista de PRs (autenticado)                                 |
+| `/me/pdi`       | Página de acompanhamento do PDI                            |
+| `/manager`      | Dashboard do manager (seleciona subordinado; abas PRs/PDI) |
+
+## Endpoints Backend (principais)
+
+- Auth: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`,
+  `GET /auth/my-reports`, `POST /auth/set-manager`, `POST /auth/remove-manager`
+- PRs (JWT): `GET /prs` (aceita `?ownerUserId=` com checagem de permissão), `GET /prs/:id`, `POST /prs`, `PUT /prs/:id`, `DELETE /prs/:id`
+- PDI (JWT):
+  - `GET /pdi/me` (404 se não existir)
+  - `POST /pdi` (cria/substitui plano do usuário logado)
+  - `PATCH /pdi/me` (atualização parcial)
+  - `GET /pdi/:userId`, `PUT /pdi/:userId`, `DELETE /pdi/:userId` (somente dono ou manager)
+
+Permissões
+
+- PRs filtrados por `ownerUserId` e PDI de outro usuário só podem ser acessados pelo próprio dono ou por alguém que esteja listado como seu manager.
 
 ## Tipagens Principais (Frontend)
 
@@ -141,15 +160,15 @@ Para adicionar mais PRs basta inserir novos objetos no array `mockPrs` respeitan
 - Sidebar persistente desktop; TopBar só em mobile.
 - Redução de excesso de cores nas métricas (cards neutros com pontos de cor).
 - PR stats com distribuição de linhas adicionadas/deletadas (barra empilhada).
-- AuthContext gerencia token + user; fallback a mocks somente onde ainda não há backend (PDI).
-- PDI continua local para iterar rápido antes de modelar schema.
+- AuthContext gerencia token + user.
+- PDI agora persiste no backend; UI desativou localStorage para PDI na tela.
 
 ## Possíveis Próximos Passos
 
 1. DTO + validation pipes (class-validator) para /auth e /prs
 2. Filtros/paginação server-side para PRs
 3. Endpoint /prs/metrics agregando estatísticas (linhas, tempo médio merge)
-4. Migrar PDI para Prisma (schema: Plan, Milestone, Task, CompetencyRecord, KeyResult)
+4. Endpoints granulares de PDI (ex.: add/remove task, update milestone) evitando enviar o blob completo
 5. Command Palette (Ctrl/⌘+K) + quick search
 6. Dark mode toggle
 7. Persistir checklist de PR e anotações de review
@@ -180,14 +199,29 @@ DATABASE_URL="postgresql://forge_user:forge_pass@localhost:5433/forge_db"
 JWT_SECRET="dev_jwt_secret"
 ```
 
-Instalar dependências e migrar:
+Instalar dependências e aplicar migrações:
 
 ```bash
 cd backend
 npm install
-npx prisma migrate dev --name init
+npx prisma migrate dev
 npm run start:dev
 ```
+
+Seed de dados (mock completo + reset de banco):
+
+```bash
+# do diretório raiz do projeto
+bash script.sh
+```
+
+O script irá:
+
+- Subir o Postgres (via Docker) se necessário e aguardar disponibilidade
+- Resetar o schema via Prisma (ou via SQL com docker em fallback)
+- Criar usuários (manager + 2 devs), vincular relações de gestão
+- Popular PRs variados (open/merged/closed) em frontend/backend
+- Criar um PDI completo para cada dev
 
 ### Frontend
 
@@ -239,13 +273,12 @@ Arquivo: `tailwind.config.js`
 
 ## Persistência Local
 
-O PDI editável salva automaticamente em `localStorage` (chave `pdi_plan_me`). O botão _Reset_ restaura o mock original e limpa o storage.
+O PDI passou a persistir no backend. O uso de `localStorage` foi desativado na tela de PDI para evitar conflito com o estado remoto.
 
 ## Limitações Atuais
 
-- PDI não está no backend (ainda local)
-- Falta validação de entrada no backend (DTOs)
-- Sem paginação real / filtros server-side em PRs
+- Falta DTOs para alguns endpoints (PRs) e mensagens de erro consistentes
+- Paginação real ainda pendente (há filtro server-side por `ownerUserId`)
 - Falta refresh token / expiração explícita
 - Checklist de PR não persiste
 - Sem testes automatizados

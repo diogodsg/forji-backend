@@ -20,16 +20,34 @@ function mapPr(raw: any): PullRequest {
   };
 }
 
-export function useRemotePrs(filters: { repo?: string; state?: string }) {
+export function useRemotePrs(
+  filters: {
+    repo?: string;
+    state?: string;
+    ownerUserId?: number;
+  },
+  opts?: { skip?: boolean }
+) {
   const [data, setData] = useState<PullRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
+    if (opts?.skip) {
+      setLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    setLoading(true);
+    setError(null);
     (async () => {
       try {
-        const res = await api<any[]>("/prs", { auth: true });
+        const qs = filters.ownerUserId
+          ? `?ownerUserId=${filters.ownerUserId}`
+          : "";
+        const res = await api<any[]>(`/prs${qs}`, { auth: true });
         if (!active) return;
         setData(res.map(mapPr));
       } catch (e: any) {
@@ -42,7 +60,7 @@ export function useRemotePrs(filters: { repo?: string; state?: string }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [filters.repo, filters.state, filters.ownerUserId, opts?.skip]);
 
   const filtered = useMemo(() => {
     return data.filter((p) => {

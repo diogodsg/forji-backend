@@ -3,8 +3,14 @@ import prisma from "./prisma";
 
 @Injectable()
 export class PrsService {
-  list() {
-    return prisma.pullRequest.findMany({ orderBy: { createdAt: "desc" } });
+  list(filter?: { ownerUserId?: number }) {
+    const where = filter?.ownerUserId
+      ? ({ ownerUserId: filter.ownerUserId } as any)
+      : undefined;
+    return prisma.pullRequest.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   get(id: number) {

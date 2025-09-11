@@ -6,9 +6,17 @@ import type { PullRequest } from "../types/pr";
 import { PrList } from "../components/PrList";
 import { PrDetailDrawer } from "../components/PrDetailDrawer";
 
-export function MyPrsPage() {
+export function MyPrsPage({
+  initialFilters,
+}: {
+  initialFilters?: { repo?: string; state?: string; ownerUserId?: number };
+} = {}) {
   const [selected, setSelected] = useState<PullRequest | null>(null);
-  const [filters, setFilters] = useState<{ repo?: string; state?: string }>({});
+  const [filters, setFilters] = useState<{
+    repo?: string;
+    state?: string;
+    ownerUserId?: number;
+  }>(initialFilters || {});
 
   const { prs: remotePrs, loading, error } = useRemotePrs(filters);
 
@@ -16,7 +24,7 @@ export function MyPrsPage() {
   const filtered = useMemo(() => source, [source]);
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-5 space-y-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
           <span>Pull Requests</span>
@@ -37,7 +45,7 @@ export function MyPrsPage() {
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {loading && source.length === 0 && (
           <div className="text-xs text-gray-500">Carregando PRs...</div>
         )}

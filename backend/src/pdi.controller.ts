@@ -14,6 +14,8 @@ import {
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { NotFoundException } from "@nestjs/common";
 import { PdiService, PdiPlanDto as RawPlanDto } from "./pdi.service";
+import prisma from "./prisma";
+import { ForbiddenException } from "@nestjs/common";
 import { PdiPlanDto, PartialPdiPlanDto } from "./pdi.dto";
 
 @Controller("pdi")
@@ -31,7 +33,8 @@ export class PdiController {
 
   // Get another user's plan (could add role checks later)
   @Get(":userId")
-  async get(@Param("userId", ParseIntPipe) userId: number) {
+  async get(@Req() req: any, @Param("userId", ParseIntPipe) userId: number) {
+    await this.ensureOwnerOrManager(req.user.id, userId);
     const plan = await this.pdiService.getByUser(userId);
     if (!plan) throw new NotFoundException();
     return plan;
@@ -45,10 +48,12 @@ export class PdiController {
 
   // Full update by explicit userId (admin / future role check)
   @Put(":userId")
-  replace(
+  async replace(
+    @Req() req: any,
     @Param("userId", ParseIntPipe) userId: number,
     @Body() body: PdiPlanDto
   ) {
+    await this.ensureOwnerOrManager(req.user.id, userId);
     return this.pdiService.upsert(userId, body as RawPlanDto);
   }
 
@@ -59,7 +64,24 @@ export class PdiController {
   }
 
   @Delete(":userId")
-  remove(@Param("userId", ParseIntPipe) userId: number) {
+  async remove(@Req() req: any, @Param("userId", ParseIntPipe) userId: number) {
+    await this.ensureOwnerOrManager(req.user.id, userId);
     return this.pdiService.delete(userId);
+  }
+
+  private async ensureOwnerOrManager(
+    requesterId: number,
+    targetUserId: number
+  ) {
+    if (requesterId === targetUserId) return;
+    const target = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      include: { managers: { select: { id: true } } },
+    });
+    if (!target) throw new NotFoundException("User not found");
+    const isManager = target.managers?.some((m) => m.id === requesterId);
+    if (!isManager) {
+      throw new ForbiddenException("Not allowed to access this user's PDI");
+    }
   }
 }
