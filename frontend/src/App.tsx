@@ -2,30 +2,42 @@ import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
 import { MyPrsPage } from "./pages/MyPrsPage";
 import { ManagerPrsPage } from "./pages/ManagerPrsPage";
 import { MyPdiPage } from "./pages/MyPdiPage";
+import LoginPage from "./pages/LoginPage";
+import { useAuth } from "./hooks/useAuth";
 
 export default function App() {
+  const { user, login, logout } = useAuth();
   return (
     <BrowserRouter>
-  <div className="min-h-full flex flex-col bg-surface-100 text-gray-800">
-        <Header />
-        <main className="flex-1 relative">
-          <div className="pointer-events-none select-none opacity-60 absolute inset-0 bg-[radial-gradient(circle_at_10%_15%,#c7d2fe,transparent_60%)]" />
-          <div className="relative z-10 max-w-6xl mx-auto w-full px-6 py-8">
-            <Routes>
-              <Route path="/" element={<MyPrsPage />} />
-              <Route path="/me/prs" element={<MyPrsPage />} />
-              <Route path="/me/pdi" element={<MyPdiPage />} />
-              <Route path="/users/:userId/prs" element={<ManagerPrsPage />} />
-            </Routes>
-          </div>
-        </main>
-        <Footer />
+      <div className="min-h-full flex flex-col bg-surface-100 text-gray-800">
+        {user ? (
+          <>
+            <Header onLogout={logout} user={user} />
+            <main className="flex-1 relative">
+              <div className="pointer-events-none select-none opacity-60 absolute inset-0 bg-[radial-gradient(circle_at_10%_15%,#c7d2fe,transparent_60%)]" />
+              <div className="relative z-10 max-w-6xl mx-auto w-full px-6 py-8">
+                <Routes>
+                  <Route path="/" element={<MyPrsPage />} />
+                  <Route path="/me/prs" element={<MyPrsPage />} />
+                  <Route path="/me/pdi" element={<MyPdiPage />} />
+                  <Route
+                    path="/users/:userId/prs"
+                    element={<ManagerPrsPage />}
+                  />
+                </Routes>
+              </div>
+            </main>
+            <Footer />
+          </>
+        ) : (
+          <LoginPage onLogin={login} />
+        )}
       </div>
     </BrowserRouter>
   );
 }
 
-function Header() {
+function Header({ onLogout, user }: { onLogout: () => void; user: string }) {
   const base = "px-3 py-2 rounded text-sm font-medium";
   return (
     <header className="border-b border-surface-300/80 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 sticky top-0 z-30">
@@ -71,6 +83,15 @@ function Header() {
             Manager View
           </NavLink>
         </nav>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs text-gray-500">{user}</span>
+          <button
+            onClick={onLogout}
+            className="ml-2 px-2 py-1 text-xs rounded bg-surface-200 hover:bg-surface-300 text-gray-700"
+          >
+            Sair
+          </button>
+        </div>
       </div>
     </header>
   );

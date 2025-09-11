@@ -7,6 +7,10 @@ import type {
 } from "../types/pdi";
 import { PdiView } from "./PdiView";
 import { useLocalPdi } from "../hooks/useLocalPdi";
+import { CompetenciesSection } from "./CompetenciesSection";
+import { MilestonesSection } from "./MilestonesSection";
+import { KeyResultsSection } from "./KeyResultsSection";
+import { ResultsSection } from "./ResultsSection";
 
 interface Props {
   initialPlan: PdiPlan;
@@ -105,286 +109,27 @@ export const EditablePdiView: React.FC<Props> = ({ initialPlan }) => {
 
   const sections = (
     <div className="space-y-10">
-      {/* Competencies */}
-      <section className="rounded-xl border border-surface-300 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <span className="w-1.5 h-5 bg-indigo-600 rounded" />
-            Competências
-          </h2>
-          <AddCompetencyForm onAdd={addCompetency} />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {working.competencies.map((c) => (
-            <span
-              key={c}
-              className="group inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-indigo-50 border border-indigo-200 text-indigo-700"
-            >
-              {c}
-              <button
-                onClick={() => removeCompetency(c)}
-                className="opacity-60 group-hover:opacity-100 text-[10px]"
-                aria-label="remover"
-              >
-                ✕
-              </button>
-            </span>
-          ))}
-        </div>
-      </section>
+      <CompetenciesSection
+        competencies={working.competencies}
+        onAdd={addCompetency}
+        onRemove={removeCompetency}
+      />
 
-      {/* Milestones */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <span className="w-1.5 h-5 bg-indigo-600 rounded" />
-            Acompanhamento
-          </h2>
-          <button
-            onClick={addMilestone}
-            className="text-xs px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-500"
-          >
-            Adicionar encontro
-          </button>
-        </div>
-        <div className="space-y-5">
-          {working.milestones.map((m) => (
-            <div
-              key={m.id}
-              className="rounded-xl border border-surface-300 bg-white p-5 shadow-sm"
-            >
-              <div className="flex flex-col md:flex-row md:items-start gap-4 md:justify-between">
-                <div className="flex-1 space-y-2">
-                  <input
-                    value={m.title}
-                    onChange={(e) =>
-                      updateMilestone(m.id, { title: e.target.value })
-                    }
-                    className="w-full text-sm font-medium text-indigo-700 bg-transparent border-b border-indigo-200 focus:outline-none focus:border-indigo-500"
-                  />
-                  <input
-                    type="date"
-                    value={m.date}
-                    onChange={(e) =>
-                      updateMilestone(m.id, { date: e.target.value })
-                    }
-                    className="text-[11px] uppercase tracking-wide text-gray-600 bg-white border border-surface-300 rounded px-2 py-1"
-                  />
-                </div>
-                <div className="flex gap-2 self-start">
-                  <button
-                    onClick={() => removeMilestone(m.id)}
-                    className="text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50"
-                  >
-                    Remover
-                  </button>
-                </div>
-              </div>
-              <div className="mt-4 grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-gray-600">
-                    Resumo / Notas
-                  </label>
-                  <textarea
-                    value={m.summary}
-                    onChange={(e) =>
-                      updateMilestone(m.id, { summary: e.target.value })
-                    }
-                    rows={4}
-                    className="w-full text-xs rounded border border-surface-300 p-2 focus:border-indigo-400"
-                  />
-                  <ListEditor
-                    label="Sugestões (IA)"
-                    value={m.suggestions}
-                    onChange={(arr) =>
-                      updateMilestone(m.id, { suggestions: arr })
-                    }
-                    highlight="violet"
-                  />
-                  <TaskEditor
-                    milestoneId={m.id}
-                    tasks={m.tasks}
-                    onChange={(tasks) => updateMilestone(m.id, { tasks })}
-                  />
-                </div>
-                <div className="space-y-4">
-                  <ListEditor
-                    label="Pontos positivos"
-                    value={m.positives}
-                    onChange={(arr) =>
-                      updateMilestone(m.id, { positives: arr })
-                    }
-                  />
-                  <ListEditor
-                    label="Pontos de melhoria"
-                    value={m.improvements}
-                    onChange={(arr) =>
-                      updateMilestone(m.id, { improvements: arr })
-                    }
-                    highlight="amber"
-                  />
-                  <ListEditor
-                    label="Referências"
-                    value={m.resources}
-                    onChange={(arr) =>
-                      updateMilestone(m.id, { resources: arr })
-                    }
-                    highlight="sky"
-                    placeholder="https://..."
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <MilestonesSection
+        milestones={working.milestones}
+        onAdd={addMilestone}
+        onRemove={removeMilestone}
+        onUpdate={updateMilestone}
+      />
 
-      {/* Key Results */}
-      <section className="rounded-xl border border-surface-300 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <span className="w-1.5 h-5 bg-indigo-600 rounded" />
-            Key Results
-          </h2>
-          <button
-            onClick={addKr}
-            className="text-xs px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-500"
-          >
-            Adicionar KR
-          </button>
-        </div>
-        {(!working.krs || working.krs.length === 0) && (
-          <p className="text-xs text-gray-500">Nenhuma KR definida.</p>
-        )}
-        <div className="space-y-4">
-          {(working.krs || []).map((kr) => (
-            <div
-              key={kr.id}
-              className="border border-surface-200 rounded-lg p-4 bg-surface-50/50 space-y-3"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <input
-                  value={kr.description}
-                  onChange={(e) =>
-                    updateKr(kr.id, { description: e.target.value })
-                  }
-                  className="flex-1 text-sm font-medium text-indigo-700 bg-transparent border-b border-indigo-200 focus:outline-none focus:border-indigo-500"
-                />
-                <button
-                  onClick={() => removeKr(kr.id)}
-                  className="text-xs px-2 py-1 rounded border border-red-300 text-red-600 hover:bg-red-50"
-                >
-                  Remover
-                </button>
-              </div>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-                    Noção de sucesso
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={kr.successCriteria}
-                    onChange={(e) =>
-                      updateKr(kr.id, { successCriteria: e.target.value })
-                    }
-                    className="w-full text-xs rounded border border-surface-300 p-2 focus:border-indigo-400"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-                    Status atual
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={kr.currentStatus || ""}
-                    onChange={(e) =>
-                      updateKr(kr.id, { currentStatus: e.target.value })
-                    }
-                    className="w-full text-xs rounded border border-surface-300 p-2 focus:border-indigo-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <ListEditor
-                    label="Ações melhoria"
-                    value={kr.improvementActions}
-                    onChange={(arr) =>
-                      updateKr(kr.id, { improvementActions: arr })
-                    }
-                    highlight="violet"
-                    placeholder="Uma ação por linha"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <KeyResultsSection
+        krs={working.krs || []}
+        onAdd={addKr}
+        onRemove={removeKr}
+        onUpdate={updateKr}
+      />
 
-      {/* Results */}
-      <section className="rounded-xl border border-surface-300 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="w-1.5 h-5 bg-indigo-600 rounded" />
-          Resultado
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-gray-500 text-xs uppercase tracking-wide">
-              <tr className="border-b border-surface-300">
-                <th className="text-left py-2 pr-4 font-medium">
-                  Área Técnica
-                </th>
-                <th className="text-left py-2 pr-4 font-medium">Nível antes</th>
-                <th className="text-left py-2 pr-4 font-medium">
-                  Nível depois
-                </th>
-                <th className="text-left py-2 font-medium">Evidências</th>
-              </tr>
-            </thead>
-            <tbody>
-              {working.records.map((r) => (
-                <tr
-                  key={r.area}
-                  className="border-b last:border-0 border-surface-300/70 align-top"
-                >
-                  <td className="py-2 pr-4 text-gray-700 text-xs md:text-sm">
-                    {r.area}
-                  </td>
-                  <td className="py-2 pr-4 text-gray-700 text-xs">
-                    {r.levelBefore ?? "-"}
-                  </td>
-                  <td className="py-2 pr-4">
-                    <input
-                      type="number"
-                      min={1}
-                      max={5}
-                      value={r.levelAfter ?? ""}
-                      onChange={(e) =>
-                        updateRecord(r.area, {
-                          levelAfter: e.target.value
-                            ? Number(e.target.value)
-                            : undefined,
-                        })
-                      }
-                      className="w-16 text-xs border rounded px-1 py-1 border-surface-300"
-                    />
-                  </td>
-                  <td className="py-2">
-                    <textarea
-                      value={r.evidence ?? ""}
-                      onChange={(e) =>
-                        updateRecord(r.area, { evidence: e.target.value })
-                      }
-                      rows={2}
-                      className="w-full text-xs border rounded p-1 border-surface-300"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <ResultsSection records={working.records} onUpdate={updateRecord} />
     </div>
   );
 
@@ -436,7 +181,7 @@ export const EditablePdiView: React.FC<Props> = ({ initialPlan }) => {
   );
 };
 
-const AddCompetencyForm: React.FC<{ onAdd: (c: string) => void }> = ({
+export const AddCompetencyForm: React.FC<{ onAdd: (c: string) => void }> = ({
   onAdd,
 }) => {
   const [value, setValue] = useState("");
@@ -465,7 +210,7 @@ const AddCompetencyForm: React.FC<{ onAdd: (c: string) => void }> = ({
   );
 };
 
-const ListEditor: React.FC<{
+export const ListEditor: React.FC<{
   label: string;
   value?: string[];
   onChange: (v: string[]) => void;
@@ -500,7 +245,7 @@ const ListEditor: React.FC<{
   );
 };
 
-const TaskEditor: React.FC<{
+export const TaskEditor: React.FC<{
   milestoneId: string;
   tasks?: PdiTask[];
   onChange: (t: PdiTask[]) => void;
