@@ -1,0 +1,156 @@
+import type { PullRequest } from "../types/pr";
+import { formatDistanceToNow } from "date-fns";
+
+interface PrListProps {
+  prs: PullRequest[];
+  onSelect: (pr: PullRequest) => void;
+  repoFilter?: string;
+  stateFilter?: string;
+  onFilterChange?: (f: {
+    repo?: string;
+    state?: string;
+    sort?: string;
+  }) => void;
+}
+
+export function PrList({
+  prs,
+  onSelect,
+  repoFilter,
+  stateFilter,
+  onFilterChange,
+}: PrListProps) {
+  const repos = Array.from(new Set(prs.map((p) => p.repo)));
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-4 items-end bg-white/70 border border-surface-300 rounded-xl px-4 py-3 backdrop-blur">
+        <FilterSelect
+          label="Repositório"
+          value={repoFilter || ""}
+          onChange={(v) =>
+            onFilterChange?.({ repo: v || undefined, state: stateFilter })
+          }
+          options={repos}
+        />
+        <FilterSelect
+          label="Status"
+          value={stateFilter || ""}
+          onChange={(v) =>
+            onFilterChange?.({ repo: repoFilter, state: v || undefined })
+          }
+          options={["open", "closed", "merged"]}
+          allowEmpty
+        />
+      </div>
+  <div className="overflow-x-auto rounded-xl border border-surface-300 bg-white/70 backdrop-blur shadow-soft">
+        <table className="w-full text-sm">
+          <thead>
+    <tr className="text-xs uppercase tracking-wide text-gray-500 border-b border-surface-300/80">
+              <th className="text-left px-3 py-2 font-medium">Título</th>
+              <th className="text-left px-3 py-2 font-medium">Repo</th>
+              <th className="text-left px-3 py-2 font-medium">Criado</th>
+              <th className="text-left px-3 py-2 font-medium">T. Merge</th>
+              <th className="text-left px-3 py-2 font-medium">Status</th>
+              <th className="text-left px-3 py-2 font-medium">+/-</th>
+              <th className="text-left px-3 py-2 font-medium">Arquivos</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-surface-300/70">
+            {prs.map((pr) => {
+              const created = new Date(pr.created_at);
+              const merged = pr.merged_at ? new Date(pr.merged_at) : undefined;
+              const timeToMerge = merged
+                ? `${Math.round(
+                    (merged.getTime() - created.getTime()) / 60000
+                  )}m`
+                : "-";
+              return (
+                <tr
+                  key={pr.id}
+                  onClick={() => onSelect(pr)}
+                  className="group cursor-pointer hover:bg-surface-200 transition-colors"
+                >
+                  <td className="px-3 py-2 max-w-[280px]">
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-800 group-hover:text-gray-900 line-clamp-1">
+                        {pr.title}
+                      </span>
+                      <span className="text-[10px] text-gray-400 tracking-wide">
+                        #{pr.id}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 text-gray-700">{pr.repo}</td>
+                  <td
+                    className="px-3 py-2 text-gray-500"
+                    title={created.toISOString()}
+                  >
+                    {formatDistanceToNow(created, { addSuffix: true })}
+                  </td>
+                  <td className="px-3 py-2 text-gray-700">{timeToMerge}</td>
+                  <td className="px-3 py-2">
+                    <StatusBadge state={pr.state} />
+                  </td>
+                  <td className="px-3 py-2 text-gray-700">
+                    {pr.lines_added}/-{pr.lines_deleted}
+                  </td>
+                  <td className="px-3 py-2 text-gray-700">
+                    {pr.files_changed}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  options,
+  allowEmpty,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  allowEmpty?: boolean;
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+        {label}
+      </span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="bg-white border border-surface-300 rounded-md text-xs px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+      >
+        {allowEmpty && <option value="">Todos</option>}
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function StatusBadge({ state }: { state: string }) {
+  const map: Record<string, string> = {
+    open: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    closed: "bg-rose-50 text-rose-700 border-rose-200",
+    merged: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  };
+  return (
+    <span className={`text-[10px] font-medium px-2 py-1 rounded-full border ${map[state]}`}>
+      {state}
+    </span>
+  );
+}

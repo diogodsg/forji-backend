@@ -1,0 +1,61 @@
+import { useCallback, useEffect, useState } from "react";
+import type { PdiPlan } from "../types/pdi";
+
+const STORAGE_KEY = "pdi_plan_me";
+
+export function loadStoredPdi(): PdiPlan | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as PdiPlan;
+  } catch {
+    return null;
+  }
+}
+
+export function useLocalPdi(initial: PdiPlan) {
+  const [plan, setPlan] = useState<PdiPlan>(() => loadStoredPdi() ?? initial);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (dirty) {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ ...plan, updatedAt: new Date().toISOString() })
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [plan, dirty]);
+
+  const updatePlan = useCallback(
+    <K extends keyof PdiPlan>(key: K, value: PdiPlan[K]) => {
+      setPlan((p) => ({
+        ...p,
+        [key]: value,
+        updatedAt: new Date().toISOString(),
+      }));
+      setDirty(true);
+    },
+    []
+  );
+
+  const replacePlan = useCallback((p: PdiPlan) => {
+    setPlan(p);
+    setDirty(true);
+  }, []);
+
+  const reset = useCallback(() => {
+    setPlan(initial);
+    setDirty(false);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }, [initial]);
+
+  return { plan, setPlan: replacePlan, updatePlan, dirty, reset };
+}
