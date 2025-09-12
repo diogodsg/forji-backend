@@ -42,5 +42,31 @@ export function useRemotePdiForUser(userId?: number) {
     load();
   }, [load]);
 
-  return { plan, loading, error, refresh: load };
+  const upsert = useCallback(
+    async (incoming: Omit<PdiPlan, "createdAt" | "updatedAt">) => {
+      if (!userId) return;
+      const res = await api<any>(`/pdi/${userId}`, {
+        method: "PUT",
+        auth: true,
+        body: JSON.stringify({
+          competencies: incoming.competencies,
+          milestones: incoming.milestones,
+          krs: incoming.krs || [],
+          records: incoming.records,
+        }),
+      });
+      setPlan({
+        userId: String(res.userId),
+        competencies: res.competencies,
+        milestones: res.milestones,
+        krs: res.krs || [],
+        records: res.records,
+        createdAt: res.createdAt,
+        updatedAt: res.updatedAt,
+      });
+    },
+    [userId]
+  );
+
+  return { plan, loading, error, refresh: load, upsert };
 }

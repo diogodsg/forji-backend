@@ -11,6 +11,20 @@ echo "==> Seeding complete mock dataset on $API"
 # --- Optional helpers ---
 has() { command -v $1 >/dev/null 2>&1; }
 
+# Auth helper: registers if missing, otherwise logs in; prints access_token
+get_token() {
+  local name="$1" email="$2" password="$3"
+  local out token
+  out=$(curl -sS -X POST "$API/auth/register" -H 'Content-Type: application/json' \
+    -d "{\"name\":\"$name\",\"email\":\"$email\",\"password\":\"$password\"}") || true
+  token=$(echo "$out" | jq -r '.access_token // empty')
+  if [[ -z "$token" ]]; then
+    token=$(curl -sS -X POST "$API/auth/login" -H 'Content-Type: application/json' \
+      -d "{\"email\":\"$email\",\"password\":\"$password\"}" | jq -r .access_token)
+  fi
+  echo -n "$token"
+}
+
 echo "==> Ensuring database is up"
 if has docker; then
   if ! docker ps --format '{{.Names}}' | grep -q '^forge_postgres$'; then
@@ -55,18 +69,30 @@ else
   fi
 fi
 
-get_token() {
-  local name="$1" email="$2" password="$3"
-  local out token
-  out=$(curl -sS -X POST "$API/auth/register" -H 'Content-Type: application/json' \
-    -d "{\"name\":\"$name\",\"email\":\"$email\",\"password\":\"$password\"}") || true
-  token=$(echo "$out" | jq -r '.access_token // empty')
-  if [[ -z "$token" ]]; then
-    token=$(curl -sS -X POST "$API/auth/login" -H 'Content-Type: application/json' \
-      -d "{\"email\":\"$email\",\"password\":\"$password\"}" | jq -r .access_token)
-  fi
-  echo -n "$token"
-}
+echo "==> Waiting for API at $API"
+if has curl; then
+  echo -n "   • Checking /auth/login"
+  for i in {1..60}; do
+    code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/auth/login" -H 'Content-Type: application/json' -d '{"email":"_","password":"_"}' || true)
+    if [[ "$code" != "000" ]]; then echo " ✓"; break; fi
+    echo -n "."; sleep 0.5
+    if [[ $i -eq 60 ]]; then echo "\n   ! Timeout waiting for API"; exit 1; fi
+  done
+fi
+
+echo "==> Creating admin user (first user becomes admin)"
+admin_token=$(get_token "Root Admin" "admin@example.com" "pass123")
+if [[ -z "$admin_token" ]]; then
+  echo "   ! Failed to obtain admin token" && exit 1
+fi
+
+echo "==> Creating users via admin endpoint"
+curl -sS -X POST "$API/auth/admin/create-user" -H "Authorization: Bearer $admin_token" -H 'Content-Type: application/json' \
+  -d '{"name":"Alice Manager","email":"alice.manager@example.com","password":"pass123"}' | jq -cr '.id // .message // .error // empty' || true
+curl -sS -X POST "$API/auth/admin/create-user" -H "Authorization: Bearer $admin_token" -H 'Content-Type: application/json' \
+  -d '{"name":"Bob Dev","email":"bob.dev@example.com","password":"pass123"}' | jq -cr '.id // .message // .error // empty' || true
+curl -sS -X POST "$API/auth/admin/create-user" -H "Authorization: Bearer $admin_token" -H 'Content-Type: application/json' \
+  -d '{"name":"Carol Dev","email":"carol.dev@example.com","password":"pass123"}' | jq -cr '.id // .message // .error // empty' || true
 
 mgr_token=$(get_token "Alice Manager" "alice.manager@example.com" "pass123")
 dev1_token=$(get_token "Bob Dev" "bob.dev@example.com" "pass123")
@@ -79,11 +105,11 @@ dev2_id=$(curl -sS -H "Authorization: Bearer $dev2_token" "$API/auth/me" | jq -r
 
 echo "Manager=$mgr_id Dev1=$dev1_id Dev2=$dev2_id"
 
-echo "==> Setting manager relations"
-curl -sS -X POST "$API/auth/set-manager" -H "Authorization: Bearer $mgr_token" -H 'Content-Type: application/json' \
+echo "==> Setting manager relations (admin)"
+curl -sS -X POST "$API/auth/admin/set-manager" -H "Authorization: Bearer $admin_token" -H 'Content-Type: application/json' \
   -d "{\"userId\": $dev1_id, \"managerId\": $mgr_id}" | jq -c '{userId:.id, managers:.managers|map(.id)}'
 
-curl -sS -X POST "$API/auth/set-manager" -H "Authorization: Bearer $mgr_token" -H 'Content-Type: application/json' \
+curl -sS -X POST "$API/auth/admin/set-manager" -H "Authorization: Bearer $admin_token" -H 'Content-Type: application/json' \
   -d "{\"userId\": $dev2_id, \"managerId\": $mgr_id}" | jq -c '{userId:.id, managers:.managers|map(.id)}'
 
 echo "==> Current reports"

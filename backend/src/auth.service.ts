@@ -26,8 +26,15 @@ export class AuthService {
 
   async register(email: string, password: string, name: string) {
     const hash = await bcrypt.hash(password, 10);
+    const userCount = await prisma.user.count();
     const user = await prisma.user.create({
-      data: { email, password: hash, name },
+      data: {
+        email,
+        password: hash,
+        name,
+        // first user becomes admin to bootstrap access management
+        isAdmin: userCount === 0,
+      } as any,
     });
     return user;
   }

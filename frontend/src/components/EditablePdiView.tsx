@@ -15,9 +15,17 @@ import { ResultsSection } from "./ResultsSection";
 
 interface Props {
   initialPlan: PdiPlan;
+  // If provided, saves changes to this user's PDI via PUT /pdi/:userId (manager editing)
+  saveForUserId?: number;
+  // Optional callback when a save completes successfully (e.g., to refresh parent)
+  onSaved?: (plan: PdiPlan) => void;
 }
 
-export const EditablePdiView: React.FC<Props> = ({ initialPlan }) => {
+export const EditablePdiView: React.FC<Props> = ({
+  initialPlan,
+  saveForUserId,
+  onSaved,
+}) => {
   // Desabilitar storage local quando integrado ao backend
   const { plan, setPlan, dirty, reset } = useLocalPdi(initialPlan, {
     enableStorage: false,
@@ -46,25 +54,44 @@ export const EditablePdiView: React.FC<Props> = ({ initialPlan }) => {
         records: working.records,
       };
       let saved;
-      try {
-        saved = await api<any>("/pdi/me", {
-          method: "PATCH",
+      if (typeof saveForUserId === "number") {
+        // Manager editing a report's PDI: full upsert by userId
+        saved = await api<any>(`/pdi/${saveForUserId}`, {
+          method: "PUT",
           auth: true,
           body: JSON.stringify(payload),
         });
-      } catch (e: any) {
-        // Se plano não existir ainda, fazer POST /pdi
-        if (e.message.includes("404")) {
-          saved = await api<any>("/pdi", {
-            method: "POST",
+      } else {
+        // Self editing: try patch, fallback to create
+        try {
+          saved = await api<any>("/pdi/me", {
+            method: "PATCH",
             auth: true,
             body: JSON.stringify(payload),
           });
-        } else {
-          throw e;
+        } catch (e: any) {
+          // Se plano não existir ainda, fazer POST /pdi
+          if (e.message.includes("404")) {
+            saved = await api<any>("/pdi", {
+              method: "POST",
+              auth: true,
+              body: JSON.stringify(payload),
+            });
+          } else {
+            throw e;
+          }
         }
       }
       setPlan({
+        userId: String(saved.userId),
+        competencies: saved.competencies,
+        milestones: saved.milestones,
+        krs: saved.krs || [],
+        records: saved.records,
+        createdAt: saved.createdAt || working.createdAt,
+        updatedAt: saved.updatedAt || new Date().toISOString(),
+      });
+      onSaved?.({
         userId: String(saved.userId),
         competencies: saved.competencies,
         milestones: saved.milestones,

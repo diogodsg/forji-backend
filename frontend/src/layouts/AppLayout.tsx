@@ -7,6 +7,7 @@ interface AppLayoutProps {
   onLogout: () => void;
   userName: string;
   showManager?: boolean;
+  showAdmin?: boolean;
 }
 
 export function AppLayout({
@@ -14,6 +15,7 @@ export function AppLayout({
   onLogout,
   userName,
   showManager,
+  showAdmin,
 }: AppLayoutProps) {
   return (
     <div className="h-screen w-full overflow-hidden flex bg-surface-100 text-gray-800">
@@ -21,6 +23,7 @@ export function AppLayout({
         userName={userName}
         onLogout={onLogout}
         showManager={showManager}
+        showAdmin={showAdmin}
       />
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <TopBar

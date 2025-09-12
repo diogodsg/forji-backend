@@ -10,18 +10,23 @@ export function Sidebar({
   userName,
   onLogout,
   showManager,
+  showAdmin,
 }: {
   userName: string;
   onLogout: () => void;
   showManager?: boolean;
+  showAdmin?: boolean;
 }) {
   const location = useLocation();
   const initial = userName?.[0]?.toUpperCase() || "U";
   const navItems = React.useMemo(() => {
-    return showManager
-      ? [...baseNavItems, { to: "/manager", label: "Manager", icon: "\u2605" }]
-      : baseNavItems;
-  }, [showManager]);
+    let items = baseNavItems.slice();
+    if (showManager)
+      items = [...items, { to: "/manager", label: "Manager", icon: "\u2605" }];
+    if (showAdmin)
+      items = [...items, { to: "/admin", label: "Admin", icon: "#" }];
+    return items;
+  }, [showManager, showAdmin]);
   return (
     <aside className="hidden md:flex h-screen flex-col flex-none w-60 border-r border-surface-300/70 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/55">
       <div className="h-14 flex items-center px-4 border-b border-surface-300/60">

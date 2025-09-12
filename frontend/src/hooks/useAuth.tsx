@@ -15,6 +15,7 @@ interface User {
   createdAt: string;
   updatedAt: string;
   isManager?: boolean;
+  isAdmin?: boolean;
 }
 
 interface AuthContextValue {

@@ -12,6 +12,13 @@ API NestJS com autenticação JWT, Prisma + PostgreSQL. PRs e PDI persistidos.
   - `PATCH /pdi/me` (atualização parcial)
   - `GET /pdi/:userId`, `PUT /pdi/:userId`, `DELETE /pdi/:userId`
 
+### Administração (somente admin)
+
+- `GET /auth/users` — lista usuários (id, email, name, managers, reports, timestamps)
+- `POST /auth/admin/create-user` — cria usuário; aceita `isAdmin` opcional
+- `POST /auth/admin/set-manager` — conecta um manager a um usuário
+- `POST /auth/admin/remove-manager` — desconecta manager de um usuário
+
 ## Como rodar
 
 Pré-requisitos: Docker, Node 20+.
@@ -42,3 +49,4 @@ npm run start:dev
 
 - `prisma/schema.prisma` contém os modelos `User`, `PullRequest` e `PdiPlan` (milestones/KRs/records como JSON).
 - Para desenvolvimento rápido, o PDI usa colunas JSON. Futuro: normalizar em tabelas.
+- O modelo `User` possui o campo `isAdmin` (boolean, default false). O primeiro usuário registrado é promovido automaticamente a admin no `AuthService.register`.

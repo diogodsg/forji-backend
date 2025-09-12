@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import React from "react";
 import { useAuth, AuthProvider as RawAuthProvider } from "./hooks/useAuth";
 import { AppLayout } from "./layouts/AppLayout";
+import AdminAccessPage from "./pages/AdminAccessPage.tsx";
 const AuthProvider = RawAuthProvider as unknown as React.ComponentType<{
   children: React.ReactNode;
 }>;
@@ -29,6 +30,7 @@ function InnerApp() {
       userName={user.name}
       onLogout={logout}
       showManager={!!user.isManager}
+      showAdmin={!!user.isAdmin}
     >
       <Routes>
         <Route path="/" element={<MyPrsPage />} />
@@ -36,6 +38,7 @@ function InnerApp() {
         <Route path="/me/pdi" element={<MyPdiPage />} />
         <Route path="/users/:userId/prs" element={<ManagerPrsPage />} />
         <Route path="/manager" element={<ManagerDashboardPage />} />
+        {user.isAdmin && <Route path="/admin" element={<AdminAccessPage />} />}
       </Routes>
     </AppLayout>
   );

@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useMyReports } from "../hooks/useMyReports";
 import { MyPrsPage } from "./MyPrsPage";
 import { useRemotePdiForUser } from "../hooks/useRemotePdiForUser";
-import { PdiView } from "../components/PdiView";
+// PDI view is embedded within EditablePdiView when plan exists
+import { EditablePdiView } from "../components/EditablePdiView";
 import { useRemotePrs } from "../hooks/useRemotePrs";
 
 export function ManagerDashboardPage() {
@@ -19,6 +20,8 @@ export function ManagerDashboardPage() {
     plan,
     loading: pdiLoading,
     error: pdiError,
+    upsert: upsertPdi,
+    refresh: refreshPdi,
   } = useRemotePdiForUser(current?.id);
 
   // Fetch a small PR sample for header chips
@@ -130,11 +133,33 @@ export function ManagerDashboardPage() {
                     </div>
                   )}
                   {!pdiLoading && !plan && (
-                    <div className="text-sm text-gray-600">
-                      Nenhum PDI criado para esta pessoa ainda.
+                    <div className="text-sm text-gray-700 space-y-3">
+                      <div>Nenhum PDI criado para esta pessoa ainda.</div>
+                      {current?.id && (
+                        <button
+                          className="px-3 py-1.5 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-500"
+                          onClick={() =>
+                            upsertPdi({
+                              userId: String(current.id),
+                              competencies: [],
+                              milestones: [],
+                              krs: [],
+                              records: [],
+                            })
+                          }
+                        >
+                          Criar PDI
+                        </button>
+                      )}
                     </div>
                   )}
-                  {plan && <PdiView plan={plan} />}
+                  {plan && current?.id && (
+                    <EditablePdiView
+                      initialPlan={plan}
+                      saveForUserId={current.id}
+                      onSaved={() => refreshPdi()}
+                    />
+                  )}
                 </div>
               )}
             </div>

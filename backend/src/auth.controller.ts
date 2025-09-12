@@ -11,6 +11,16 @@ import { JwtAuthGuard } from "./jwt-auth.guard";
 import { AuthService } from "./auth.service";
 import prisma from "./prisma";
 import { ParseIntPipe } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+
+@Injectable()
+class AdminGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const req = context.switchToHttp().getRequest();
+    const user = req.user;
+    return !!user?.isAdmin;
+  }
+}
 
 @Controller("auth")
 export class AuthController {
@@ -37,6 +47,82 @@ export class AuthController {
     return this.authService.login(user);
   }
 
+  // --- Admin endpoints ---
+  @Get("users")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async listUsers() {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        managers: { select: { id: true } },
+        reports: { select: { id: true } },
+      },
+      orderBy: { id: "asc" },
+    });
+    // Append isAdmin from full user read to avoid type mismatch prior to Prisma generate
+    const ids = users.map((u) => u.id);
+    const full = await prisma.user.findMany({ where: { id: { in: ids } } });
+    const byId = new Map(full.map((u) => [u.id, u]));
+    return users.map((u) => ({
+      ...u,
+      isAdmin: !!(byId.get(u.id) as any)?.isAdmin,
+    }));
+  }
+
+  @Post("admin/create-user")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminCreateUser(
+    @Body()
+    body: {
+      email: string;
+      password: string;
+      name: string;
+      isAdmin?: boolean;
+    }
+  ) {
+    const bcrypt = await import("bcryptjs");
+    const hash = await bcrypt.hash(body.password, 10);
+    const created = await prisma.user.create({
+      data: {
+        email: body.email,
+        password: hash,
+        name: body.name,
+        // cast to any to allow isAdmin before Prisma client is regenerated
+        isAdmin: !!body.isAdmin,
+      } as any,
+      select: { id: true, email: true, name: true, createdAt: true },
+    });
+    return { ...created, isAdmin: !!body.isAdmin } as any;
+  }
+
+  @Post("admin/set-manager")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminSetManager(@Body() body: { userId: number; managerId: number }) {
+    const updated = await prisma.user.update({
+      where: { id: body.userId },
+      data: { managers: { connect: { id: body.managerId } } },
+      select: { id: true, managers: { select: { id: true } } },
+    });
+    return updated;
+  }
+
+  @Post("admin/remove-manager")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminRemoveManager(
+    @Body() body: { userId: number; managerId: number }
+  ) {
+    const updated = await prisma.user.update({
+      where: { id: body.userId },
+      data: { managers: { disconnect: { id: body.managerId } } },
+      select: { id: true, managers: { select: { id: true } } },
+    });
+    return updated;
+  }
+
   @Get("me")
   @UseGuards(JwtAuthGuard)
   me(@Req() req: any) {
@@ -48,7 +134,11 @@ export class AuthController {
       .then((u) => {
         if (!u) return null;
         const { password, reports, ...rest } = u as any;
-        return { ...rest, isManager: (reports?.length ?? 0) > 0 } as any;
+        return {
+          ...rest,
+          isManager: (reports?.length ?? 0) > 0,
+          isAdmin: !!(u as any).isAdmin,
+        } as any;
       });
   }
 

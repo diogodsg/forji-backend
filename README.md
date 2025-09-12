@@ -28,6 +28,7 @@ Hoje a aplicação permite:
 - Lista de subordinados do manager (`/auth/my-reports`)
 - Filtro de PRs por dono via query `?ownerUserId=` com checagem de permissão (manager ou dono)
 - Navegação aprimorada com Sidebar (logo, seções) e avatar com logout
+- Administração: página `/admin` para criação de usuários e gestão de relações (somente administradores)
 
 ## Stack
 
@@ -76,11 +77,20 @@ backend/
 | `/` / `/me/prs` | Lista de PRs (autenticado)                                 |
 | `/me/pdi`       | Página de acompanhamento do PDI                            |
 | `/manager`      | Dashboard do manager (seleciona subordinado; abas PRs/PDI) |
+| `/admin`        | Gestão de contas e relações (apenas para usuários admin)   |
 
 ## Endpoints Backend (principais)
 
 - Auth: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`,
   `GET /auth/my-reports`, `POST /auth/set-manager`, `POST /auth/remove-manager`
+
+  Admin (somente admin):
+
+  - `GET /auth/users` (lista usuários com managers/reports)
+  - `POST /auth/admin/create-user` (cria usuário; aceita `isAdmin` opcional)
+  - `POST /auth/admin/set-manager` (define um manager para um usuário)
+  - `POST /auth/admin/remove-manager` (remove relação de manager)
+
 - PRs (JWT): `GET /prs` (aceita `?ownerUserId=` com checagem de permissão), `GET /prs/:id`, `POST /prs`, `PUT /prs/:id`, `DELETE /prs/:id`
 - PDI (JWT):
   - `GET /pdi/me` (404 se não existir)
@@ -91,6 +101,13 @@ backend/
 Permissões
 
 - PRs filtrados por `ownerUserId` e PDI de outro usuário só podem ser acessados pelo próprio dono ou por alguém que esteja listado como seu manager.
+
+Administração
+
+- Campo `isAdmin` no modelo de usuário (Prisma) habilita acesso administrativo.
+- O primeiro usuário registrado no sistema é promovido automaticamente a admin.
+- A página `/admin` permite criar contas e gerenciar relações de gestão.
+- Atalho de teclado: `g` seguido de `a` navega para a página de administração (se o usuário for admin).
 
 ## Tipagens Principais (Frontend)
 
@@ -219,7 +236,9 @@ O script irá:
 
 - Subir o Postgres (via Docker) se necessário e aguardar disponibilidade
 - Resetar o schema via Prisma (ou via SQL com docker em fallback)
-- Criar usuários (manager + 2 devs), vincular relações de gestão
+- Aguardar a API ficar pronta antes de disparar requests
+- Criar o admin (primeiro usuário) e obter token
+- Criar usuários (manager + 2 devs) via endpoint admin e vincular relações
 - Popular PRs variados (open/merged/closed) em frontend/backend
 - Criar um PDI completo para cada dev
 
@@ -228,6 +247,7 @@ O script irá:
 Instalação e dev:
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
@@ -235,6 +255,7 @@ npm run dev
 Build produção:
 
 ```bash
+cd frontend
 npm run build
 npm run preview
 ```

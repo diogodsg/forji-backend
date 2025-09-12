@@ -5,9 +5,15 @@ interface TopBarProps {
   userName: string;
   onLogout: () => void;
   showManager?: boolean;
+  showAdmin?: boolean;
 }
 
-export function TopBar({ userName, onLogout, showManager }: TopBarProps) {
+export function TopBar({
+  userName,
+  onLogout,
+  showManager,
+  showAdmin,
+}: TopBarProps) {
   const navigate = useNavigate();
 
   // Keyboard shortcuts (g p, g d, g m, ctrl/cmd+k placeholder)
@@ -29,11 +35,12 @@ export function TopBar({ userName, onLogout, showManager }: TopBarProps) {
         if (k === "p") navigate("/me/prs");
         if (k === "d") navigate("/me/pdi");
         if (k === "m" && showManager) navigate("/manager");
+        if (k === "a" && showAdmin) navigate("/admin");
       }
     }
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [navigate, showManager]);
+  }, [navigate, showManager, showAdmin]);
 
   const initial = userName?.[0]?.toUpperCase() || "U";
   return (
@@ -44,7 +51,13 @@ export function TopBar({ userName, onLogout, showManager }: TopBarProps) {
       <div className="flex items-center gap-3">
         <button
           className="text-[11px] text-gray-500 border border-surface-300 rounded px-2 py-1 hover:bg-surface-200"
-          title={showManager ? "Atalho: g p / g d / g m" : "Atalho: g p / g d"}
+          title={
+            showManager || showAdmin
+              ? `Atalho: g p / g d${showManager ? " / g m" : ""}${
+                  showAdmin ? " / g a" : ""
+                }`
+              : "Atalho: g p / g d"
+          }
           onClick={() => navigate("/me/prs")}
         >
           PRs
