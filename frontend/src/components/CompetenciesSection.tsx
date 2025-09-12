@@ -1,4 +1,5 @@
 import React from "react";
+import { FiAward } from "react-icons/fi";
 
 interface CompetenciesSectionProps {
   competencies: string[];
@@ -14,7 +15,7 @@ export const CompetenciesSection: React.FC<CompetenciesSectionProps> = ({
   <section className="rounded-xl border border-surface-300 bg-white p-6 shadow-sm">
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-lg font-semibold flex items-center gap-2">
-        <span className="w-1.5 h-5 bg-indigo-600 rounded" />
+        <FiAward className="w-5 h-5 text-indigo-600" />
         Competências
       </h2>
       <AddCompetencyForm onAdd={onAdd} />

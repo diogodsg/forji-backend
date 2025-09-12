@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { FiGitPullRequest } from "react-icons/fi";
 import { mockPrs } from "../mocks/prs";
 import { useRemotePrs } from "../hooks/useRemotePrs";
 import { PrStats } from "../components/PrStats";
@@ -27,6 +28,7 @@ export function MyPrsPage({
     <div className="p-5 space-y-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <FiGitPullRequest className="w-5 h-5 text-indigo-600" />
           <span>Pull Requests</span>
           <span className="text-[10px] font-medium uppercase tracking-wide text-gray-500">
             visão geral

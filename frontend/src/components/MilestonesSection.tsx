@@ -1,4 +1,5 @@
 import React from "react";
+import { FiCalendar } from "react-icons/fi";
 import type { PdiMilestone } from "../types/pdi";
 import { ListEditor, TaskEditor } from "./EditablePdiView";
 
@@ -18,7 +19,7 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
   <section>
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-lg font-semibold flex items-center gap-2">
-        <span className="w-1.5 h-5 bg-indigo-600 rounded" />
+        <FiCalendar className="w-5 h-5 text-indigo-600" />
         Acompanhamento
       </h2>
       <button

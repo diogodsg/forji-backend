@@ -1,5 +1,12 @@
 import type { PullRequest } from "../types/pr";
 import { formatDistanceToNow } from "date-fns";
+import {
+  FiFilter,
+  FiGitBranch,
+  FiHash,
+  FiClock,
+  FiFileText,
+} from "react-icons/fi";
 
 interface PrListProps {
   prs: PullRequest[];
@@ -25,6 +32,10 @@ export function PrList({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 items-end bg-white/70 border border-surface-300 rounded-xl px-4 py-3 backdrop-blur">
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <FiFilter className="w-3.5 h-3.5" />
+          Filtros
+        </div>
         <FilterSelect
           label="Repositório"
           value={repoFilter || ""}
@@ -76,17 +87,25 @@ export function PrList({
                       <span className="font-medium text-gray-800 group-hover:text-gray-900 line-clamp-1">
                         {pr.title}
                       </span>
-                      <span className="text-[10px] text-gray-400 tracking-wide">
-                        #{pr.id}
+                      <span className="inline-flex items-center gap-1 text-[10px] text-gray-400 tracking-wide">
+                        <FiHash className="w-3 h-3" /> {pr.id}
                       </span>
                     </div>
                   </td>
-                  <td className="px-3 py-2 text-gray-700">{pr.repo}</td>
+                  <td className="px-3 py-2 text-gray-700">
+                    <span className="inline-flex items-center gap-1">
+                      <FiGitBranch className="w-4 h-4 text-gray-500" />
+                      {pr.repo}
+                    </span>
+                  </td>
                   <td
                     className="px-3 py-2 text-gray-500"
                     title={created.toISOString()}
                   >
-                    {formatDistanceToNow(created, { addSuffix: true })}
+                    <span className="inline-flex items-center gap-1">
+                      <FiClock className="w-4 h-4 text-gray-400" />
+                      {formatDistanceToNow(created, { addSuffix: true })}
+                    </span>
                   </td>
                   <td className="px-3 py-2 text-gray-700">{timeToMerge}</td>
                   <td className="px-3 py-2">
@@ -130,7 +149,10 @@ export function PrList({
                     </div>
                   </td>
                   <td className="px-3 py-2 text-gray-700">
-                    {pr.files_changed}
+                    <span className="inline-flex items-center gap-1">
+                      <FiFileText className="w-4 h-4 text-gray-500" />
+                      {pr.files_changed}
+                    </span>
                   </td>
                 </tr>
               );
@@ -184,8 +206,17 @@ function StatusBadge({ state }: { state: string }) {
   };
   return (
     <span
-      className={`text-[10px] font-medium px-2 py-1 rounded-full border ${map[state]}`}
+      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full border ${map[state]}`}
     >
+      <span
+        className={`inline-block w-1.5 h-1.5 rounded-full ${
+          state === "open"
+            ? "bg-emerald-500"
+            : state === "merged"
+            ? "bg-indigo-500"
+            : "bg-rose-500"
+        }`}
+      />
       {state}
     </span>
   );

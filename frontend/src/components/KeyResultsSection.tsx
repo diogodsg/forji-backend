@@ -1,4 +1,5 @@
 import React from "react";
+import { FiTrendingUp } from "react-icons/fi";
 import type { PdiKeyResult } from "../types/pdi";
 import { ListEditor } from "./EditablePdiView";
 
@@ -18,7 +19,7 @@ export const KeyResultsSection: React.FC<KeyResultsSectionProps> = ({
   <section className="rounded-xl border border-surface-300 bg-white p-6 shadow-sm">
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-lg font-semibold flex items-center gap-2">
-        <span className="w-1.5 h-5 bg-indigo-600 rounded" />
+        <FiTrendingUp className="w-5 h-5 text-indigo-600" />
         Key Results
       </h2>
       <button

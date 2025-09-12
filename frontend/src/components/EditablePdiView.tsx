@@ -155,6 +155,27 @@ export const EditablePdiView: React.FC<Props> = ({
     });
   };
 
+  const addRecord = (area?: string) => {
+    const name = (area || "").trim();
+    if (!name) return;
+    if (working.records.some((r) => r.area === name)) return;
+    updateWorking({
+      records: [
+        ...working.records,
+        {
+          area: name,
+          levelBefore: undefined,
+          levelAfter: undefined,
+          evidence: "",
+        },
+      ],
+    });
+  };
+
+  const removeRecord = (area: string) => {
+    updateWorking({ records: working.records.filter((r) => r.area !== area) });
+  };
+
   // KRs
   const addKr = () => {
     const kr: PdiKeyResult = {
@@ -199,7 +220,13 @@ export const EditablePdiView: React.FC<Props> = ({
         onUpdate={updateKr}
       />
 
-      <ResultsSection records={working.records} onUpdate={updateRecord} />
+      <ResultsSection
+        records={working.records}
+        onUpdate={updateRecord}
+        onAdd={addRecord}
+        onRemove={removeRecord}
+        competencies={working.competencies}
+      />
     </div>
   );
 

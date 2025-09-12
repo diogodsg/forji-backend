@@ -2,6 +2,7 @@ import { EditablePdiView } from "../components/EditablePdiView";
 import { useRemotePdi } from "../hooks/useRemotePdi";
 import { useEffect } from "react";
 import type { PdiPlan } from "../types/pdi";
+import { FiTarget } from "react-icons/fi";
 
 export function MyPdiPage() {
   const { plan, loading, error, upsert } = useRemotePdi();
@@ -22,7 +23,9 @@ export function MyPdiPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Meu PDI</h1>
+      <h1 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-gray-800">
+        <FiTarget className="w-6 h-6 text-indigo-600" /> Meu PDI
+      </h1>
       {loading && <div className="text-sm text-gray-500">Carregando...</div>}
       {error && (
         <div className="text-sm text-red-600">Erro ao carregar: {error}</div>

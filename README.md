@@ -332,3 +332,22 @@ Próximo agente deve:
 ---
 
 MVP pronto para extensão.
+
+## Mudanças recentes
+
+- Administração
+  - Modal de criação de usuário reestruturado (grid responsivo, overlay corrigido).
+  - Tabela simplificada (Usuário | Permissões | Gerentes) com header fixo e gerência inline.
+  - Atribuição de manager via menu/botão “+ Adicionar gerente”; nomes longos com truncamento e tooltip.
+  - Erro de e-mail duplicado tratado como 409 (mensagem amigável no frontend).
+- Navegação e páginas
+  - Sidebar renovada com ícones (react-icons), visual mais consistente e logout destacado.
+  - Páginas de PRs e PDI com iconografia e tabelas/cartões refinados.
+- PDI
+  - Seção “Resultado” agora totalmente editável: nível antes/depois, evidências, adicionar/remover linhas.
+  - Adição rápida a partir de competências existentes ou criação manual de nova área.
+
+Dicas rápidas
+
+- Para testar administração, faça login com um usuário admin e abra `/admin`.
+- Na página Meu PDI (`/me/pdi`), clique em “Editar PDI” para habilitar a edição da seção “Resultado”. Salve para persistir no backend.

@@ -1,5 +1,6 @@
 import type { PdiPlan } from "../types/pdi";
 import React from "react";
+import { FiAward, FiTrendingUp, FiCalendar, FiBarChart2 } from "react-icons/fi";
 
 interface Props {
   plan: PdiPlan;
@@ -11,7 +12,7 @@ export const PdiView: React.FC<Props> = ({ plan }) => {
       <section className="relative overflow-hidden rounded-xl border border-surface-300 bg-gradient-to-br from-indigo-50 to-sky-50 p-6 shadow-sm">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-200/40 rounded-full blur-3xl" />
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="w-1.5 h-5 bg-indigo-600 rounded" />
+          <FiAward className="w-5 h-5 text-indigo-600" />
           Competências técnicas a desenvolver
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -29,7 +30,7 @@ export const PdiView: React.FC<Props> = ({ plan }) => {
       {plan.krs && plan.krs.length > 0 && (
         <section className="rounded-xl border border-surface-300 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-1.5 h-5 bg-indigo-600 rounded" />
+            <FiTrendingUp className="w-5 h-5 text-indigo-600" />
             Key Results
           </h2>
           <div className="space-y-4">
@@ -82,7 +83,7 @@ export const PdiView: React.FC<Props> = ({ plan }) => {
 
       <section>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="w-1.5 h-5 bg-indigo-600 rounded" />
+          <FiCalendar className="w-5 h-5 text-indigo-600" />
           Acompanhamento
         </h2>
         <div className="space-y-5">
@@ -196,7 +197,7 @@ export const PdiView: React.FC<Props> = ({ plan }) => {
 
       <section className="rounded-xl border border-surface-300 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="w-1.5 h-5 bg-indigo-600 rounded" />
+          <FiBarChart2 className="w-5 h-5 text-indigo-600" />
           Resultado
         </h2>
         <div className="overflow-x-auto">

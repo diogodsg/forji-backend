@@ -6,6 +6,7 @@ import {
   Get,
   UseGuards,
   Req,
+  ConflictException,
 } from "@nestjs/common";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { AuthService } from "./auth.service";
@@ -86,17 +87,24 @@ export class AuthController {
   ) {
     const bcrypt = await import("bcryptjs");
     const hash = await bcrypt.hash(body.password, 10);
-    const created = await prisma.user.create({
-      data: {
-        email: body.email,
-        password: hash,
-        name: body.name,
-        // cast to any to allow isAdmin before Prisma client is regenerated
-        isAdmin: !!body.isAdmin,
-      } as any,
-      select: { id: true, email: true, name: true, createdAt: true },
-    });
-    return { ...created, isAdmin: !!body.isAdmin } as any;
+    try {
+      const created = await prisma.user.create({
+        data: {
+          email: body.email,
+          password: hash,
+          name: body.name,
+          // cast to any to allow isAdmin before Prisma client is regenerated
+          isAdmin: !!body.isAdmin,
+        } as any,
+        select: { id: true, email: true, name: true, createdAt: true },
+      });
+      return { ...created, isAdmin: !!body.isAdmin } as any;
+    } catch (e: any) {
+      if (e?.code === "P2002") {
+        throw new ConflictException("Email já está em uso");
+      }
+      throw e;
+    }
   }
 
   @Post("admin/set-manager")

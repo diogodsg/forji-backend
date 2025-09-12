@@ -50,3 +50,7 @@ npm run start:dev
 - `prisma/schema.prisma` contém os modelos `User`, `PullRequest` e `PdiPlan` (milestones/KRs/records como JSON).
 - Para desenvolvimento rápido, o PDI usa colunas JSON. Futuro: normalizar em tabelas.
 - O modelo `User` possui o campo `isAdmin` (boolean, default false). O primeiro usuário registrado é promovido automaticamente a admin no `AuthService.register`.
+
+### Tratamento de erros
+
+- `POST /auth/admin/create-user`: quando o e-mail já existir, retorna `409 Conflict` com mensagem amigável (violação de unique no Prisma).
