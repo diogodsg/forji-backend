@@ -1,14 +1,33 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { MyPrsPage } from "./pages/MyPrsPage";
-import { ManagerPrsPage } from "./pages/ManagerPrsPage";
-import { ManagerDashboardPage } from "./pages/ManagerDashboardPage";
-import { MyPdiPage } from "./pages/MyPdiPage";
-import LoginPage from "./pages/LoginPage";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import { useAuth, AuthProvider } from "@/features/auth";
 import { AppLayout } from "./layouts/AppLayout";
-import AdminAccessPage from "./pages/AdminAccessPage.tsx";
-// AuthProvider now comes directly from feature barrel.
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { ScreenLoading, PageLoading, LoginLoading } from "./lib/fallbacks";
+import { ErrorBoundary } from "./lib/ErrorBoundary";
 
+/**
+ * Core pages are lazy-loaded to reduce the initial bundle size.
+ * Only providers + the flow shell (InnerApp) are eagerly loaded.
+ */
+const MyPrsPage = lazy(() =>
+  import("./pages/MyPrsPage").then((m) => ({ default: m.MyPrsPage }))
+);
+const ManagerDashboardPage = lazy(() =>
+  import("./pages/ManagerDashboardPage").then((m) => ({
+    default: m.ManagerDashboardPage,
+  }))
+);
+const MyPdiPage = lazy(() =>
+  import("./pages/MyPdiPage").then((m) => ({ default: m.MyPdiPage }))
+);
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const AdminAccessPage = lazy(() => import("./pages/AdminAccessPage"));
+
+/**
+ * Root component: sets up auth + router context.
+ * Conditional auth logic lives inside `InnerApp` for testability and clarity.
+ */
 export default function App() {
   return (
     <AuthProvider>
@@ -19,39 +38,50 @@ export default function App() {
   );
 }
 
+/**
+ * Orchestrates authentication flow and private routes.
+ * States:
+ *  - loading: token validation -> splash prevents flicker between login and app
+ *  - unauthenticated: lazy-loads login screen
+ *  - authenticated: mounts layout + lazy routes
+ * Admin route is registered only when `user.isAdmin` is true.
+ */
 function InnerApp() {
-  const { user, logout, loading } = useAuth() as any;
-  const hasToken =
-    typeof window !== "undefined" && !!localStorage.getItem("auth:token");
-  if (loading && hasToken) {
+  const { user, logout, loading } = useAuth();
+
+  // Loading splash while resolving /auth/me
+  if (loading) return <ScreenLoading label="Loading..." />;
+
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-sky-50">
-        <div className="flex flex-col items-center gap-3 text-gray-600 text-sm">
-          <div className="h-10 w-10 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
-          <span>Carregando...</span>
-        </div>
-      </div>
+      <Suspense fallback={<LoginLoading label="Loading login..." />}>
+        <LoginPage />
+      </Suspense>
     );
   }
-  if (!user && !loading) return <LoginPage />;
-  if (!user) return null; // evita flash
+
   return (
-    <AppLayout
-      userName={user.name}
-      onLogout={logout}
-      showManager={!!user.isManager}
-      showAdmin={!!user.isAdmin}
-    >
-      <Routes>
-        <Route path="/" element={<MyPrsPage />} />
-        <Route path="/me/prs" element={<MyPrsPage />} />
-        <Route path="/me/pdi" element={<MyPdiPage />} />
-        <Route path="/users/:userId/prs" element={<ManagerPrsPage />} />
-        <Route path="/manager" element={<ManagerDashboardPage />} />
-        {user.isAdmin && <Route path="/admin" element={<AdminAccessPage />} />}
-      </Routes>
-    </AppLayout>
+    <ErrorBoundary>
+      <AppLayout
+        userName={user.name}
+        onLogout={logout}
+        showManager={!!user.isManager}
+        showAdmin={!!user.isAdmin}
+      >
+        <Suspense fallback={<PageLoading />}>
+          <Routes>
+            {/* Redirect root to canonical PR route */}
+            <Route index element={<Navigate to="/me/prs" replace />} />
+            <Route path="/me/prs" element={<MyPrsPage />} />
+            <Route path="/me/pdi" element={<MyPdiPage />} />
+            <Route path="/manager" element={<ManagerDashboardPage />} />
+            {user.isAdmin && (
+              <Route path="/admin" element={<AdminAccessPage />} />
+            )}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </AppLayout>
+    </ErrorBoundary>
   );
 }
-
-// Old Header/Footer removed in favor of AppLayout / Sidebar / TopBar.

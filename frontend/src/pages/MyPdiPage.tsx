@@ -1,25 +1,24 @@
 import { EditablePdiView } from "../features/pdi/components/EditablePdiView";
 import { useRemotePdi } from "../features/pdi/hooks/useRemotePdi";
-import { useEffect } from "react";
-import type { PdiPlan } from "../features/pdi/types/pdi";
+import { useEnsurePdi } from "../features/pdi/hooks/useEnsurePdi";
 import { FiTarget } from "react-icons/fi";
 
+/**
+ * MyPdiPage
+ *
+ * Displays the current user's Personal Development Plan (PDI). Ensures an empty
+ * plan is provisioned automatically (via `useEnsurePdi`) so that the editor UI
+ * can appear without a manual "create" flow. Portuguese UI copy kept on purpose.
+ *
+ * Data flow:
+ * - Fetch plan with `useRemotePdi`.
+ * - Hook `useEnsurePdi` triggers creation when no plan exists and not loading.
+ * - Once plan is available it is passed to `EditablePdiView` for editing.
+ */
 export function MyPdiPage() {
   const { plan, loading, error, upsert } = useRemotePdi();
-
-  // Se não houver plano após carregar, criar um básico
-  useEffect(() => {
-    if (!loading && !plan && !error) {
-      const empty: Omit<PdiPlan, "createdAt" | "updatedAt"> = {
-        userId: "me",
-        competencies: [],
-        milestones: [],
-        krs: [],
-        records: [],
-      };
-      upsert(empty);
-    }
-  }, [loading, plan, error, upsert]);
+  // Garante criação automática de PDI vazio
+  useEnsurePdi({ plan, loading, error, upsert, userId: "me" });
 
   return (
     <div className="p-6">

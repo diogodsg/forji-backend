@@ -1,4 +1,16 @@
 import { LoginForm } from "@/features/auth";
+/**
+ * LoginPage
+ *
+ * Public unauthenticated entry point. Presents brand/marketing context on the left
+ * (desktop and larger screens) and the login form on the right. Portuguese copy kept
+ * intentionally; technical documentation remains in English.
+ *
+ * UX Notes:
+ * - Background uses subtle gradient + radial accents for visual depth.
+ * - Marketing panel hidden on small screens to prioritize authentication.
+ * - Version tag (MVP) displayed for transparency of product maturity.
+ */
 
 export default function LoginPage() {
   return (

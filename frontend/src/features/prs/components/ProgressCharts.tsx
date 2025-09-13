@@ -1,4 +1,7 @@
 import { weeklyMetrics } from "../mocks/prs";
+// TODO(dead-code): Componente não utilizado em nenhuma página. Avaliar remoção ou mover para
+// um futuro módulo de métricas (ex: features/metrics) quando dados reais forem expostos
+// pelo backend (/prs/metrics). Mantido temporariamente como referência de layout.
 import {
   LineChart,
   Line,

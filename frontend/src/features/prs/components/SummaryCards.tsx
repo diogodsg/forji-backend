@@ -1,4 +1,6 @@
-// MOVED from src/components/SummaryCards.tsx
+// TODO(dead-code): Não referenciado em pages atuais. Métricas principais já cobertas por PrStats.
+// Considerar remoção ou mesclar lógica complementar ao componente de estatísticas.
+// Origem: componente movido de src/components/SummaryCards.tsx
 import { weeklyMetrics } from "../mocks/prs";
 
 export function SummaryCards() {

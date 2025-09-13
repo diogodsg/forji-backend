@@ -1,10 +1,35 @@
 import { useMemo, useState } from "react";
+/**
+ * AdminAccessPage
+ *
+ * Route-level page for user and access management. Aggregates smaller admin feature
+ * components (toolbar, table, creation modal, manager relationship drawer) and wires
+ * them to the administrative data hook `useAdminUsers`.
+ *
+ * Portuguese UI copy is preserved (product decision), while documentation/comments
+ * are in English for code readability and onboarding.
+ *
+ * Responsibilities:
+ * - Fetch & hold admin user list state via `useAdminUsers`.
+ * - Provide client-side search filter (name/email) with a lightweight memoized filter.
+ * - Handle user creation errors translating backend messages to friendly text.
+ * - Gate access: non-admin users see an `AccessDeniedPanel` early return.
+ * - Orchestrate subordinate manager assignment through `ManagerDrawer`.
+ *
+ * Not in scope here:
+ * - Table row rendering details (delegated to feature components).
+ * - Complex caching; relies on underlying hook.
+ */
 import { useAuth } from "@/features/auth";
-import type { UserRow } from "../features/admin";
-// Migrated to feature-first admin module
-import { useAdminUsers } from "@/features/admin";
-import { ManagerDrawer, CreateUserModal } from "@/features/admin";
-import { AdminUserRow } from "@/features/admin/components/AdminUserRow";
+import {
+  useAdminUsers,
+  ManagerDrawer,
+  CreateUserModal,
+  AdminUsersToolbar,
+  AdminUsersTable,
+  AccessDeniedPanel,
+} from "@/features/admin";
+import type { UserRow } from "@/features/admin";
 
 export default function AdminAccessPage() {
   const { user } = useAuth();
@@ -49,27 +74,18 @@ export default function AdminAccessPage() {
     } catch (err: any) {
       const msg = String(err?.message || "");
       let display: string;
-      if (/Email já está em uso/i.test(msg)) display = "Email já está em uso";
-      else if (/githubId.+uso|github/i.test(msg))
-        display = "githubId já está em uso";
-      else display = "Falha ao criar usuário";
+      if (/Email já está em uso|email.+exists/i.test(msg))
+        display = "Email already in use";
+      else if (/githubId.+uso|githubId.+exists|github/i.test(msg))
+        display = "GitHub ID already in use";
+      else display = "Failed to create user";
       setCreateError(display);
       throw new Error(display);
     }
   }
 
-  if (!user?.isAdmin) {
-    return (
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white/80 backdrop-blur border border-rose-200 rounded-xl p-6 text-center">
-          <h2 className="text-xl font-semibold text-rose-700">Acesso negado</h2>
-          <p className="text-sm text-rose-600 mt-1">
-            Esta página é restrita a administradores.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Early auth/role gate – avoids rendering internal admin structure needlessly.
+  if (!user?.isAdmin) return <AccessDeniedPanel />;
 
   return (
     <div className="space-y-8">
@@ -78,72 +94,28 @@ export default function AdminAccessPage() {
           Administração
         </h1>
         <p className="text-sm text-gray-500">
-          Gerencie contas, permissões e relações de gestão.
+          Gerencie contas, permissões e relacionamentos de gestão.
         </p>
       </header>
 
       <section className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-          <h2 className="text-base font-semibold">Usuários</h2>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por nome ou email…"
-                className="w-72 max-w-full rounded-md border border-surface-300 pl-3 pr-8 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 bg-white/80"
-              />
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                ⌘K
-              </span>
-            </div>
-            <button
-              onClick={() => setShowCreate(true)}
-              className="inline-flex items-center justify-center bg-indigo-600 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-indigo-700 shadow-sm"
-              title="Criar novo usuário"
-            >
-              Novo usuário
-            </button>
-          </div>
-        </div>
-        {loading ? (
-          <div className="text-sm text-gray-500">Carregando…</div>
-        ) : error ? (
-          <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-md px-3 py-2">
-            {error}
-          </div>
-        ) : (
-          <div className="overflow-x-auto rounded-lg border border-surface-300/70">
-            <table className="min-w-full text-sm">
-              <thead className="bg-surface-100/70 text-gray-600 sticky top-0 z-10">
-                <tr className="text-left">
-                  <th className="py-2.5 px-3 w-[42%]">Usuário</th>
-                  <th className="py-2.5 px-3 w-[12%]">Função</th>
-                  <th className="py-2.5 px-3 w-[18%]">GitHub</th>
-                  <th className="py-2.5 px-3 w-[20%]">Gerentes</th>
-                  <th className="py-2.5 px-3 w-[8%] text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-200/70">
-                {filteredUsers.map((u) => (
-                  <AdminUserRow
-                    key={u.id}
-                    user={u}
-                    allUsers={users}
-                    onToggleAdmin={toggleAdmin}
-                    onUpdateGithub={setGithubId}
-                    onOpenManagers={(id: number) =>
-                      setManagerDrawerUser(
-                        users.find((x) => x.id === id) || null
-                      )
-                    }
-                    onRemove={deleteUser}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <AdminUsersToolbar
+          query={query}
+          setQuery={setQuery}
+          onNew={() => setShowCreate(true)}
+        />
+        <AdminUsersTable
+          users={users}
+          filtered={filteredUsers}
+          loading={loading}
+          error={error}
+          onToggleAdmin={toggleAdmin}
+          onUpdateGithub={setGithubId}
+          onOpenManagers={(id: number) =>
+            setManagerDrawerUser(users.find((x) => x.id === id) || null)
+          }
+          onRemove={deleteUser}
+        />
       </section>
 
       <CreateUserModal

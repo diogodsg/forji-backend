@@ -2,6 +2,11 @@ import type { PullRequest } from "../types/pr";
 import { formatDistanceToNow } from "date-fns";
 import { FiGitBranch, FiHash, FiClock, FiFileText } from "react-icons/fi";
 import { PrFiltersBar } from "./PrFiltersBar";
+import { PaginationFooter } from "@/shared";
+import {
+  prStatusBadgeClasses,
+  prStatusDotColor,
+} from "@/features/prs/lib/status";
 
 interface PrListProps {
   prs: PullRequest[];
@@ -183,95 +188,28 @@ export function PrList({
         totalItems={total}
         pageSize={pageSize}
         pageSizeOptions={pageSizeOptions}
-        onPageChange={(p) => onPageChange?.(p)}
-        onPageSizeChange={(s) => onPageSizeChange?.(s)}
+        onPageChange={(p: number) => onPageChange?.(p)}
+        onPageSizeChange={(s: number) => onPageSizeChange?.(s)}
       />
     </div>
   );
 }
 
 function StatusBadge({ state }: { state: string }) {
-  const map: Record<string, string> = {
-    open: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    closed: "bg-rose-50 text-rose-700 border-rose-200",
-    merged: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  };
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full border ${map[state]}`}
+      className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full border ${prStatusBadgeClasses(
+        state
+      )}`}
     >
       <span
-        className={`inline-block w-1.5 h-1.5 rounded-full ${
-          state === "open"
-            ? "bg-emerald-500"
-            : state === "merged"
-            ? "bg-indigo-500"
-            : "bg-rose-500"
-        }`}
+        className={`inline-block w-1.5 h-1.5 rounded-full ${prStatusDotColor(
+          state
+        )}`}
       />
       {state}
     </span>
   );
 }
 
-function PaginationFooter({
-  page,
-  totalPages,
-  totalItems,
-  pageSize,
-  pageSizeOptions,
-  onPageChange,
-  onPageSizeChange,
-}: {
-  page: number;
-  totalPages: number;
-  totalItems: number;
-  pageSize: number;
-  pageSizeOptions: number[];
-  onPageChange?: (p: number) => void;
-  onPageSizeChange?: (s: number) => void;
-}) {
-  return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-gray-600 bg-white/60 rounded-lg">
-      <div className="flex items-center gap-2 order-2 sm:order-1">
-        <button
-          onClick={() => page > 1 && onPageChange?.(page - 1)}
-          disabled={page === 1}
-          className="px-2 py-1 rounded border border-surface-300 disabled:opacity-40 bg-white hover:bg-surface-100"
-        >
-          Prev
-        </button>
-        <span className="px-2">
-          Página <strong>{page}</strong> de <strong>{totalPages}</strong>
-        </span>
-        <button
-          onClick={() => page < totalPages && onPageChange?.(page + 1)}
-          disabled={page === totalPages}
-          className="px-2 py-1 rounded border border-surface-300 disabled:opacity-40 bg-white hover:bg-surface-100"
-        >
-          Next
-        </button>
-      </div>
-      <div className="flex items-center gap-2 order-1 sm:order-2">
-        <span className="uppercase tracking-wide text-[10px] text-gray-500">
-          Itens por página
-        </span>
-        <select
-          value={pageSize}
-          onChange={(e) => onPageSizeChange?.(parseInt(e.target.value, 10))}
-          className="border border-surface-300 rounded-md bg-white/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-        >
-          {pageSizeOptions.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-        <span className="text-gray-400 hidden md:inline">•</span>
-        <span className="text-gray-500">
-          Total <strong>{totalItems}</strong>
-        </span>
-      </div>
-    </div>
-  );
-}
+// PaginationFooter agora movido para shared/components

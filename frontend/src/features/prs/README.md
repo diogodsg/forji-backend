@@ -15,7 +15,7 @@ Encapsulates listing, filtering, basic analytics and detail inspection of Pull R
 features/prs/
   types/          // Domain types (PullRequest, metrics)
   hooks/          // Data fetching & filtering hook (useRemotePrs)
-  components/     // UI (list, stats, filters bar, detail drawer, charts)
+  components/     // UI (list, stats, filters bar, detail drawer)
   mocks/          // Mock data & weekly metrics generation
   index.ts        // Barrel export
   README.md       // (this file)
@@ -28,7 +28,7 @@ Exports:
 - Types: `PullRequest`, metric interfaces
 - Data: `mockPrs`, `weeklyMetrics` (dev/demo only)
 - Hook: `useRemotePrs`
-- Components: `PrList`, `PrStats`, `PrFiltersBar`, `PrDetailDrawer`, `ProgressCharts`
+- Components: `PrList`, `PrStats`, `PrFiltersBar`, `PrDetailDrawer`
 
 ## Hook: useRemotePrs
 
@@ -42,13 +42,12 @@ Behavior:
 
 ## Components Overview
 
-| Component        | Responsibility                                              |
-| ---------------- | ----------------------------------------------------------- |
-| `PrList`         | Tabular list + pagination + integrates `PrFiltersBar`       |
-| `PrFiltersBar`   | Controlled filters (repo, status, author)                   |
-| `PrStats`        | Aggregated quick KPIs (count, lines, avg merge time)        |
-| `PrDetailDrawer` | Detailed view with AI summary & checklist                   |
-| `ProgressCharts` | Trend lines (weekly volume & merge time) using mock metrics |
+| Component        | Responsibility                                        |
+| ---------------- | ----------------------------------------------------- |
+| `PrList`         | Tabular list + pagination + integrates `PrFiltersBar` |
+| `PrFiltersBar`   | Controlled filters (repo, status, author)             |
+| `PrStats`        | Aggregated quick KPIs (count, lines, avg merge time)  |
+| `PrDetailDrawer` | Detailed view with AI summary & checklist             |
 
 ## Data Mapping Rules
 
@@ -84,6 +83,7 @@ Behavior:
 - Sorting (lines changed, created date)
 - Export CSV / metrics endpoint integration
 - Merge time bucketing (p95, median)
+- Reintroduce trend charts once backend `/prs/metrics` is available
 - PR → PDI linkage (action button currently a placeholder)
 
 ## Maintenance Checklist

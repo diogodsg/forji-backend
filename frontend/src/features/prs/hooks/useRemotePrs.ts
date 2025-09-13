@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/apiClient";
 import type { PullRequest } from "../types/pr";
+import { mockPrs } from "../mocks/prs";
 
 // Map backend PullRequest (snake case & different numeric fields) to frontend shape
 function mapPr(raw: any): PullRequest {
@@ -30,7 +31,7 @@ export function useRemotePrs(
     page?: number;
     pageSize?: number;
   },
-  opts?: { skip?: boolean }
+  opts?: { skip?: boolean; fallbackMocks?: boolean }
 ) {
   const [data, setData] = useState<PullRequest[]>([]);
   const [total, setTotal] = useState(0);
@@ -67,6 +68,11 @@ export function useRemotePrs(
       } catch (e: any) {
         if (!active) return;
         setError(e.message || "Erro ao carregar PRs");
+        if (opts?.fallbackMocks) {
+          // Provide mocks if remote fails and fallback enabled
+          setData(mockPrs as PullRequest[]);
+          setTotal(mockPrs.length);
+        }
       } finally {
         if (active) setLoading(false);
       }
@@ -82,6 +88,7 @@ export function useRemotePrs(
     filters.page,
     filters.pageSize,
     opts?.skip,
+    opts?.fallbackMocks,
   ]);
 
   const filtered = useMemo(() => {
