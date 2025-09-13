@@ -1,11 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
 import { FiGitPullRequest } from "react-icons/fi";
-import { mockPrs } from "../mocks/prs";
-import { useRemotePrs } from "../hooks/useRemotePrs";
-import { PrStats } from "../components/PrStats";
-import type { PullRequest } from "../types/pr";
-import { PrList } from "../components/PrList";
-import { PrDetailDrawer } from "../components/PrDetailDrawer";
+import type { PullRequest } from "@/features/prs";
+import {
+  mockPrs,
+  useRemotePrs,
+  PrStats,
+  PrList,
+  PrDetailDrawer,
+} from "@/features/prs";
 
 export function MyPrsPage({
   initialFilters,
@@ -82,7 +84,7 @@ export function MyPrsPage({
           page={page}
           pageSize={pageSize}
           onPageChange={setPage}
-          onPageSizeChange={(s) => {
+          onPageSizeChange={(s: number) => {
             setPageSize(s);
             setPage(1);
           }}

@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { useAuth } from "../hooks/useAuth";
-import type { UserRow } from "../types/user";
-import { useAdminUsers } from "./admin/hooks/useAdminUsers";
-import { AdminUserRow } from "./admin/components/AdminUserRow";
-import { ManagerDrawer } from "./admin/components/ManagerDrawer";
-import { CreateUserModal } from "./admin/components/CreateUserModal";
+import { useAuth } from "@/features/auth";
+import type { UserRow } from "../features/admin";
+// Migrated to feature-first admin module
+import { useAdminUsers } from "@/features/admin";
+import { ManagerDrawer, CreateUserModal } from "@/features/admin";
+import { AdminUserRow } from "@/features/admin/components/AdminUserRow";
 
 export default function AdminAccessPage() {
   const { user } = useAuth();
@@ -132,7 +132,7 @@ export default function AdminAccessPage() {
                     allUsers={users}
                     onToggleAdmin={toggleAdmin}
                     onUpdateGithub={setGithubId}
-                    onOpenManagers={(id) =>
+                    onOpenManagers={(id: number) =>
                       setManagerDrawerUser(
                         users.find((x) => x.id === id) || null
                       )

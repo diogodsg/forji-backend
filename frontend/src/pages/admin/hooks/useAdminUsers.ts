@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { UserRow } from "../../../types/user";
+import type { UserRow } from "../../../features/admin";
 import { adminApi } from "../services/adminApi";
 import type { CreateUserInput } from "../services/adminApi";
 

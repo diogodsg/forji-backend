@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { useMyReports } from "../hooks/useMyReports";
+import { useMyReports } from "../features/admin";
 import { MyPrsPage } from "./MyPrsPage";
-import { useRemotePdiForUser } from "../hooks/useRemotePdiForUser";
+import { useRemotePdiForUser } from "../features/pdi/hooks/useRemotePdiForUser";
 // PDI view is embedded within EditablePdiView when plan exists
-import { EditablePdiView } from "../components/EditablePdiView";
-import { useRemotePrs } from "../hooks/useRemotePrs";
+import { EditablePdiView } from "../features/pdi/components/EditablePdiView";
+import { useRemotePrs } from "../features/prs/hooks/useRemotePrs";
 
 export function ManagerDashboardPage() {
   const { reports, loading, error } = useMyReports();
@@ -23,8 +23,8 @@ export function ManagerDashboardPage() {
   } = useRemotePdiForUser(current?.id);
 
   // Fetch a small PR sample for header chips
-  const { all: prList, loading: prsLoading } = useRemotePrs(
-    { ownerUserId: current?.id as number },
+  const { prs: prList, loading: prsLoading } = useRemotePrs(
+    { ownerUserId: current?.id },
     { skip: !current?.id }
   );
   const prOpen = useMemo(

@@ -1,5 +1,5 @@
 import { api } from "../../../lib/apiClient";
-import type { UserRow } from "../../../types/user";
+import type { UserRow } from "../../../features/admin";
 
 // Service layer centralizing admin-related API calls.
 // Keeps Admin UI components thin and facilitates future caching or React Query integration.

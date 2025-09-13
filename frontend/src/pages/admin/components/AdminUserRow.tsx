@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { UserRow } from "../../../types/user";
+import type { UserRow } from "../../../features/admin";
 import { RowMenu } from "./RowMenu";
 
 interface Props {

@@ -1,7 +1,7 @@
-import { EditablePdiView } from "../components/EditablePdiView";
-import { useRemotePdi } from "../hooks/useRemotePdi";
+import { EditablePdiView } from "../features/pdi/components/EditablePdiView";
+import { useRemotePdi } from "../features/pdi/hooks/useRemotePdi";
 import { useEffect } from "react";
-import type { PdiPlan } from "../types/pdi";
+import type { PdiPlan } from "../features/pdi/types/pdi";
 import { FiTarget } from "react-icons/fi";
 
 export function MyPdiPage() {

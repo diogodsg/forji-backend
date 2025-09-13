@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import type { UserRow } from "../../../types/user";
+import type { UserRow } from "../../../features/admin";
 
 interface Props {
   target: UserRow;

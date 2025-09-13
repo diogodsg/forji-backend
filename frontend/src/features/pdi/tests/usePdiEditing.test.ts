@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { pdiEditingReducer, type PdiEditingState } from "./usePdiEditing";
-import type { PdiPlan } from "../types/pdi";
+import {
+  pdiEditingReducer,
+  type PdiEditingState,
+} from "../hooks/usePdiEditing";
+import type { PdiPlan } from "..";
 
 function basePlan(): PdiPlan {
   return {

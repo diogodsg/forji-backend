@@ -1,5 +1,5 @@
-import { MyPrsPage } from "./MyPrsPage";
-import { useMyReports } from "../hooks/useMyReports";
+import { MyPrsPage } from "./MyPrsPage"; // retains route component layering
+import { useMyReports } from "../features/admin";
 import { useMemo, useState } from "react";
 
 // MVP: usa o primeiro subordinado; futuras versões vão escolher por select/url param

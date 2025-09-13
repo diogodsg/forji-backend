@@ -1,4 +1,4 @@
-import type { PdiPlan } from "../types/pdi";
+import type { PdiPlan } from "../features/pdi";
 
 export const mockPdi: PdiPlan = {
   userId: "me",

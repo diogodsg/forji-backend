@@ -1,4 +1,4 @@
-import type { PullRequest, WeeklyMetricPoint } from "../types/pr";
+import type { PullRequest, WeeklyMetricPoint } from "../features/prs/types/pr";
 
 export const mockPrs: PullRequest[] = [
   {

@@ -4,13 +4,10 @@ import { ManagerPrsPage } from "./pages/ManagerPrsPage";
 import { ManagerDashboardPage } from "./pages/ManagerDashboardPage";
 import { MyPdiPage } from "./pages/MyPdiPage";
 import LoginPage from "./pages/LoginPage";
-import React from "react";
-import { useAuth, AuthProvider as RawAuthProvider } from "./hooks/useAuth";
+import { useAuth, AuthProvider } from "@/features/auth";
 import { AppLayout } from "./layouts/AppLayout";
 import AdminAccessPage from "./pages/AdminAccessPage.tsx";
-const AuthProvider = RawAuthProvider as unknown as React.ComponentType<{
-  children: React.ReactNode;
-}>;
+// AuthProvider now comes directly from feature barrel.
 
 export default function App() {
   return (

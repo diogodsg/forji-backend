@@ -1,5 +1,5 @@
-import { SummaryCards } from "../components/SummaryCards";
-import { ProgressCharts } from "../components/ProgressCharts";
+// Updated to use feature PR components via barrel
+import { SummaryCards, ProgressCharts } from "../features/prs";
 
 export function MyProgressPage() {
   return (
