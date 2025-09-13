@@ -37,7 +37,7 @@ export function PrStats({ prs, loading }: PrStatsProps) {
   }, [prs]);
 
   return (
-    <div className="grid gap-3 md:grid-cols-6 sm:grid-cols-3 grid-cols-2">
+    <div className="grid gap-3 xl:grid-cols-7 lg:grid-cols-6 md:grid-cols-4 sm:grid-cols-3 grid-cols-2">
       <StatCard
         label="Total"
         value={loading ? "..." : stats?.total ?? 0}
@@ -58,12 +58,6 @@ export function PrStats({ prs, loading }: PrStatsProps) {
         value={loading ? "..." : stats?.closed ?? 0}
         color="rose"
       />
-      <LinesDeltaCard
-        loading={loading}
-        additions={stats?.additions ?? 0}
-        deletions={stats?.deletions ?? 0}
-        className="md:col-span-2"
-      />
       <StatCard
         label="Avg Merge"
         value={
@@ -75,6 +69,12 @@ export function PrStats({ prs, loading }: PrStatsProps) {
         }
         color="amber"
         small
+      />
+      <LinesDeltaCard
+        loading={loading}
+        additions={stats?.additions ?? 0}
+        deletions={stats?.deletions ?? 0}
+        className="xl:col-span-2 lg:col-span-2 md:col-span-2"
       />
     </div>
   );

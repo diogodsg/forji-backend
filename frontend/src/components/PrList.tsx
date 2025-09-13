@@ -1,23 +1,27 @@
 import type { PullRequest } from "../types/pr";
 import { formatDistanceToNow } from "date-fns";
-import {
-  FiFilter,
-  FiGitBranch,
-  FiHash,
-  FiClock,
-  FiFileText,
-} from "react-icons/fi";
+import { FiGitBranch, FiHash, FiClock, FiFileText } from "react-icons/fi";
+import { PrFiltersBar } from "./PrFiltersBar";
 
 interface PrListProps {
   prs: PullRequest[];
   onSelect: (pr: PullRequest) => void;
   repoFilter?: string;
   stateFilter?: string;
+  authorFilter?: string;
   onFilterChange?: (f: {
     repo?: string;
     state?: string;
+    author?: string;
     sort?: string;
   }) => void;
+  page?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  pageSizeOptions?: number[];
+  serverPaginated?: boolean;
+  totalItems?: number;
 }
 
 export function PrList({
@@ -25,57 +29,58 @@ export function PrList({
   onSelect,
   repoFilter,
   stateFilter,
+  authorFilter,
   onFilterChange,
+  page = 1,
+  pageSize = 20,
+  onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [10, 20, 50, 100],
+  serverPaginated = false,
+  totalItems,
 }: PrListProps) {
   const repos = Array.from(new Set(prs.map((p) => p.repo)));
+  const authors = Array.from(
+    new Set(prs.map((p) => p.user || p.author).filter(Boolean))
+  );
+  const total = serverPaginated ? totalItems ?? prs.length : prs.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const pageItems = serverPaginated
+    ? prs
+    : prs.slice(
+        (safePage - 1) * pageSize,
+        (safePage - 1) * pageSize + pageSize
+      );
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-4 items-end bg-white/70 border border-surface-300 rounded-xl px-4 py-3 backdrop-blur">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <FiFilter className="w-3.5 h-3.5" />
-          Filtros
-        </div>
-        <FilterSelect
-          label="Repositório"
-          value={repoFilter || ""}
-          onChange={(v) =>
-            onFilterChange?.({ repo: v || undefined, state: stateFilter })
-          }
-          options={repos}
-        />
-        <FilterSelect
-          label="Status"
-          value={stateFilter || ""}
-          onChange={(v) =>
-            onFilterChange?.({ repo: repoFilter, state: v || undefined })
-          }
-          options={["open", "closed", "merged"]}
-          allowEmpty
-        />
-      </div>
+      <PrFiltersBar
+        repos={repos}
+        repo={repoFilter}
+        state={stateFilter}
+        authors={authors as string[]}
+        author={authorFilter}
+        onChange={(f: { repo?: string; state?: string; author?: string }) =>
+          onFilterChange?.(f)
+        }
+      />
       <div className="overflow-x-auto rounded-xl border border-surface-300 bg-white/70 backdrop-blur shadow-soft">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wide text-gray-500 border-b border-surface-300/80">
               <th className="text-left px-3 py-2 font-medium">Título</th>
+              <th className="text-left px-3 py-2 font-medium">Autor</th>
               <th className="text-left px-3 py-2 font-medium">Repo</th>
               <th className="text-left px-3 py-2 font-medium">Criado</th>
-              <th className="text-left px-3 py-2 font-medium">T. Merge</th>
               <th className="text-left px-3 py-2 font-medium">Status</th>
               <th className="text-left px-3 py-2 font-medium">Linhas</th>
               <th className="text-left px-3 py-2 font-medium">Arquivos</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-300/70">
-            {prs.map((pr) => {
+            {pageItems.map((pr) => {
               const created = new Date(pr.created_at);
-              const merged = pr.merged_at ? new Date(pr.merged_at) : undefined;
-              const timeToMerge = merged
-                ? `${Math.round(
-                    (merged.getTime() - created.getTime()) / 60000
-                  )}m`
-                : "-";
               return (
                 <tr
                   key={pr.id}
@@ -93,6 +98,19 @@ export function PrList({
                     </div>
                   </td>
                   <td className="px-3 py-2 text-gray-700">
+                    {pr.user ? (
+                      <span className="text-xs font-medium text-gray-800">
+                        @{pr.user}
+                      </span>
+                    ) : pr.author ? (
+                      <span className="text-xs text-gray-500">
+                        @{pr.author}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-gray-700">
                     <span className="inline-flex items-center gap-1">
                       <FiGitBranch className="w-4 h-4 text-gray-500" />
                       {pr.repo}
@@ -107,7 +125,6 @@ export function PrList({
                       {formatDistanceToNow(created, { addSuffix: true })}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-gray-700">{timeToMerge}</td>
                   <td className="px-3 py-2">
                     <StatusBadge state={pr.state} />
                   </td>
@@ -160,43 +177,20 @@ export function PrList({
           </tbody>
         </table>
       </div>
+      <PaginationFooter
+        page={safePage}
+        totalPages={totalPages}
+        totalItems={total}
+        pageSize={pageSize}
+        pageSizeOptions={pageSizeOptions}
+        onPageChange={(p) => onPageChange?.(p)}
+        onPageSizeChange={(s) => onPageSizeChange?.(s)}
+      />
     </div>
   );
 }
 
-function FilterSelect({
-  label,
-  value,
-  onChange,
-  options,
-  allowEmpty,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-  allowEmpty?: boolean;
-}) {
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-        {label}
-      </span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="bg-white border border-surface-300 rounded-md text-xs px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-      >
-        {allowEmpty && <option value="">Todos</option>}
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
+// FilterSelect removed; replaced by PrFiltersBar component.
 
 function StatusBadge({ state }: { state: string }) {
   const map: Record<string, string> = {
@@ -219,5 +213,67 @@ function StatusBadge({ state }: { state: string }) {
       />
       {state}
     </span>
+  );
+}
+
+function PaginationFooter({
+  page,
+  totalPages,
+  totalItems,
+  pageSize,
+  pageSizeOptions,
+  onPageChange,
+  onPageSizeChange,
+}: {
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  pageSizeOptions: number[];
+  onPageChange?: (p: number) => void;
+  onPageSizeChange?: (s: number) => void;
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-gray-600 bg-white/60 rounded-lg">
+      <div className="flex items-center gap-2 order-2 sm:order-1">
+        <button
+          onClick={() => page > 1 && onPageChange?.(page - 1)}
+          disabled={page === 1}
+          className="px-2 py-1 rounded border border-surface-300 disabled:opacity-40 bg-white hover:bg-surface-100"
+        >
+          Prev
+        </button>
+        <span className="px-2">
+          Página <strong>{page}</strong> de <strong>{totalPages}</strong>
+        </span>
+        <button
+          onClick={() => page < totalPages && onPageChange?.(page + 1)}
+          disabled={page === totalPages}
+          className="px-2 py-1 rounded border border-surface-300 disabled:opacity-40 bg-white hover:bg-surface-100"
+        >
+          Next
+        </button>
+      </div>
+      <div className="flex items-center gap-2 order-1 sm:order-2">
+        <span className="uppercase tracking-wide text-[10px] text-gray-500">
+          Itens por página
+        </span>
+        <select
+          value={pageSize}
+          onChange={(e) => onPageSizeChange?.(parseInt(e.target.value, 10))}
+          className="border border-surface-300 rounded-md bg-white/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+        >
+          {pageSizeOptions.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+        <span className="text-gray-400 hidden md:inline">•</span>
+        <span className="text-gray-500">
+          Total <strong>{totalItems}</strong>
+        </span>
+      </div>
+    </div>
   );
 }

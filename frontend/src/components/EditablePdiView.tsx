@@ -46,6 +46,13 @@ export const EditablePdiView: React.FC<Props> = ({
   const [saving, setSaving] = useState(false);
   const save = async () => {
     setSaving(true);
+    const previous = plan; // snapshot
+    const optimistic = {
+      ...plan,
+      ...working,
+      updatedAt: new Date().toISOString(),
+    } as PdiPlan;
+    setPlan(optimistic); // optimistic update
     try {
       const payload = {
         competencies: working.competencies,
@@ -55,14 +62,12 @@ export const EditablePdiView: React.FC<Props> = ({
       };
       let saved;
       if (typeof saveForUserId === "number") {
-        // Manager editing a report's PDI: full upsert by userId
         saved = await api<any>(`/pdi/${saveForUserId}`, {
           method: "PUT",
           auth: true,
           body: JSON.stringify(payload),
         });
       } else {
-        // Self editing: try patch, fallback to create
         try {
           saved = await api<any>("/pdi/me", {
             method: "PATCH",
@@ -70,7 +75,6 @@ export const EditablePdiView: React.FC<Props> = ({
             body: JSON.stringify(payload),
           });
         } catch (e: any) {
-          // Se plano não existir ainda, fazer POST /pdi
           if (e.message.includes("404")) {
             saved = await api<any>("/pdi", {
               method: "POST",
@@ -82,25 +86,23 @@ export const EditablePdiView: React.FC<Props> = ({
           }
         }
       }
-      setPlan({
+      const merged: PdiPlan = {
         userId: String(saved.userId),
         competencies: saved.competencies,
         milestones: saved.milestones,
         krs: saved.krs || [],
         records: saved.records,
-        createdAt: saved.createdAt || working.createdAt,
+        createdAt: saved.createdAt || optimistic.createdAt,
         updatedAt: saved.updatedAt || new Date().toISOString(),
-      });
-      onSaved?.({
-        userId: String(saved.userId),
-        competencies: saved.competencies,
-        milestones: saved.milestones,
-        krs: saved.krs || [],
-        records: saved.records,
-        createdAt: saved.createdAt || working.createdAt,
-        updatedAt: saved.updatedAt || new Date().toISOString(),
-      });
+      };
+      setPlan(merged);
+      onSaved?.(merged);
       setMode("view");
+    } catch (err) {
+      // revert optimistic update on failure
+      if (previous) setPlan(previous);
+      console.error("Falha ao salvar PDI", err);
+      alert("Falha ao salvar PDI. Tente novamente.");
     } finally {
       setSaving(false);
     }

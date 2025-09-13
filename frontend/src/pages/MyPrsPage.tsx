@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { FiGitPullRequest } from "react-icons/fi";
 import { mockPrs } from "../mocks/prs";
 import { useRemotePrs } from "../hooks/useRemotePrs";
@@ -17,12 +17,31 @@ export function MyPrsPage({
     repo?: string;
     state?: string;
     ownerUserId?: number;
+    author?: string;
   }>(initialFilters || {});
 
-  const { prs: remotePrs, loading, error } = useRemotePrs(filters);
+  // Pagination state (define before hook usage)
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
+  const {
+    prs: remotePrs,
+    loading,
+    error,
+    total,
+  } = useRemotePrs({
+    ...filters,
+    page,
+    pageSize,
+  });
 
   const source = remotePrs.length ? remotePrs : mockPrs; // fallback enquanto não há dados
   const filtered = useMemo(() => source, [source]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filters.repo, filters.state, filters.ownerUserId, filters.author]);
 
   return (
     <div className="p-5 space-y-6">
@@ -53,10 +72,20 @@ export function MyPrsPage({
         )}
         <PrList
           prs={filtered}
+          totalItems={total}
+          serverPaginated
           onSelect={setSelected}
           repoFilter={filters.repo}
           stateFilter={filters.state}
+          authorFilter={filters.author}
           onFilterChange={setFilters}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => {
+            setPageSize(s);
+            setPage(1);
+          }}
         />
       </div>
 

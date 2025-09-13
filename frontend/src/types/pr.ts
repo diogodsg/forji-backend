@@ -1,6 +1,7 @@
 export interface PullRequest {
   id: string;
   author: string;
+  user?: string | null; // GitHub login (coluna `user` na tabela), pode ser null
   repo: string;
   title: string;
   created_at: string; // ISO
