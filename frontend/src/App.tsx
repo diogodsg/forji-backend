@@ -23,8 +23,21 @@ export default function App() {
 }
 
 function InnerApp() {
-  const { user, logout } = useAuth();
-  if (!user) return <LoginPage />;
+  const { user, logout, loading } = useAuth() as any;
+  const hasToken =
+    typeof window !== "undefined" && !!localStorage.getItem("auth:token");
+  if (loading && hasToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-sky-50">
+        <div className="flex flex-col items-center gap-3 text-gray-600 text-sm">
+          <div className="h-10 w-10 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+          <span>Carregando...</span>
+        </div>
+      </div>
+    );
+  }
+  if (!user && !loading) return <LoginPage />;
+  if (!user) return null; // evita flash
   return (
     <AppLayout
       userName={user.name}

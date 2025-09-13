@@ -8,11 +8,10 @@ import { useRemotePrs } from "../hooks/useRemotePrs";
 
 export function ManagerDashboardPage() {
   const { reports, loading, error } = useMyReports();
-  const first = useMemo(() => reports[0], [reports]);
   const [currentId, setCurrentId] = useState<number | undefined>(undefined);
   const current = useMemo(
-    () => reports.find((r) => r.id === currentId) || first,
-    [reports, currentId, first]
+    () => reports.find((r) => r.id === currentId),
+    [reports, currentId]
   );
 
   const [tab, setTab] = useState<"prs" | "pdi">("prs");
@@ -21,7 +20,6 @@ export function ManagerDashboardPage() {
     loading: pdiLoading,
     error: pdiError,
     upsert: upsertPdi,
-    refresh: refreshPdi,
   } = useRemotePdiForUser(current?.id);
 
   // Fetch a small PR sample for header chips
@@ -42,6 +40,8 @@ export function ManagerDashboardPage() {
     [prList]
   );
 
+  const filteredReports = reports; // TODO: se id do manager disponível, filtrar aqui.
+
   return (
     <div className="flex h-full min-h-0">
       {/* Left column: report selector */}
@@ -58,7 +58,7 @@ export function ManagerDashboardPage() {
           </div>
         )}
         <ul className="space-y-1">
-          {reports.map((r) => (
+          {filteredReports.map((r) => (
             <li key={r.id}>
               <button
                 onClick={() => setCurrentId(r.id)}
@@ -76,6 +76,11 @@ export function ManagerDashboardPage() {
             </li>
           ))}
         </ul>
+        {reports.length > 0 && currentId === undefined && (
+          <div className="mt-3 text-[11px] text-amber-600 font-medium">
+            Selecione um subordinado para habilitar PRs / PDI.
+          </div>
+        )}
       </aside>
 
       {/* Right column: header + content */}
@@ -115,6 +120,12 @@ export function ManagerDashboardPage() {
         )}
 
         <div className="flex-1 overflow-auto min-h-0">
+          {!loading && currentId === undefined && reports.length > 0 && (
+            <div className="p-10 text-sm text-gray-600">
+              Escolha um subordinado na coluna lateral para visualizar PRs ou
+              PDI.
+            </div>
+          )}
           {!loading && current && (
             <div>
               {tab === "prs" && (
@@ -132,32 +143,31 @@ export function ManagerDashboardPage() {
                       Erro ao carregar: {pdiError}
                     </div>
                   )}
-                  {!pdiLoading && !plan && (
+                  {!pdiLoading && !plan && current?.id && (
                     <div className="text-sm text-gray-700 space-y-3">
                       <div>Nenhum PDI criado para esta pessoa ainda.</div>
-                      {current?.id && (
-                        <button
-                          className="px-3 py-1.5 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-500"
-                          onClick={() =>
-                            upsertPdi({
-                              userId: String(current.id),
-                              competencies: [],
-                              milestones: [],
-                              krs: [],
-                              records: [],
-                            })
-                          }
-                        >
-                          Criar PDI
-                        </button>
-                      )}
+                      <button
+                        className="px-3 py-1.5 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-500 disabled:opacity-50"
+                        disabled={!currentId}
+                        onClick={() =>
+                          upsertPdi({
+                            userId: String(current.id),
+                            competencies: [],
+                            milestones: [],
+                            krs: [],
+                            records: [],
+                          })
+                        }
+                      >
+                        Criar PDI
+                      </button>
                     </div>
                   )}
                   {plan && current?.id && (
                     <EditablePdiView
+                      key={current.id}
                       initialPlan={plan}
-                      saveForUserId={current.id}
-                      onSaved={() => refreshPdi()}
+                      saveForUserId={Number(current.id)}
                     />
                   )}
                 </div>

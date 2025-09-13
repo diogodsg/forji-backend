@@ -1,7 +1,7 @@
 import React from "react";
 import { FiTrendingUp } from "react-icons/fi";
 import type { PdiKeyResult } from "../types/pdi";
-import { ListEditor } from "./EditablePdiView";
+import { ListEditor } from "./pdi/inputs";
 
 interface KeyResultsSectionProps {
   krs: PdiKeyResult[];

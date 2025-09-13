@@ -1,5 +1,6 @@
 import React from "react";
 import { FiAward } from "react-icons/fi";
+import { CompetenciesEditor } from "./editors/CompetenciesEditor";
 
 interface CompetenciesSectionProps {
   competencies: string[];
@@ -18,27 +19,11 @@ export const CompetenciesSection: React.FC<CompetenciesSectionProps> = ({
         <FiAward className="w-5 h-5 text-indigo-600" />
         Competências
       </h2>
-      <AddCompetencyForm onAdd={onAdd} />
     </div>
-    <div className="flex flex-wrap gap-2">
-      {competencies.map((c) => (
-        <span
-          key={c}
-          className="group inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-indigo-50 border border-indigo-200 text-indigo-700"
-        >
-          {c}
-          <button
-            onClick={() => onRemove(c)}
-            className="opacity-60 group-hover:opacity-100 text-[10px]"
-            aria-label="remover"
-          >
-            ✕
-          </button>
-        </span>
-      ))}
-    </div>
+    <CompetenciesEditor
+      competencies={competencies}
+      onAdd={onAdd}
+      onRemove={onRemove}
+    />
   </section>
 );
-
-// Import AddCompetencyForm from the original file
-import { AddCompetencyForm } from "./EditablePdiView";

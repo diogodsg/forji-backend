@@ -61,15 +61,20 @@ export function Sidebar({
     <aside className="hidden md:flex h-screen flex-col flex-none w-64 border-r border-surface-300/70 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/55">
       <div className="h-14 flex items-center px-4 border-b border-surface-300/60">
         <div className="flex items-center gap-2 select-none">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-600 to-sky-500 text-white font-bold flex items-center justify-center text-sm shadow-sm">
-            F
-          </div>
+          <img
+            src="/logo-forge.webp"
+            alt="Forge"
+            className="h-8 w-8 rounded-md shadow-sm ring-1 ring-surface-300/60 object-cover"
+          />
           <div className="flex flex-col leading-tight">
             <span className="font-semibold tracking-tight text-gray-800 text-[15px]">
               Forge
             </span>
-            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-indigo-600/80 font-semibold">
-              <HiOutlineHashtag className="w-3.5 h-3.5" /> mvp
+            <span
+              className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wide text-indigo-600/80 font-semibold"
+              title="Forjando talentos, moldando times"
+            >
+              <HiOutlineHashtag className="w-3 h-3" /> mvp
             </span>
           </div>
         </div>

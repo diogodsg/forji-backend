@@ -1,5 +1,7 @@
 import type { PdiPlan } from "../types/pdi";
 import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { FiAward, FiTrendingUp, FiCalendar, FiBarChart2 } from "react-icons/fi";
 
 interface Props {
@@ -240,12 +242,10 @@ export const PdiView: React.FC<Props> = ({ plan }) => {
   );
 };
 
-const MarkdownText = ({ text }: { text: string }) => {
-  return (
-    <div className="prose max-w-none text-sm leading-relaxed prose-p:my-0">
-      {text.split(/\n{2,}/).map((b, i) => (
-        <p key={i}>{b}</p>
-      ))}
-    </div>
-  );
-};
+const MarkdownText = ({ text }: { text: string }) => (
+  <div className="prose prose-sm max-w-none text-gray-800 prose-headings:mt-4 prose-p:my-2">
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      {text || "_Sem notas_"}
+    </ReactMarkdown>
+  </div>
+);
