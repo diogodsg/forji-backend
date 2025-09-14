@@ -1,5 +1,10 @@
 import React from "react";
 
+/**
+ * Generic pagination footer: page navigation + page size selector + total items.
+ * Stateless: caller owns page/pageSize/total values.
+ */
+
 export interface PaginationFooterProps {
   page: number;
   totalPages: number;
@@ -28,6 +33,9 @@ const defaultLabels = {
   total: "Total",
 };
 
+/**
+ * Renders navigation and sizing controls; guards invalid page changes internally.
+ */
 export function PaginationFooter({
   page,
   totalPages,

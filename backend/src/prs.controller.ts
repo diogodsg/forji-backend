@@ -22,7 +22,14 @@ export class PrsController {
   constructor(private readonly prsService: PrsService) {}
 
   @Get()
-  async list(@Req() req: any, @Query("ownerUserId") ownerUserId?: string) {
+  async list(
+    @Req() req: any,
+    @Query("ownerUserId") ownerUserId?: string,
+    @Query("page") page?: string,
+    @Query("pageSize") pageSize?: string
+  ) {
+    const p = Math.max(1, parseInt(page || "1", 10));
+    const ps = Math.min(200, Math.max(1, parseInt(pageSize || "20", 10)));
     if (ownerUserId) {
       const uid = parseInt(ownerUserId, 10);
       if (!Number.isFinite(uid)) throw new ForbiddenException("Invalid userId");
@@ -32,9 +39,9 @@ export class PrsController {
         });
         if (!isManager) throw new ForbiddenException();
       }
-      return this.prsService.list({ ownerUserId: uid });
+      return this.prsService.list({ ownerUserId: uid, page: p, pageSize: ps });
     }
-    return this.prsService.list();
+    return this.prsService.list({ page: p, pageSize: ps });
   }
 
   @Get(":id")

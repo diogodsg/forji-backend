@@ -1,5 +1,8 @@
 import React from "react";
 
+/**
+ * Props for SidePanel. Keep content lightweight; large forms may need focus mgmt.
+ */
 export interface SidePanelProps {
   open: boolean;
   onClose: () => void;
@@ -13,8 +16,8 @@ export interface SidePanelProps {
 }
 
 /**
- * Accessible side panel / drawer with overlay.
- * Focus trapping e aria-role podem ser adicionados futuramente.
+ * Sliding overlay panel. Currently simple: no focus trap / aria labels beyond close button.
+ * Add them where accessibility requirements increase.
  */
 export function SidePanel({
   open,

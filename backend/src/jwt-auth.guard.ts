@@ -13,7 +13,17 @@ export class JwtAuthGuard implements CanActivate {
     const token = authHeader.split(" ")[1];
     try {
       const payload = this.jwtService.verify(token);
-      const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+      const rawSub = payload.sub;
+      // Convert back to BigInt if possible (stored as string in JWT)
+      let userId: any = rawSub;
+      if (typeof rawSub === "string" && /^\d+$/.test(rawSub)) {
+        try {
+          userId = BigInt(rawSub);
+        } catch {
+          userId = Number(rawSub); // fallback
+        }
+      }
+      const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) return false;
       req.user = user;
       return true;

@@ -4,11 +4,11 @@ API NestJS com autenticação JWT, Prisma + PostgreSQL. PRs e PDI persistidos.
 
 ## Endpoints
 
-- Auth: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
-- PRs (JWT): `GET /prs`, `GET /prs/:id`, `POST /prs`, `PUT /prs/:id`, `DELETE /prs/:id`
+- Auth: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `GET /auth/my-reports`, `POST /auth/set-manager`, `POST /auth/remove-manager`
+- PRs (JWT): `GET /prs` (pagina: `?page=&pageSize=` até 200; filtro: `?ownerUserId=` com checagem de manager), `GET /prs/:id`, `POST /prs`, `PUT /prs/:id`, `DELETE /prs/:id`
 - PDI (JWT):
   - `GET /pdi/me` (404 se não existir)
-  - `POST /pdi` (cria/substitui plano do usuário logado)
+  - `POST /pdi` (upsert: cria ou substitui plano do usuário logado)
   - `PATCH /pdi/me` (atualização parcial)
   - `GET /pdi/:userId`, `PUT /pdi/:userId`, `DELETE /pdi/:userId`
 
@@ -16,8 +16,11 @@ API NestJS com autenticação JWT, Prisma + PostgreSQL. PRs e PDI persistidos.
 
 - `GET /auth/users` — lista usuários (id, email, name, managers, reports, timestamps)
 - `POST /auth/admin/create-user` — cria usuário; aceita `isAdmin` opcional
+- `POST /auth/admin/set-admin` — promove ou remove privilégio admin
 - `POST /auth/admin/set-manager` — conecta um manager a um usuário
 - `POST /auth/admin/remove-manager` — desconecta manager de um usuário
+- `POST /auth/admin/set-github-id` — define/remove githubId (409 se duplicado)
+- `POST /auth/admin/delete-user` — remove usuário (PRs ficam órfãos, PDI removido, relações gerenciais desconectadas)
 
 ## Como rodar
 
@@ -50,7 +53,9 @@ npm run start:dev
 - `prisma/schema.prisma` contém os modelos `User`, `PullRequest` e `PdiPlan` (milestones/KRs/records como JSON).
 - Para desenvolvimento rápido, o PDI usa colunas JSON. Futuro: normalizar em tabelas.
 - O modelo `User` possui o campo `isAdmin` (boolean, default false). O primeiro usuário registrado é promovido automaticamente a admin no `AuthService.register`.
+- Campo opcional `githubId` permite auto-vínculo de PRs (se `user` do payload de PR corresponder a um githubId cadastrado, o `ownerUserId` é preenchido).
 
 ### Tratamento de erros
 
-- `POST /auth/admin/create-user`: quando o e-mail já existir, retorna `409 Conflict` com mensagem amigável (violação de unique no Prisma).
+- Unicidade: email ou githubId duplicados retornam `409 Conflict` com mensagem amigável (`P2002`).
+- Ao deletar usuário: PRs têm `ownerUserId` nulado; plano PDI removido; relações manager são desconectadas.

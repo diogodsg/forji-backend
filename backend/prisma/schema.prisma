@@ -11,11 +11,12 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
+  id        BigInt  @id @default(autoincrement())
   email     String  @unique
   password  String
   name      String
   isAdmin   Boolean @default(false)
+  githubId  String? @unique @map("github_id")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   pdiPlan   PdiPlan?
@@ -29,8 +30,8 @@ model User {
 }
 
 model PullRequest {
-  id              Int       @id
-  number          Int?      @map("number")
+  id              BigInt    @id
+  number          BigInt?   @map("number")
   nodeId          String?   @map("node_id")
   user            String?   @map("user")
   title           String?
@@ -43,13 +44,16 @@ model PullRequest {
   state           String?
   lastReviewedAt  DateTime? @map("last_reviewed_at")
   reviewText      String?   @map("review_text")
-  totalAdditions  Int?      @map("total_additions")
-  totalDeletions  Int?      @map("total_deletions")
-  totalChanges    Int?      @map("total_changes")
+  totalAdditions  BigInt?   @map("total_additions")
+  totalDeletions  BigInt?   @map("total_deletions")
+  totalChanges    BigInt?   @map("total_changes")
 
   // Optional link to an application user (for manager filtering)
-  ownerUserId     Int?
+  ownerUserId     BigInt?
   ownerUser       User?     @relation(fields: [ownerUserId], references: [id])
+
+  // One-to-many: file changes associated with this PR
+  fileChanges     FileChange[]
 
   @@map("pull_requests")
 }
@@ -57,13 +61,31 @@ model PullRequest {
 // PDI Plan persisted as JSON blobs for fast iteration.
 // Later this can be normalized into separate tables.
 model PdiPlan {
-  id           Int       @id @default(autoincrement())
+  id           BigInt    @id @default(autoincrement())
   user         User      @relation(fields: [userId], references: [id])
-  userId       Int       @unique
+  userId       BigInt    @unique
   competencies String[]  // text[] of competencies
   milestones   Json      // PdiMilestone[]
   krs          Json?     // PdiKeyResult[]
   records      Json      // PdiCompetencyRecord[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+// GitHub file-level changes for a Pull Request
+model FileChange {
+  sha       String  @id // commit/file SHA
+  filename  String?
+  status    String?
+  additions BigInt?
+  deletions BigInt?
+  changes   BigInt?
+  patch     String?
+
+  // Nullable relation to PullRequest
+  prId         BigInt?      @map("pr_id")
+  pullRequest  PullRequest? @relation(fields: [prId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@map("file_changes")
+  @@index([prId], map: "file_changes_pr_id_idx")
 }

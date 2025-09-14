@@ -3,14 +3,40 @@ import prisma from "./prisma";
 
 @Injectable()
 export class PrsService {
-  list(filter?: { ownerUserId?: number }) {
-    const where = filter?.ownerUserId
-      ? ({ ownerUserId: filter.ownerUserId } as any)
-      : undefined;
-    return prisma.pullRequest.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-    });
+  async list(filter?: {
+    ownerUserId?: number;
+    page?: number;
+    pageSize?: number;
+  }) {
+    const page = filter?.page && filter.page > 0 ? filter.page : 1;
+    const pageSize =
+      filter?.pageSize && filter.pageSize > 0 ? filter.pageSize : 20;
+    const skip = (page - 1) * pageSize;
+
+    let where: any = undefined;
+    if (filter?.ownerUserId) {
+      // We need PRs linked via ownerUserId OR whose raw login matches the user's githubId
+      const user = await prisma.user.findFirst({
+        where: { id: filter.ownerUserId as any },
+      });
+      const gh = (user as any)?.githubId?.trim?.();
+      where = gh
+        ? {
+            OR: [{ ownerUserId: filter.ownerUserId as any }, { user: gh }],
+          }
+        : { ownerUserId: filter.ownerUserId as any };
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.pullRequest.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.pullRequest.count({ where }),
+    ]);
+    return { items, total, page, pageSize };
   }
 
   get(id: number) {
@@ -56,6 +82,16 @@ export class PrsService {
   async create(data: any) {
     if (!data?.id) throw new Error("id is required");
     const mapped = this.mapIncoming(data);
+    // Auto-link by githubId if ownerUserId not provided and PR 'user' (login) present
+    if (!mapped.ownerUserId && mapped.user) {
+      const gh = String(mapped.user).trim();
+      if (gh) {
+        const owner = (await prisma.user.findFirst({
+          where: { githubId: gh } as any,
+        })) as any;
+        if (owner) mapped.ownerUserId = owner.id as any;
+      }
+    }
     return prisma.pullRequest.create({ data: mapped });
   }
 
@@ -64,6 +100,15 @@ export class PrsService {
     if (!exists) throw new NotFoundException("PR not found");
     const mapped = this.mapIncoming(data);
     delete mapped.id; // never allow id change
+    if (!mapped.ownerUserId && mapped.user) {
+      const gh = String(mapped.user).trim();
+      if (gh) {
+        const owner = (await prisma.user.findFirst({
+          where: { githubId: gh } as any,
+        })) as any;
+        if (owner) mapped.ownerUserId = owner.id as any;
+      }
+    }
     return prisma.pullRequest.update({ where: { id }, data: mapped });
   }
 

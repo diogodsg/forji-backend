@@ -52,21 +52,24 @@ export class AuthController {
   @Get("users")
   @UseGuards(JwtAuthGuard, new AdminGuard())
   async listUsers() {
-    const users = await prisma.user.findMany({
+    const users = (await prisma.user.findMany({
       select: {
         id: true,
         email: true,
         name: true,
+        githubId: true,
         createdAt: true,
         updatedAt: true,
         managers: { select: { id: true } },
         reports: { select: { id: true } },
-      },
+      } as any,
       orderBy: { id: "asc" },
-    });
+    })) as any[];
     // Append isAdmin from full user read to avoid type mismatch prior to Prisma generate
     const ids = users.map((u) => u.id);
-    const full = await prisma.user.findMany({ where: { id: { in: ids } } });
+    const full = (await prisma.user.findMany({
+      where: { id: { in: ids as any } },
+    })) as any[];
     const byId = new Map(full.map((u) => [u.id, u]));
     return users.map((u) => ({
       ...u,
@@ -83,6 +86,7 @@ export class AuthController {
       password: string;
       name: string;
       isAdmin?: boolean;
+      githubId?: string;
     }
   ) {
     const bcrypt = await import("bcryptjs");
@@ -95,16 +99,79 @@ export class AuthController {
           name: body.name,
           // cast to any to allow isAdmin before Prisma client is regenerated
           isAdmin: !!body.isAdmin,
+          githubId: body.githubId?.trim() || undefined,
         } as any,
-        select: { id: true, email: true, name: true, createdAt: true },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          githubId: true,
+          createdAt: true,
+        } as any,
       });
       return { ...created, isAdmin: !!body.isAdmin } as any;
     } catch (e: any) {
       if (e?.code === "P2002") {
-        throw new ConflictException("Email já está em uso");
+        // Determine which unique field
+        const target = Array.isArray(e?.meta?.target)
+          ? e.meta.target.join(",")
+          : "";
+        if (target.includes("email")) {
+          throw new ConflictException("Email já está em uso");
+        }
+        if (target.includes("github_id")) {
+          throw new ConflictException("githubId já está em uso");
+        }
+        throw new ConflictException("Violação de unicidade");
       }
       throw e;
     }
+  }
+
+  @Post("admin/set-github-id")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminSetGithubId(
+    @Body() body: { userId: number; githubId: string | null }
+  ) {
+    try {
+      const updated = await prisma.user.update({
+        where: { id: body.userId },
+        data: { githubId: body.githubId?.trim() || null } as any,
+        select: { id: true, githubId: true } as any,
+      });
+      return updated;
+    } catch (e: any) {
+      if (e?.code === "P2002") {
+        throw new ConflictException("githubId já está em uso");
+      }
+      throw e;
+    }
+  }
+
+  @Post("admin/delete-user")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminDeleteUser(@Body() body: { userId: number }) {
+    // Cascade deletes: remove PDI plan, disconnect manager relations, delete PR ownership references
+    // PRs: set ownerUserId null to preserve PR history
+    await prisma.pullRequest.updateMany({
+      where: { ownerUserId: body.userId },
+      data: { ownerUserId: null },
+    });
+    await prisma.pdiPlan.deleteMany({ where: { userId: body.userId } });
+    // Finally delete the user
+    await prisma.user.delete({ where: { id: body.userId } });
+    return { deleted: true };
+  }
+
+  @Post("admin/set-admin")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminSetAdmin(@Body() body: { userId: number; isAdmin: boolean }) {
+    const updated = await prisma.user.update({
+      where: { id: body.userId },
+      data: { isAdmin: body.isAdmin } as any,
+      select: { id: true, isAdmin: true } as any,
+    });
+    return updated;
   }
 
   @Post("admin/set-manager")

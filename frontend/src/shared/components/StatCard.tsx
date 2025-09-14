@@ -1,5 +1,10 @@
 import React from "react";
 
+/**
+ * Small metric card showing a label + value with a colored dot.
+ * Keep logic outside (only presentation). Use for lightweight dashboard stats.
+ */
+
 export interface StatCardProps {
   label: string;
   value: React.ReactNode;
@@ -16,6 +21,9 @@ const palette: Record<string, string> = {
   amber: "bg-amber-200 text-amber-600",
 };
 
+/**
+ * Stateless visual component. Pass pre-formatted value if formatting needed.
+ */
 export function StatCard({
   label,
   value,

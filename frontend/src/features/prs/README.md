@@ -86,6 +86,15 @@ Behavior:
 - Reintroduce trend charts once backend `/prs/metrics` is available
 - PR → PDI linkage (action button currently a placeholder)
 
+## Recent Refactor (2025-09)
+
+- Dead code removed: `ProgressCharts`, `SummaryCards` (will return when `/prs/metrics` backend is ready).
+- Extracted shared components (`PaginationFooter`, `StatCard`, `LinesDeltaCard`, `SidePanel`, `Badge`) to `src/shared` to keep this feature lean.
+- Moved PR status style helpers into `lib/status.ts` (were previously in shared; now domain-scoped).
+- Centralized status badge rendering using the `prStatusBadgeClasses` + `prStatusDotColor` helpers.
+- Barrel updated to export `./lib/status` for internal and page-level reuse without leaking other internals.
+- Added minimal TSDoc across shared components to clarify usage boundaries.
+
 ## Maintenance Checklist
 
 - [ ] Fields mapped still match backend schema

@@ -1,5 +1,10 @@
 import React from "react";
 
+/**
+ * Displays additions vs deletions with percentages and absolute counts.
+ * Suitable for compact diff summaries.
+ */
+
 export interface LinesDeltaCardProps {
   additions: number;
   deletions: number;
@@ -8,6 +13,9 @@ export interface LinesDeltaCardProps {
   label?: string;
 }
 
+/**
+ * Pure presentational; parent controls loading state and numbers.
+ */
 export function LinesDeltaCard({
   additions,
   deletions,

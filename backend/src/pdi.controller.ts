@@ -79,7 +79,11 @@ export class PdiController {
       include: { managers: { select: { id: true } } },
     });
     if (!target) throw new NotFoundException("User not found");
-    const isManager = target.managers?.some((m) => m.id === requesterId);
+    // Normalize to string to safely compare bigint/number IDs
+    const requesterIdStr = String(requesterId);
+    const isManager = target.managers?.some(
+      (m) => String(m.id) === requesterIdStr
+    );
     if (!isManager) {
       throw new ForbiddenException("Not allowed to access this user's PDI");
     }

@@ -1,73 +1,105 @@
 # Forge
 
-Plataforma (MVP) para acompanhar Pull Requests e evolução de PDI com autenticação, backend NestJS + PostgreSQL/Prisma e frontend React, incluindo dashboard de manager (PRs + PDI dos subordinados).
+Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Desenvolvimento Individual (PDI). Stack: **NestJS + Prisma/PostgreSQL** (backend) e **React 19 + Vite + TailwindCSS** (frontend). Inclui:
+
+- Área do desenvolvedor (PRs e PDI próprio)
+- Dashboard de manager (PRs + PDI dos subordinados)
+- Área administrativa (gestão de contas, relacionamentos e permissões)
+
+Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`, `mocks`, `services`). Pastas legadas (`src/components`, `src/hooks`, `src/types`, `src/utils`) foram eliminadas ou migradas; novas implementações devem sempre residir em `src/features/<domínio>`.
 
 ## Visão Geral
 
-Arquitetura full‑stack:
+### Frontend (Feature‑First)
 
-- Backend NestJS: autenticação JWT, Postgres (Docker) via Prisma, endpoints para PRs e PDI persistente.
-- Frontend React 19 + TypeScript (Vite) com Tailwind; layout com Sidebar + top bar mobile; fluxo de login/registro; tela de Manager.
-- Persistência real de usuários, Pull Requests e PDI (milestones/KRs/records como JSON no Prisma).
+Estrutura principal (exemplo abreviado):
 
-Hoje a aplicação permite:
+```
+src/features/
+  pdi/
+    types/pdi.ts
+    hooks/... (usePdiEditing, useRemotePdi, etc)
+    components/ (EditablePdiView, sections, editors, structure)
+    lib/pdi.ts
+  prs/
+    types/pr.ts
+    hooks/useRemotePrs.ts
+    components/(PrList, PrDetailDrawer, PrStats, ...)
+  auth/
+    types/auth.ts
+    hooks/useAuth.tsx
+    components/LoginForm.tsx
+  admin/
+    types/user.ts (+ types.ts agregador)
+    hooks/(useAdminUsers, useMyReports)
+    components/(AdminGate, CreateUserModal, ManagerDrawer, ...)
+```
 
-- Registrar e logar usuários (JWT) /auth/register /auth/login
-- Manter sessão (token + /auth/me)
-- Listar PRs persistidos do usuário (/me/prs) (ou fallback mock se vazio)
-- Ver detalhes de um PR com resumo de IA e checklist (ainda não persistente)
-- Visualizar e editar PDI (/me/pdi) com persistência no backend:
-  - Competências técnicas
-  - Milestones / encontros
-  - Tarefas (próximos passos) por encontro
-  - Sugestões (IA placeholder) por encontro
-  - Key Results opcionais (KR) com critérios de sucesso e ações de melhoria
-  - Registros de evolução (nível antes/depois + evidências)
-- Visualização de manager com abas PRs | PDI dos subordinados (`/manager`)
-- Relação de gestão M:N (um usuário pode ter vários managers, e um manager vários reports)
-- Lista de subordinados do manager (`/auth/my-reports`)
-- Filtro de PRs por dono via query `?ownerUserId=` com checagem de permissão (manager ou dono)
-- Navegação aprimorada com Sidebar (logo, seções) e avatar com logout
-- Administração: página `/admin` para criação de usuários e gestão de relações (somente administradores)
+Principais pontos:
+
+- Hooks remotos: `useRemotePrs`, `useRemotePdi`, `useRemotePdiForUser`, `useMyReports`
+- Estado de edição de PDI: `usePdiEditing` (reducer + ações) + `useAutoSave` (debounce / optimistic)
+- Componentes de PDI segmentados em: `sections/`, `editors/`, `structure/` (responsabilidade clara)
+- Navegação: React Router v7; layout base (`AppLayout`) com Sidebar; TopBar mobile
+- Barrel `index.ts` em cada feature para exports públicos e isolamento interno
+
+### Backend
+
+1. Autenticação JWT (7d) + guards.
+2. Modelos Prisma simples (User, PullRequest, PdiPlan) usando JSON para campos dinâmicos (milestones, krs, records) visando iteração rápida.
+3. Permissões: acesso a PRs e PDI de subordinados apenas para managers listados ou próprio dono.
+
+### Funcionalidades
+
+- Registro / login / sessão (`/auth/*`).
+- Administração: criar usuários, gerir managers, definir/remover `githubId`, promover a admin, remover usuário (PRs ficam órfãos).
+- PRs: CRUD + filtro por dono (`?ownerUserId=`) + paginação server‑side.
+- Dashboard usuário: PRs próprios + PDI.
+- Dashboard manager: seleção de subordinado + abas PRs | PDI.
+- PDI: competências, milestones (listas: melhorias, positivos, recursos, tarefas), key results, registros de evolução, sugestões (placeholder IA).
+- Edição por seção independente; auto‑save com feedback visual (salvando / pendente / tudo salvo).
 
 ## Stack
 
-Frontend:
+Frontend
 
 - React 19 + TypeScript (Vite)
 - React Router DOM v7
 - TailwindCSS + @tailwindcss/typography
 - date-fns
+- Vitest (testes iniciais)
 
-Backend:
+Backend
 
-- NestJS + JWT (jsonwebtoken via `@nestjs/jwt`)
-- Prisma ORM + PostgreSQL (container Docker)
-- bcryptjs (hash de senha)
-- PDI persistido no modelo `PdiPlan` (campos JSON para milestones/KRs/records)
+- NestJS + @nestjs/jwt
+- Prisma ORM + PostgreSQL (Docker)
+- bcryptjs
 
-Infra / Dev:
+Infra / Dev
 
-- Docker Compose (Postgres exposto em 5433)
-- Prisma Migrations (`npx prisma migrate dev`)
+- Docker Compose (Postgres em 5433)
+- Prisma Migrations
+- Script de seed (`script.sh`)
 
-## Estrutura de Pastas Principal
+## Estrutura Atual (Resumo)
 
 ```
-src/
-  components/        -> Componentes reutilizáveis (PrList, PrDetailDrawer, PdiView, EditablePdiView, etc)
-  pages/             -> Páginas de rota (MyPrsPage, MyPdiPage, ManagerDashboardPage)
-  mocks/             -> Dados mock (prs.ts, pdi.ts)
-  types/             -> Tipagens (pr.ts, pdi.ts)
-  index.css          -> Estilos globais (Tailwind)
-  App.tsx            -> Monta Provider de Auth e rotas dentro do layout
-  layouts/           -> `AppLayout` (Sidebar + Main + Footer)
-  components/nav/    -> Sidebar / TopBar / (futuro: CommandPalette)
+frontend/src/
+  features/
+    pdi/ ...
+    prs/ ...
+    auth/ ...
+    admin/ ...
+  pages/              -> Rotas (MyPdiPage, ManagerDashboardPage, etc.) consumindo apenas barrels de features
+  layouts/            -> AppLayout, Sidebar, TopBar
+  lib/                -> apiClient, helpers transversais
+  mocks/              -> Dados mock (em processo de realocação gradual para dentro de cada feature)
+  index.css / main.tsx
 
 backend/
-  prisma/schema.prisma -> Modelos User, PullRequest e PdiPlan
-  src/                 -> Auth, PRs, guards, controllers
-  docker-compose.yml   -> Postgres
+  prisma/             -> schema.prisma + migrations
+  src/                -> módulos Nest (auth, prs, pdi, etc.)
+  docker-compose.yml  -> Postgres
 ```
 
 ## Rotas Frontend
@@ -88,8 +120,11 @@ backend/
 
   - `GET /auth/users` (lista usuários com managers/reports)
   - `POST /auth/admin/create-user` (cria usuário; aceita `isAdmin` opcional)
+  - `POST /auth/admin/set-admin` (promove ou remove privilégio admin)
   - `POST /auth/admin/set-manager` (define um manager para um usuário)
   - `POST /auth/admin/remove-manager` (remove relação de manager)
+  - `POST /auth/admin/set-github-id` (define ou remove githubId de um usuário; 409 em caso de duplicidade)
+  - `POST /auth/admin/delete-user` (remove usuário; PRs ficam órfãos; PDI removido; relações gerenciais desconectadas)
 
 - PRs (JWT): `GET /prs` (aceita `?ownerUserId=` com checagem de permissão), `GET /prs/:id`, `POST /prs`, `PUT /prs/:id`, `DELETE /prs/:id`
 - PDI (JWT):
@@ -105,56 +140,17 @@ Permissões
 Administração
 
 - Campo `isAdmin` no modelo de usuário (Prisma) habilita acesso administrativo.
+- Campo opcional `githubId` (login do GitHub) permite vincular automaticamente PRs importados: se o campo `user` do payload do PR (login GitHub) casar com `githubId` de um usuário, o `ownerUserId` é preenchido automaticamente.
 - O primeiro usuário registrado no sistema é promovido automaticamente a admin.
 - A página `/admin` permite criar contas e gerenciar relações de gestão.
 - Atalho de teclado: `g` seguido de `a` navega para a página de administração (se o usuário for admin).
+- Erros de unicidade (email ou githubId) retornam 409 com mensagem amigável.
 
-## Tipagens Principais (Frontend)
+## Tipagens
 
-`src/types/pr.ts`
+Agora vivem dentro de cada feature (`features/<domínio>/types/*.ts`). Exemplos: `features/prs/types/pr.ts`, `features/pdi/types/pdi.ts`, `features/admin/types/user.ts`.
 
-```ts
-export interface PullRequest {
-  /* id, author, repo, title, timestamps, métricas básicas, resumo IA, checklist */
-}
-```
-
-`src/types/pdi.ts` (principais entidades)
-
-```ts
-export interface PdiTask {
-  id: string;
-  title: string;
-  done?: boolean;
-}
-export interface PdiKeyResult {
-  id: string;
-  description: string;
-  successCriteria: string;
-  currentStatus?: string;
-  improvementActions?: string[];
-}
-export interface PdiMilestone {
-  id: string;
-  date: string;
-  title: string;
-  summary: string;
-  improvements?: string[];
-  positives?: string[];
-  resources?: string[];
-  tasks?: PdiTask[];
-  suggestions?: string[]; // geradas por IA futuramente
-}
-export interface PdiPlan {
-  userId: string;
-  competencies: string[];
-  milestones: PdiMilestone[];
-  krs?: PdiKeyResult[];
-  records: PdiCompetencyRecord[];
-  createdAt: string;
-  updatedAt: string;
-}
-```
+Diretriz: nunca criar novo arquivo em `src/types`. Use o escopo da feature ou uma pasta `shared/` futura (ainda não necessária).
 
 ## Mocks
 
@@ -163,13 +159,12 @@ export interface PdiPlan {
 
 Para adicionar mais PRs basta inserir novos objetos no array `mockPrs` respeitando a interface `PullRequest`.
 
-## Componentes Chave (Frontend)
+## Componentes Chave (Exemplos)
 
-- `PrList`: Tabela filtrável de PRs (filtros por repositório e status)
-- `PrDetailDrawer`: Drawer lateral com detalhes, resumo IA e checklist
-- `PdiView`: Exibe competências, milestones, sugestões, tarefas, KRs e resultado
-- `EditablePdiView`: Wrapper com modo de edição + persistência local
-- `TaskEditor` / `ListEditor` (internos ao componente editável)
+- PDI: `EditablePdiView`, `sections/MilestonesSection`, `editors/KeyResultsEditor`, `structure/SaveStatusBar`
+- PRs: `PrList`, `PrDetailDrawer`, `PrStats`, `ProgressCharts`, `SummaryCards`
+- Admin: `AdminUserRow`, `ManagerDrawer`, `CreateUserModal`, `AdminGate`
+- Auth: `LoginForm`
 
 ## Decisões de Design / UI
 
@@ -180,19 +175,18 @@ Para adicionar mais PRs basta inserir novos objetos no array `mockPrs` respeitan
 - AuthContext gerencia token + user.
 - PDI agora persiste no backend; UI desativou localStorage para PDI na tela.
 
-## Possíveis Próximos Passos
+## Próximos Passos Sugeridos
 
-1. DTO + validation pipes (class-validator) para /auth e /prs
-2. Filtros/paginação server-side para PRs
-3. Endpoint /prs/metrics agregando estatísticas (linhas, tempo médio merge)
-4. Endpoints granulares de PDI (ex.: add/remove task, update milestone) evitando enviar o blob completo
-5. Command Palette (Ctrl/⌘+K) + quick search
-6. Dark mode toggle
-7. Persistir checklist de PR e anotações de review
-8. Exportar / importar PDI (JSON / Markdown)
-9. Testes (Vitest + e2e Nest) básicos
-10. Refresh token / expiração antecipada + logout global
-11. Observabilidade mínima (logs estruturados / pino) no backend
+Backend/API
+
+1. DTO + validation pipes (auth, prs, pdi)
+2. Endpoints granulares de PDI (patch por bloco/milestone)
+3. `/prs/metrics` agregadas (tempo merge, churn, distribuição estados)
+4. Observabilidade (logger estruturado + request id)
+
+Frontend 5. Command Palette (Ctrl/⌘+K) 6. Dark mode toggle 7. Persistência de checklist / notas de review de PR 8. Export / import de PDI (JSON / Markdown) 9. Indicators de sincronização por seção (granular)
+
+Qualidade / Segurança 10. Testes E2E (Nest + frontend smoke) 11. Refresh token + revogação 12. Sanitização markdown robusta
 
 ## Como Rodar (Full Stack)
 
@@ -262,9 +256,10 @@ npm run preview
 
 ## Convenções de Código
 
-- Imports de tipos usam `import type` para compatibilidade com `verbatimModuleSyntax`
-- Classes Tailwind priorizam semântica leve; evitar duplicação criando componentes quando necessário
-- Evitar lógica complexa nos componentes de página; mover para hooks conforme escalar
+- `import type` para diferenciar tipos.
+- Reducer centraliza mutações de PDI; evitar state derivado duplicado.
+- Hooks isolam efeitos remotos e debounce.
+- Extração de componentes de layout/estrutura em `pdi/*` reduz acoplamento.
 
 ## Adicionando Novos PRs (Mock / Durante Transição)
 
@@ -285,6 +280,29 @@ mockPrs.push({
 });
 ```
 
+### Exemplo de Payload de Criação/Atualização de PR (API)
+
+Campos snake_case são mapeados internamente para camelCase; datas terminadas em `_at` são convertidas para Date:
+
+```json
+{
+  "id": 987654321,
+  "repo": "org/repo",
+  "number": 42,
+  "title": "Improve performance of X",
+  "state": "open",
+  "user": "github-login",
+  "created_at": "2025-09-13T10:15:00Z",
+  "updated_at": "2025-09-13T10:20:00Z",
+  "total_additions": 120,
+  "total_deletions": 30,
+  "total_changes": 150,
+  "files_changed": 8
+}
+```
+
+Se `ownerUserId` não for enviado e `user` corresponder ao `githubId` de um usuário, o vínculo é atribuído automaticamente.
+
 ## Ajustando Tema
 
 Arquivo: `tailwind.config.js`
@@ -298,19 +316,21 @@ O PDI passou a persistir no backend. O uso de `localStorage` foi desativado na t
 
 ## Limitações Atuais
 
-- Falta DTOs para alguns endpoints (PRs) e mensagens de erro consistentes
-- Paginação real ainda pendente (há filtro server-side por `ownerUserId`)
-- Falta refresh token / expiração explícita
-- Checklist de PR não persiste
-- Sem testes automatizados
-- IA apenas placeholder
-- Sem export/import PDI
+- PDI salvo como blob único (PUT/PATCH) – falta granularidade.
+- Checklist / review notes de PR não persiste.
+- Falta DTO/validation pipes (payloads PR/PDI aceitam `any`).
+- Sem refresh token / rotação de chave JWT.
+- Sanitização markdown mínima.
+- Métricas agregadas de PR ausentes.
+- Sugestões de PDI ainda placeholder (IA).
 
-## Qualidade / Build
+## Qualidade / Build / Testes
 
-- `npm run build` gera artefatos em `dist/`
-- Sem testes ainda (pendente)
-- Lint base via ESLint config padrão Vite + TS
+- Frontend: `npm run build` / `npm run dev`
+- Backend: `npm run start:dev`
+- Testes atuais concentrados em reducer de PDI; utilidades migradas para `features/pdi/lib`
+- Planejar: testes de hooks remotos (mock fetch), auto‑save com timers, edge cases de milestones
+- ESLint + TS estritos (`strict`, `noUnusedLocals`)
 
 ## Segurança
 
@@ -333,7 +353,7 @@ Próximo agente deve:
 
 MVP pronto para extensão.
 
-## Mudanças recentes
+## Mudanças Recentes (Resumo)
 
 - Administração
   - Modal de criação de usuário reestruturado (grid responsivo, overlay corrigido).
@@ -346,6 +366,85 @@ MVP pronto para extensão.
 - PDI
   - Seção “Resultado” agora totalmente editável: nível antes/depois, evidências, adicionar/remover linhas.
   - Adição rápida a partir de competências existentes ou criação manual de nova área.
+- Admin / GitHub
+  - Adicionados campo `githubId` ao usuário e edição inline na página `/admin`.
+  - Vinculação automática de PRs pelo login GitHub (`user` do PR -> `githubId` do usuário) quando `ownerUserId` não for enviado.
+  - Ação de remoção de usuário (soft para PRs: apenas anula ownerUserId) disponível na UI admin.
+
+### Novidades Técnicas
+
+- PRs: Paginação server-side (`GET /prs?page=1&pageSize=20`) retornando `{ items, total, page, pageSize }` e frontend ajustado para usar `serverPaginated` em `PrList`.
+- PRs: Filtro inclusivo para PDI / visão de subordinado: quando `ownerUserId` é enviado, a busca inclui PRs cujo `ownerUserId` seja o usuário OU cujo login GitHub (`user`) case com `githubId` do usuário.
+- PRs: Hook `useRemotePrs` agora envia page/pageSize e processa resposta paginada.
+- PDI: Salvamento otimista no `EditablePdiView` com rollback em caso de falha (antes ficava sem feedback). Fallback POST quando PATCH retorna 404.
+- PDI: Edição via manager usa `saveForUserId` (PUT `/pdi/:userId`). Garantir que o manager selecione explicitamente o subordinado correto antes de editar.
+- Admin: Removidos imports React obsoletos para build mais limpo (React 19 JSX transform).
+- Infra: Ajustes menores de tipagem e prevenção de BigInt vs number em filtros de PRs.
+
+### Frontend Refactor (Feature PRs & Shared Layer)
+
+- Introduzida pasta `frontend/src/shared` contendo apenas componentes verdadeiramente genéricos (layout / UI atômica): `PaginationFooter`, `StatCard`, `LinesDeltaCard`, `SidePanel`, `Badge`.
+- Removido código morto: componentes antigos `ProgressCharts` e `SummaryCards` (ficarão para futura reimplementação quando endpoint de métricas existir).
+- Extraídas partes reutilizáveis da feature de PRs (paginação, cards, painel lateral) para reduzir duplicação futura entre PRs, PDI e Admin.
+- Criado util de status específico de PR em `features/prs/lib/status.ts` (antes estava incorretamente em `shared/lib`). Mantém `shared` neutro de domínio.
+- Padronizados imports via barrels (`@/shared`, `@/features/prs`).
+- Adicionado `Badge` genérica com helper `semanticStatusBadge` para mapear estados sem acoplar lógica de PR.
+- Documentação TSDoc mínima aplicada aos componentes compartilhados (foco em responsabilidade e props principais).
+
+### Fluxo de Paginação de PRs
+
+Requisição:
+
+```
+GET /prs?page=2&pageSize=50
+Authorization: Bearer <token>
+```
+
+Opcional `ownerUserId` para filtrar subordinado (aplica checagem de permissão). Retorno:
+
+```json
+{
+  "items": [
+    {
+      /* PullRequest */
+    }
+  ],
+  "total": 137,
+  "page": 2,
+  "pageSize": 50
+}
+```
+
+Limites: `page >= 1`, `pageSize` máximo 200 (valores maiores são normalizados para 200).
+
+### Fluxo de Persistência de PDI
+
+Self:
+
+- PATCH `/pdi/me` para atualizações parciais.
+- POST `/pdi` faz upsert: cria se inexistente ou substitui campos informados.
+
+Manager editando subordinado:
+
+- PUT `/pdi/:userId` (substitui blob completo). UI envia apenas campos atuais.
+
+Estratégia atual: enviar o blob completo (milestones/KRs/records). Futuro: endpoints granulares (ex.: `PATCH /pdi/:userId/milestones/:id`).
+
+### Observações sobre Edição de PDI via Manager
+
+Se notar que ao editar está modificando o próprio PDI do manager:
+
+1. Verifique se um subordinado foi realmente selecionado (estado `currentId`).
+2. Confirme a URL da requisição (`PUT /pdi/<idDoReport>`).
+3. Garanta que a lista de reports não inclui o próprio manager.
+4. Planejado: impedir edição até seleção explícita (todo).
+
+### Próximos Itens Recomendados
+
+- Mover filtros de PR (repo/state/author) para o backend (where condicional + índices).
+- Sort configurável (`sort=createdAt:desc|lines:asc`).
+- Debounced auto-save PDI (PATCH incremental) com status visual (badge “Sincronizado / Pendente”).
+- DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON.
 
 Dicas rápidas
 
