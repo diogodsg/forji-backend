@@ -1,3 +1,6 @@
+/**
+ * Maps PR state to Tailwind utility class string for badge styling.
+ */
 export function prStatusBadgeClasses(state: string) {
   const map: Record<string, string> = {
     open: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -7,6 +10,9 @@ export function prStatusBadgeClasses(state: string) {
   return map[state] || "bg-slate-50 text-slate-600 border-slate-200";
 }
 
+/**
+ * Maps PR state to dot background color class.
+ */
 export function prStatusDotColor(state: string) {
   if (state === "open") return "bg-emerald-500";
   if (state === "merged") return "bg-indigo-500";

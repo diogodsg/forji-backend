@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import prisma from "./prisma";
+import prisma from "../prisma";
 
 export interface PdiTask {
   id: string;
@@ -42,7 +42,6 @@ export class PdiService {
   async getByUser(userId: number) {
     return prisma.pdiPlan.findUnique({ where: { userId } });
   }
-
   async upsert(userId: number, data: PdiPlanDto) {
     const existing = await prisma.pdiPlan.findUnique({ where: { userId } });
     if (!existing) {
@@ -66,7 +65,6 @@ export class PdiService {
       },
     });
   }
-
   async patch(userId: number, partial: Partial<PdiPlanDto>) {
     const existing = await prisma.pdiPlan.findUnique({ where: { userId } });
     if (!existing) throw new NotFoundException("PDI plan not found");
@@ -80,7 +78,6 @@ export class PdiService {
       },
     });
   }
-
   async delete(userId: number) {
     await prisma.pdiPlan.delete({ where: { userId } });
     return { deleted: true };

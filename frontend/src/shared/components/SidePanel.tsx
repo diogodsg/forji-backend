@@ -32,7 +32,7 @@ export function SidePanel({
 }: SidePanelProps) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-40 flex">
+    <div className="fixed inset-0 z-40 flex !m-0">
       <div
         className={`flex-1 bg-black/30 backdrop-blur-sm ${overlayClassName}`}
         onClick={onClose}

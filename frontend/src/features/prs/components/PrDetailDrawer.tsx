@@ -1,13 +1,19 @@
 import type { PullRequest } from "../types/pr";
 import React from "react";
 import { SidePanel } from "@/shared";
-import { prStatusBadgeClasses } from "@/features/prs/lib/status";
+import { PrStatusBadge } from "./PrStatusBadge";
 
+/**
+ * Props for `PrDetailDrawer` side panel component.
+ */
 interface Props {
   pr: PullRequest | null;
   onClose: () => void;
 }
 
+/**
+ * Very small markdown-ish splitter turning blank line separated paragraphs into blocks.
+ */
 function markdownToBlocks(md: string): string[] {
   return md
     .split(/\n{2,}/)
@@ -15,6 +21,9 @@ function markdownToBlocks(md: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Slide-over panel showing detailed PR info including AI summary and checklist.
+ */
 export const PrDetailDrawer: React.FC<Props> = ({ pr, onClose }) => {
   if (!pr) return null;
   return (
@@ -36,13 +45,7 @@ export const PrDetailDrawer: React.FC<Props> = ({ pr, onClose }) => {
             <MetaBadge label="+" value={String(pr.lines_added)} />
             <MetaBadge label="-" value={String(pr.lines_deleted)} />
             <MetaBadge label="Files" value={String(pr.files_changed)} />
-            <span
-              className={`text-[10px] font-medium px-2 py-1 rounded-full border ${prStatusBadgeClasses(
-                pr.state
-              )}`}
-            >
-              {pr.state}
-            </span>
+            <PrStatusBadge state={pr.state} withDot={false} />
           </div>
         </header>
         <section>

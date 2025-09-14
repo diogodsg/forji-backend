@@ -1,12 +1,14 @@
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
-import { PrsController } from "./prs.controller";
-import { PdiController } from "./pdi.controller";
-import { AuthService } from "./auth.service";
-import { AuthController } from "./auth.controller";
-import { JwtAuthGuard } from "./jwt-auth.guard";
-import { PrsService } from "./prs.service";
-import { PdiService } from "./pdi.service";
+import { PrsController } from "./prs/prs.controller";
+import { PrsMetricsController } from "./prs/prs-metrics.controller";
+import { PdiController } from "./pdi/pdi.controller";
+import { AuthService } from "./auth/auth.service";
+import { AuthController } from "./auth/auth.controller";
+import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
+import { PrsService } from "./prs/prs.service";
+import { PrsMetricsService } from "./prs/prs-metrics.service";
+import { PdiService } from "./pdi/pdi.service";
 
 @Module({
   imports: [
@@ -15,7 +17,18 @@ import { PdiService } from "./pdi.service";
       signOptions: { expiresIn: "7d" },
     }),
   ],
-  controllers: [PrsController, PdiController, AuthController],
-  providers: [AuthService, JwtAuthGuard, PrsService, PdiService],
+  controllers: [
+    PrsController,
+    PrsMetricsController,
+    PdiController,
+    AuthController,
+  ],
+  providers: [
+    AuthService,
+    JwtAuthGuard,
+    PrsService,
+    PrsMetricsService,
+    PdiService,
+  ],
 })
 export class AppModule {}

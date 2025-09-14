@@ -49,12 +49,12 @@ export function CreateUserModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center !m-0">
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative z-10 w-[min(96vw,580px)] bg-white rounded-xl shadow-xl border border-surface-300/70 p-6">
+      <div className="relative z-10 w-[min(96vw,580px)] bg-white rounded-xl shadow-xl border border-surface-300/70 p-6 ">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="text-base font-semibold">Novo usuário</h3>

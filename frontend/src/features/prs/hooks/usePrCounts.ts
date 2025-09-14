@@ -1,6 +1,9 @@
 import { useMemo } from "react";
 import type { PullRequest } from "../types/pr";
 
+/**
+ * Derives simple counts (open/merged/closed) from PR list with memoization.
+ */
 export function usePrCounts(prs: PullRequest[]) {
   return useMemo(() => {
     let open = 0;

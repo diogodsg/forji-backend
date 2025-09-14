@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import prisma from "./prisma";
+import prisma from "../../prisma";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -14,13 +14,12 @@ export class JwtAuthGuard implements CanActivate {
     try {
       const payload = this.jwtService.verify(token);
       const rawSub = payload.sub;
-      // Convert back to BigInt if possible (stored as string in JWT)
       let userId: any = rawSub;
       if (typeof rawSub === "string" && /^\d+$/.test(rawSub)) {
         try {
           userId = BigInt(rawSub);
         } catch {
-          userId = Number(rawSub); // fallback
+          userId = Number(rawSub);
         }
       }
       const user = await prisma.user.findUnique({ where: { id: userId } });

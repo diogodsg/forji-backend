@@ -1,3 +1,6 @@
+/**
+ * Normalized Pull Request shape used across the frontend.
+ */
 export interface PullRequest {
   id: string;
   author: string;
@@ -14,6 +17,9 @@ export interface PullRequest {
   review_comments_highlight: string[];
 }
 
+/**
+ * Weekly aggregated metrics time-series point.
+ */
 export interface WeeklyMetricPoint {
   weekStart: string; // YYYY-MM-DD
   prs: number;
@@ -21,6 +27,9 @@ export interface WeeklyMetricPoint {
   reworkRatePct: number; // 0-100
 }
 
+/**
+ * Aggregate snapshot metrics over a time window.
+ */
 export interface AggregatedMetrics {
   totalPrs: number;
   avgTimeToMergeHours: number;

@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { FiGitPullRequest } from "react-icons/fi";
 import type { PullRequest } from "@/features/prs";
 import { useRemotePrs, PrStats, PrList, PrDetailDrawer } from "@/features/prs";
+import { readPrUrlState, writePrUrlState } from "@/features/prs/lib/urlFilters";
 import { usePrsFiltersPagination } from "@/features/prs/hooks/usePrsFiltersPagination";
 
 /**
@@ -28,35 +29,74 @@ export function MyPrsPage({
   initialFilters?: { repo?: string; state?: string; ownerUserId?: number };
 } = {}) {
   const [selected, setSelected] = useState<PullRequest | null>(null);
+  const urlInitial = readPrUrlState();
   const { filters, setFilters, page, pageSize, setPage, setPageSize } =
-    usePrsFiltersPagination({ initial: initialFilters });
+    usePrsFiltersPagination({
+      initial: { ...initialFilters, ...urlInitial },
+      initialPageSize: urlInitial.pageSize || undefined,
+    });
 
-  const { prs, loading, error, total } = useRemotePrs(
+  // Sync from URL when user navigates browser history
+  useEffect(() => {
+    const handler = () => {
+      const st = readPrUrlState();
+      setFilters((prev) => ({
+        ...prev,
+        repo: st.repo,
+        state: st.state,
+        author: st.author,
+        q: st.q,
+      }));
+      if (st.page) setPage(st.page);
+      if (st.pageSize) setPageSize(st.pageSize);
+    };
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, [setFilters, setPage, setPageSize]);
+
+  // Write URL on relevant state changes (debounce search separately already at filter input)
+  useEffect(() => {
+    writePrUrlState(
+      {
+        repo: filters.repo,
+        state: filters.state,
+        author: filters.author,
+        q: filters.q,
+        page,
+        pageSize,
+      },
+      true
+    );
+  }, [filters.repo, filters.state, filters.author, filters.q, page, pageSize]);
+
+  const { prs, loading, error, total, allRepos, allAuthors } = useRemotePrs(
     { ...filters, page, pageSize },
     { fallbackMocks: true }
   );
 
-  const filtered = useMemo(() => prs, [prs]);
-
   // Page reset now handled inside the hook
 
   return (
-    <div className="p-5 space-y-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-          <FiGitPullRequest className="w-5 h-5 text-indigo-600" />
-          <span>Pull Requests</span>
-          <span className="text-[10px] font-medium uppercase tracking-wide text-gray-500">
-            visão geral
-          </span>
-        </h1>
-        <p className="text-[11px] text-gray-500 max-w-xl">
-          Volume, estado e impacto das alterações nos seus pull requests
-          recentes.
-        </p>
+    <div className="min-h-full w-full bg-[#f8fafc] p-6 space-y-8">
+      <header className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-md">
+            <FiGitPullRequest className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">
+              Pull Requests
+            </h1>
+            <p className="text-xs text-gray-500">
+              Volume, estado e impacto das alterações recentes.
+            </p>
+          </div>
+        </div>
       </header>
 
-      <PrStats prs={prs} loading={loading} />
+      <div className="space-y-4">
+        <PrStats prs={prs} loading={loading} />
+      </div>
 
       {error && (
         <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
@@ -64,14 +104,9 @@ export function MyPrsPage({
         </div>
       )}
 
-      <div className="space-y-3">
-        {loading && filtered.length === 0 && (
-          <div className="text-xs text-gray-500">
-            Carregando pull requests...
-          </div>
-        )}
+      <div className="space-y-4">
         <PrList
-          prs={filtered}
+          prs={prs}
           totalItems={total}
           serverPaginated
           onSelect={setSelected}
@@ -79,6 +114,8 @@ export function MyPrsPage({
           stateFilter={filters.state}
           authorFilter={filters.author}
           onFilterChange={setFilters}
+          allRepos={allRepos}
+          allAuthors={allAuthors}
           page={page}
           pageSize={pageSize}
           onPageChange={setPage}
@@ -86,6 +123,7 @@ export function MyPrsPage({
             setPageSize(s);
             setPage(1);
           }}
+          loading={loading}
         />
       </div>
 

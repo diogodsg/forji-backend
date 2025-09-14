@@ -1,6 +1,6 @@
 # PRs Feature Module
 
-Encapsulates listing, filtering, basic analytics and detail inspection of Pull Requests (PRs) loaded from the backend `/prs` endpoint.
+Encapsulates listing, filtering (agora 100% server-side), métricas básicas e inspeção de detalhe de Pull Requests (PRs) carregados do endpoint backend `/prs`.
 
 ## Goals
 
@@ -29,25 +29,28 @@ Exports:
 - Data: `mockPrs`, `weeklyMetrics` (dev/demo only)
 - Hook: `useRemotePrs`
 - Components: `PrList`, `PrStats`, `PrFiltersBar`, `PrDetailDrawer`
+- Status helpers: `prStatusBadgeClasses`, `prStatusDotColor`
 
 ## Hook: useRemotePrs
 
-Inputs (filters): `{ repo?, state?, ownerUserId?, author?, page?, pageSize? }`
-Behavior:
+Inputs (filters): `{ repo?, state?, ownerUserId?, author?, q?, page?, pageSize?, sort? }`
+Comportamento:
 
-- Builds query string for pagination / owner filter (other filters are client-side)
-- Maps backend snake/camel mixed fields to stable frontend shape
-- Memo filters locally (repo/state/author)
-  Returns: `{ prs, loading, error, all, total }`
+- Monta query string com todos os filtros, paginação e ordenação opcional (`sort=campo:asc|desc`). Campos permitidos atualmente: `createdAt, updatedAt, mergedAt, totalAdditions, totalDeletions, totalChanges`.
+- Solicita `meta=1` apenas na primeira requisição (ou quando muda `ownerUserId`) para obter conjuntos completos de `repos` e `authors` que permanecem estáveis mesmo após aplicar filtros (evita opções “sumirem”).
+- Faz o mapeamento de campos snake_case/camelCase para o shape interno tipado (`PullRequest`).
+- Retorno: `{ prs, loading, error, all, total, allRepos, allAuthors, metaLoaded }`.
+- Fallback opcional para `mockPrs` se a chamada falhar (quando `fallbackMocks` passado nas opções).
 
 ## Components Overview
 
-| Component        | Responsibility                                        |
-| ---------------- | ----------------------------------------------------- |
-| `PrList`         | Tabular list + pagination + integrates `PrFiltersBar` |
-| `PrFiltersBar`   | Controlled filters (repo, status, author)             |
-| `PrStats`        | Aggregated quick KPIs (count, lines, avg merge time)  |
-| `PrDetailDrawer` | Detailed view with AI summary & checklist             |
+| Component        | Responsibility                                                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `PrList`         | Tabular list + pagination + integrates `PrFiltersBar`                                                                            |
+| `PrFiltersBar`   | Filtros controlados (repo, status, author, busca). Versão atual sem badges ativos ou botão “limpar filtros” para UI mais enxuta. |
+| `PrStats`        | Aggregated quick KPIs (count, lines, avg merge time)                                                                             |
+| `PrDetailDrawer` | Detailed view with AI summary & checklist                                                                                        |
+| `PrStatusBadge`  | (internal component) unified status rendering                                                                                    |
 
 ## Data Mapping Rules
 
@@ -65,11 +68,13 @@ Behavior:
 | `totalChanges`           | `files_changed`              |
 | `reviewText`             | `ai_review_summary`          |
 
-## Pagination Strategy
+## Pagination, Filtering & Sorting
 
-- Server supplies: `items`, `total`, `page`, `pageSize`
-- Component-level pagination (PrList) respects server totals when `serverPaginated` flag is true
-- Client filters (repo/state/author) applied after fetch; could migrate to server later if supported
+- Backend retorna: `items`, `total`, `page`, `pageSize`.
+- Filtros primários & busca (`repo`, `state`, `author`, `q`, `ownerUserId`) executados totalmente no servidor.
+- Sorting single-field via `sort=campo:direcao` (ex: `sort=createdAt:desc`). Direção padrão: `createdAt:desc` quando não especificado.
+- Conjuntos integrais de opções (`allRepos`, `allAuthors`) vêm de `meta` e não são afetados pelos filtros subsequentes.
+- Paginação sempre reseta para página 1 após mudança de filtro (responsabilidade de quem controla os filtros externos / hook de paginação).
 
 ## Testing Ideas (future)
 
@@ -79,28 +84,59 @@ Behavior:
 
 ## Future Enhancements
 
-- Server-side filtering for repo/state/author
-- Sorting (lines changed, created date)
+- Multi-column sorting & client UI affordance for choosing sort
 - Export CSV / metrics endpoint integration
 - Merge time bucketing (p95, median)
 - Reintroduce trend charts once backend `/prs/metrics` is available
 - PR → PDI linkage (action button currently a placeholder)
+- Optimistic update paths for inline actions (merge/close) once supported
+- Incremental streaming / infinite scroll option
+
+## Enum: State & Migração
+
+O backend agora usa enum `PrState (open | closed | merged)`. A migração que converteu a coluna (drop & recreate) ocasionou perda de dados anteriores na coluna `state`. Para registros antigos sem valor:
+
+- O serviço (`PrsService.list`) normaliza: `state = merged` se `mergedAt` existir; senão `closed` se `closedAt` existir; caso contrário `open`.
+- Caso queira persistir isso definitivamente, executar backfill (ver seção “Backfill de Dados”).
+
+## Normalização de BigInt
+
+Campos numéricos (`id`, `number`, `totalAdditions`, `totalDeletions`, `totalChanges`, etc.) chegam como `bigint` pelo Prisma. A camada de serviço converte para `number` antes de enviar ao front (uso apenas analítico / exibição). Caso surjam valores que excedam `Number.MAX_SAFE_INTEGER`, considerar enviar como string futuramente.
+
+## Backfill de Dados (opcional)
+
+SQL sugerido para popular `state` após enum migration:
+
+```sql
+-- Derivar estado a partir dos timestamps (executar uma vez)
+UPDATE public.pull_requests
+SET state = CASE
+  WHEN merged_at IS NOT NULL THEN 'merged'::public."PrState"
+  WHEN closed_at IS NOT NULL THEN 'closed'::public."PrState"
+  ELSE 'open'::public."PrState"
+END
+WHERE state IS NULL;
+```
 
 ## Recent Refactor (2025-09)
 
-- Dead code removed: `ProgressCharts`, `SummaryCards` (will return when `/prs/metrics` backend is ready).
-- Extracted shared components (`PaginationFooter`, `StatCard`, `LinesDeltaCard`, `SidePanel`, `Badge`) to `src/shared` to keep this feature lean.
-- Moved PR status style helpers into `lib/status.ts` (were previously in shared; now domain-scoped).
-- Centralized status badge rendering using the `prStatusBadgeClasses` + `prStatusDotColor` helpers.
-- Barrel updated to export `./lib/status` for internal and page-level reuse without leaking other internals.
-- Added minimal TSDoc across shared components to clarify usage boundaries.
+- Removed dead code: `ProgressCharts`, `SummaryCards` (hold until `/prs/metrics`).
+- Extracted shared components (`PaginationFooter`, `StatCard`, `LinesDeltaCard`, `SidePanel`, `Badge`).
+- Added `PrStatusBadge` component (replaces duplicated inline badge logic).
+- Added generic `useFiltersPagination` hook in `shared/hooks` and wrapped here by `usePrsFiltersPagination` for domain usage.
+- Status style helpers remain in `lib/status.ts` (domain-specific).
+- Lines change distribution bar extracted as small subcomponent inside `PrList` for clarity.
+- Migrated filtering & sorting para o servidor (repo/state/author/q/sort) eliminando inconsistências de paginação em client-side.
+- Removidos badges de filtros ativos e botão “Limpar filtros” (simplificação de UI).
+- Normalização de BigInt + derivação de `state` quando ausente após migração do enum.
 
 ## Maintenance Checklist
 
-- [ ] Fields mapped still match backend schema
-- [ ] Hook errors surfaced in page UI
-- [ ] Pagination resets on filter change
-- [ ] Barrel exports only intended surface
+- [ ] Campos mapeados continuam alinhados ao schema backend
+- [ ] Erros do hook aparecem corretamente na UI da página
+- [ ] Paginação reseta em mudanças de filtro
+- [ ] Barrel export limitado apenas ao necessário
+- [ ] Revisar se futura remoção de fallback de derivação de state é segura (após backfill)
 
 ---
 

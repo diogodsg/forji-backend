@@ -9,15 +9,23 @@ body,
 }
 
 body {
-  @apply bg-surface-100 text-gray-800 antialiased;
+  /* Replaced Tailwind @apply with raw CSS for compatibility */
+  background: var(--tw-bg-surface-100, #f1f5f9);
+  color: #1f2937; /* gray-800 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* When side panel is open, neutralize background gradient artifacts behind overlay */
+/* Removed sidepanel-open CSS rule for previous SidePanel implementation */
 
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
-  @apply bg-transparent;
+  background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 rounded;
+  background: #9ca3af; /* gray-400 */
+  border-radius: 9999px;
 }

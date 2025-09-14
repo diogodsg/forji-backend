@@ -10,6 +10,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enumerations
+enum PrState {
+  open
+  closed
+  merged
+}
+
 model User {
   id        BigInt  @id @default(autoincrement())
   email     String  @unique
@@ -41,7 +48,7 @@ model PullRequest {
   mergedAt        DateTime? @map("merged_at")
   body            String?
   repo            String?
-  state           String?
+  state           PrState?
   lastReviewedAt  DateTime? @map("last_reviewed_at")
   reviewText      String?   @map("review_text")
   totalAdditions  BigInt?   @map("total_additions")
@@ -56,6 +63,12 @@ model PullRequest {
   fileChanges     FileChange[]
 
   @@map("pull_requests")
+  // Indexes to optimize server-side filtering queries
+  @@index([ownerUserId], map: "pull_req_owner_user_id_idx")
+  @@index([repo], map: "pull_req_repo_idx")
+  @@index([state], map: "pull_req_state_idx")
+  @@index([user], map: "pull_req_user_idx")
+  @@index([title], map: "pull_req_title_idx")
 }
 
 // PDI Plan persisted as JSON blobs for fast iteration.

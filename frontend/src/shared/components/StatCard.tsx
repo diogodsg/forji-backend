@@ -33,7 +33,7 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <div
-      className={`relative rounded-lg border border-surface-300/70 bg-white/60 backdrop-blur px-3 py-2 flex flex-col ${className}`}
+      className={`relative rounded-2xl border border-surface-300/70 bg-white shadow-md px-4 py-3 flex flex-col transition-transform duration-200 ease-out hover:scale-[1.04] hover:shadow-lg ${className}`}
     >
       <div className="flex items-center gap-1.5">
         <span
@@ -45,8 +45,8 @@ export function StatCard({
       </div>
       <span
         className={`font-semibold ${
-          small ? "text-sm" : "text-base"
-        } text-gray-800 mt-0.5`}
+          small ? "text-sm" : "text-lg"
+        } text-gray-800 mt-1`}
       >
         {value}
       </span>

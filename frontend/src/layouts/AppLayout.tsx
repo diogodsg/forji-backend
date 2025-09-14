@@ -32,9 +32,9 @@ export function AppLayout({
           showManager={showManager}
         />
         {/* Breadcrumbs removed as requested */}
-        <main className="relative flex-1 pb-4 flex min-h-0">
+        <main className="relative flex-1 pb-4 flex min-h-0 overflow-y-auto">
           <div className="pointer-events-none select-none opacity-60 absolute inset-0 bg-[radial-gradient(circle_at_10%_15%,#c7d2fe,transparent_60%)]" />
-          <div className="relative z-10 max-w-6xl mx-auto w-full px-6 py-6 h-full overflow-y-auto">
+          <div className="relative z-10 max-w-6xl mx-auto w-full px-6 py-6">
             {children}
           </div>
         </main>
