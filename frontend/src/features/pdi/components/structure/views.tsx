@@ -91,3 +91,85 @@ export const ResultsTable: React.FC<{ records: PdiPlan["records"] }> = ({
     </table>
   </div>
 );
+
+// Card-based view for results (unified visual language with editor)
+export const ResultsCardsView: React.FC<{ records: PdiPlan["records"] }> = ({
+  records,
+}) => {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {records.map((r) => {
+        const hasBefore = typeof r.levelBefore === "number";
+        const hasAfter = typeof r.levelAfter === "number";
+        const before = hasBefore ? (r.levelBefore as number) : 0;
+        const after = hasAfter ? (r.levelAfter as number) : 0;
+        const delta = hasBefore && hasAfter ? after - before : 0;
+        const max = 5;
+        const pct = hasAfter ? (after / max) * 100 : 0;
+        const deltaColor =
+          hasBefore && hasAfter && delta > 0
+            ? "text-emerald-600"
+            : hasBefore && hasAfter && delta < 0
+            ? "text-amber-600"
+            : "text-slate-500";
+        return (
+          <div
+            key={r.area}
+            className="relative rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50/70 p-4 shadow-sm"
+          >
+            <div className="flex items-start justify-between mb-2">
+              <h4 className="text-sm font-semibold text-slate-800 leading-tight">
+                {r.area}
+              </h4>
+              <span className={`text-[10px] font-medium ${deltaColor}`}>
+                {hasBefore ? before : "—"} → {hasAfter ? after : "—"}
+              </span>
+            </div>
+            <div className="mb-3">
+              <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                <span>Evolução</span>
+                {hasBefore && hasAfter ? (
+                  <span>
+                    {delta > 0 && "+"}
+                    {delta}
+                  </span>
+                ) : (
+                  <span className="text-slate-400">—</span>
+                )}
+              </div>
+              <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
+                {hasAfter && (
+                  <div
+                    className="h-full bg-indigo-600 transition-all"
+                    style={{ width: `${pct}%` }}
+                    aria-label={`Nível final ${after} de ${max}`}
+                  />
+                )}
+              </div>
+            </div>
+            {r.evidence && (
+              <div className="mt-2">
+                <p className="text-[10px] uppercase tracking-wide font-medium text-slate-500 mb-1">
+                  Evidências
+                </p>
+                <p className="text-xs text-slate-600 whitespace-pre-line">
+                  {r.evidence}
+                </p>
+              </div>
+            )}
+            {!r.evidence && (
+              <p className="text-[11px] text-slate-400 italic">
+                Sem evidências.
+              </p>
+            )}
+          </div>
+        );
+      })}
+      {records.length === 0 && (
+        <div className="text-xs text-slate-500 border border-dashed rounded-lg p-6 text-center col-span-full">
+          Nenhum registro.
+        </div>
+      )}
+    </div>
+  );
+};

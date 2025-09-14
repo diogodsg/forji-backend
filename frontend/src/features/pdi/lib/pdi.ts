@@ -1,5 +1,10 @@
 // MOVED from src/utils/pdi.ts
-import type { PdiMilestone, PdiKeyResult, PdiPlan } from "..";
+import type {
+  PdiMilestone,
+  PdiKeyResult,
+  PdiPlan,
+  PdiCompetencyRecord,
+} from "..";
 
 export function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -59,13 +64,37 @@ export function mergeServerPlan(
     if (!mergedMilestones.some((m) => m.id === sm.id))
       mergedMilestones.push(sm);
   });
+  // Merge records with per-record freshness (client wins if it has a local more recently edited marker)
+  let mergedRecords: PdiCompetencyRecord[];
+  if (ctx.editingSections.results) {
+    const serverMap = new Map(server.records.map((r) => [r.area, r]));
+    mergedRecords = local.records.map((lr) => {
+      const sr = serverMap.get(lr.area);
+      if (!sr) return lr; // new local record not yet on server
+      const lTime = (lr as any).lastEditedAt
+        ? Date.parse((lr as any).lastEditedAt)
+        : 0;
+      const sTime = (sr as any).lastEditedAt
+        ? Date.parse((sr as any).lastEditedAt)
+        : 0;
+      if (lTime >= sTime) return lr; // keep local newer or equal
+      return sr; // server is fresher
+    });
+    // add any server records missing locally (deleted locally only while editing results? keep server)
+    server.records.forEach((sr) => {
+      if (!mergedRecords.some((r) => r.area === sr.area))
+        mergedRecords.push(sr);
+    });
+  } else {
+    mergedRecords = server.records;
+  }
   return {
     ...local,
     competencies: ctx.editingSections.competencies
       ? local.competencies
       : server.competencies,
     krs: ctx.editingSections.krs ? local.krs : server.krs,
-    records: ctx.editingSections.results ? local.records : server.records,
+    records: mergedRecords,
     milestones: mergedMilestones,
     updatedAt: server.updatedAt,
   };

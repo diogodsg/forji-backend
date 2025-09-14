@@ -14,16 +14,16 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
+import { OwnerOrManagerGuard } from "../common/guards/owner-or-manager.guard";
 import {
   PdiPlanDto,
   PdiService,
   PdiPlanDto as RawPlanDto,
 } from "./pdi.service";
-import { PermissionService } from "../permissions/permission.service";
 import { PartialPdiPlanDto } from "./pdi.dto";
 
 @Controller("pdi")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, OwnerOrManagerGuard)
 export class PdiController {
   constructor(private readonly pdiService: PdiService) {}
   @Get("me")
@@ -34,7 +34,6 @@ export class PdiController {
   }
   @Get(":userId")
   async get(@Req() req: any, @Param("userId", ParseIntPipe) userId: number) {
-    await this.assertOwnerOrManager(req.user.id, userId);
     const plan = await this.pdiService.getByUser(userId);
     if (!plan) throw new NotFoundException();
     return plan;
@@ -49,7 +48,6 @@ export class PdiController {
     @Param("userId", ParseIntPipe) userId: number,
     @Body() body: PdiPlanDto
   ) {
-    await this.assertOwnerOrManager(req.user.id, userId);
     return this.pdiService.upsert(userId, body as RawPlanDto);
   }
   @Patch("me")
@@ -58,15 +56,6 @@ export class PdiController {
   }
   @Delete(":userId")
   async remove(@Req() req: any, @Param("userId", ParseIntPipe) userId: number) {
-    await this.assertOwnerOrManager(req.user.id, userId);
     return this.pdiService.delete(userId);
-  }
-  private async assertOwnerOrManager(
-    requesterId: number,
-    targetUserId: number
-  ) {
-    if (await PermissionService.isOwnerOrManager(requesterId, targetUserId))
-      return;
-    throw new ForbiddenException("Not allowed to access this user's PDI");
   }
 }

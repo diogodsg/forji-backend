@@ -1,6 +1,11 @@
 // MOVED from src/hooks/usePdiEditing.ts
 import { useReducer, useCallback } from "react";
-import type { PdiPlan, PdiMilestone, PdiKeyResult } from "..";
+import type {
+  PdiPlan,
+  PdiMilestone,
+  PdiKeyResult,
+  PdiCompetencyRecord,
+} from "..";
 import { makeMilestone, makeKeyResult } from "../lib/pdi";
 
 export interface PdiEditingState {
@@ -33,7 +38,7 @@ type Action =
   | { type: "ADD_KR"; kr?: PdiKeyResult }
   | { type: "UPDATE_KR"; id: string; patch: Partial<PdiKeyResult> }
   | { type: "REMOVE_KR"; id: string }
-  | { type: "UPDATE_RECORD"; area: string; patch: any }
+  | { type: "UPDATE_RECORD"; area: string; patch: Partial<PdiCompetencyRecord> }
   | { type: "ADD_RECORD"; record: PdiPlan["records"][number] }
   | { type: "REMOVE_RECORD"; area: string }
   | { type: "MARK_PENDING" }
@@ -179,7 +184,13 @@ export function pdiEditingReducer(
         working: {
           ...state.working,
           records: state.working.records.map((r) =>
-            r.area === action.area ? { ...r, ...action.patch } : r
+            r.area === action.area
+              ? {
+                  ...r,
+                  ...action.patch,
+                  lastEditedAt: new Date().toISOString(),
+                }
+              : r
           ),
         },
         meta: { ...state.meta, pendingSave: true },

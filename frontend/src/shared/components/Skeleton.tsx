@@ -15,11 +15,11 @@ export function Skeleton({
   className = "",
   lines = 1,
   circle,
-  tone = "default",
+  tone = "light",
 }: SkeletonProps) {
   const toneClass =
     tone === "light"
-      ? "bg-slate-100/80 dark:bg-slate-600"
+      ? "bg-slate-100/80 dark:bg-slate--400"
       : tone === "dark"
       ? "bg-slate-300/80 dark:bg-slate-500"
       : "bg-slate-200/70 dark:bg-slate-600";

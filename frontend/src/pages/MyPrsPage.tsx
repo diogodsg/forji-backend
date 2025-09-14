@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FiGitPullRequest } from "react-icons/fi";
 import type { PullRequest } from "@/features/prs";
-import { useRemotePrs, PrStats, PrList, PrDetailDrawer } from "@/features/prs";
+import { useRemotePrs, PrList, PrDetailDrawer } from "@/features/prs";
 import { readPrUrlState, writePrUrlState } from "@/features/prs/lib/urlFilters";
 import { usePrsFiltersPagination } from "@/features/prs/hooks/usePrsFiltersPagination";
+import { StatGridPrs } from "@/features/prs/components/StatGridPrs";
+import { getPrStats } from "@/lib/stats";
 
 /**
  * MyPrsPage
@@ -76,8 +78,10 @@ export function MyPrsPage({
 
   // Page reset now handled inside the hook
 
+  const derived = useMemo(() => getPrStats(prs), [prs]);
+
   return (
-    <div className="min-h-full w-full bg-[#f8fafc] p-6 space-y-8">
+    <div className="min-h-full w-full bg-[#f8fafc] p-6 space-y-10">
       <header className="space-y-3">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-md">
@@ -93,18 +97,22 @@ export function MyPrsPage({
           </div>
         </div>
       </header>
-
-      <div className="space-y-4">
-        <PrStats prs={prs} loading={loading} />
-      </div>
+      <StatGridPrs
+        total={derived.total}
+        open={derived.open}
+        merged={derived.merged}
+        closed={derived.closed}
+        avgMergeHours={derived.avgMergeHours}
+        totalLines={derived.totalLines}
+        loading={loading}
+      />
 
       {error && (
         <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
           {error}
         </div>
       )}
-
-      <div className="space-y-4">
+      <div className="rounded-2xl border border-surface-300 bg-white shadow-sm p-0">
         <PrList
           prs={prs}
           totalItems={total}

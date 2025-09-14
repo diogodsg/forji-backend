@@ -156,7 +156,11 @@ export function PrList({
               </>
             )}
             {pageItems.map((pr) => {
-              const created = new Date(pr.created_at);
+              const created = new Date(pr.created_at as any);
+              const validCreated = !isNaN(created.getTime());
+              const createdTitle = validCreated
+                ? created.toISOString()
+                : "Data inválida";
               return (
                 <tr
                   key={pr.id}
@@ -201,16 +205,15 @@ export function PrList({
                       {pr.repo}
                     </span>
                   </td>
-                  <td
-                    className="px-4 py-3 text-gray-500"
-                    title={created.toISOString()}
-                  >
+                  <td className="px-4 py-3 text-gray-500" title={createdTitle}>
                     <span className="inline-flex items-center gap-1">
                       <FiClock className="w-4 h-4 text-gray-400" />
-                      {formatDistanceToNow(created, {
-                        addSuffix: true,
-                        locale: ptBR,
-                      })}
+                      {validCreated
+                        ? formatDistanceToNow(created, {
+                            addSuffix: true,
+                            locale: ptBR,
+                          })
+                        : "—"}
                     </span>
                   </td>
                   <td className="px-4 py-3">

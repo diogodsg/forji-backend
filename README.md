@@ -49,6 +49,22 @@ Principais pontos:
 2. Modelos Prisma simples (User, PullRequest, PdiPlan) usando JSON para campos dinâmicos (milestones, krs, records) visando iteração rápida.
 3. Permissões: acesso a PRs e PDI de subordinados apenas para managers listados ou próprio dono.
 
+### Arquitetura Backend Atualizada (Set/2025)
+
+Desde a refatoração recente o backend passou a ser estruturado em módulos de domínio desacoplados e serviços injetáveis:
+
+- `PrismaModule` + `PrismaService`: provê um único client Prisma via DI (eliminado arquivo antigo `prisma.ts`). Facilita testes/mocks e centraliza lifecycle (hook `beforeExit`).
+- Módulos de domínio: `AuthModule`, `PrsModule`, `PdiModule`, além de `PermissionsModule` para regras de acesso.
+- `PermissionService`: concentra lógica de "sou dono ou manager" e demais verificações, reduzindo repetição em controllers.
+- Guard reutilizável `OwnerOrManagerGuard`: aplicado nas rotas que referenciam recursos de outro usuário, decide acesso (self / relação de manager) e loga allow/deny.
+- `JwtAuthGuard` ajustado para usar DI de `PrismaService` (evitando import direto do client).
+- Interceptores globais: `LoggingInterceptor` (tempo de execução, status, método, rota) + `BigIntSerializationInterceptor` (padroniza serialização de BigInt em JSON strings).
+- Observabilidade: logs estruturados (Pino) agora também em serviços (`AuthService`, `PrsService`, `PdiService`) e no guard, com filtros, contagens e ids relevantes.
+- Tratamento consistente de erros de unicidade: util `handlePrismaUniqueError` converte código `P2002` em `409 Conflict` com mensagem amigável (email, githubId).
+- Removidas conversões manuais de BigInt para number em listagens de PR (delegado ao interceptor de serialização).
+
+Benefícios principais: menor acoplamento entre controllers e infraestrutura, pontos únicos para autorização e logging, rastreabilidade das operações (cada ação relevante gera um log). Novo trabalho deve seguir o padrão: criar módulo de domínio e injetar `PrismaService` em vez de importar o client.
+
 ### Funcionalidades
 
 - Registro / login / sessão (`/auth/*`).
@@ -182,11 +198,12 @@ Backend/API
 1. DTO + validation pipes (auth, prs, pdi)
 2. Endpoints granulares de PDI (patch por bloco/milestone)
 3. `/prs/metrics` agregadas (tempo merge, churn, distribuição estados)
-4. Observabilidade (logger estruturado + request id)
+4. (Concluído) Observabilidade básica: logging estruturado + request id + logs de domínio
+5. Métricas de desempenho simples (latências agregadas /p95) via sumarização de logs (futuro)
 
-Frontend 5. Command Palette (Ctrl/⌘+K) 6. Dark mode toggle 7. Persistência de checklist / notas de review de PR 8. Export / import de PDI (JSON / Markdown) 9. Indicators de sincronização por seção (granular)
+Frontend 6. Command Palette (Ctrl/⌘+K) 7. Dark mode toggle 8. Persistência de checklist / notas de review de PR 9. Export / import de PDI (JSON / Markdown) 10. Indicators de sincronização por seção (granular)
 
-Qualidade / Segurança 10. Testes E2E (Nest + frontend smoke) 11. Refresh token + revogação 12. Sanitização markdown robusta
+Qualidade / Segurança 11. Testes E2E (Nest + frontend smoke) 12. Refresh token + revogação 13. Sanitização markdown robusta
 
 ## Como Rodar (Full Stack)
 
@@ -371,6 +388,51 @@ MVP pronto para extensão.
   - Vinculação automática de PRs pelo login GitHub (`user` do PR -> `githubId` do usuário) quando `ownerUserId` não for enviado.
   - Ação de remoção de usuário (soft para PRs: apenas anula ownerUserId) disponível na UI admin.
 
+### Dashboard de Manager (Atualizações 2025-09-14)
+
+| Alteração               | Antes                                                                      | Depois                                                    | Benefício                                         |
+| ----------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------- |
+| Métricas de topo        | 3 cards separados (Subordinados / PRs / PDIs) ocupando altura considerável | Barra horizontal única `TeamOverviewBar`                  | Menor consumo vertical, leitura sequencial rápida |
+| Detalhes de subordinado | Drawer lateral sobreposto                                                  | Painel em fluxo (inline) abaixo da grade                  | Menos compressão lateral, contexto preservado     |
+| KPI card / tab          | Exibido (sem dados maduros)                                                | Removido                                                  | Redução de ruído visual                           |
+| Componentes legados     | `ManagerMetricCards`, `ReportDrawer`                                       | Removidos do codebase                                     | Simplificação e menor bundle                      |
+| Estado loading          | Traço ou conteúdo “saltando” rapidamente                                   | Skeletons com atraso mínimo (`useDeferredLoading`) + fade | Percepção de fluidez, ausência de flicker         |
+
+#### Novo Componente: `TeamOverviewBar`
+
+Características:
+
+- Estrutura compacta (título + 3 métricas linearizadas com separadores sutis `|` / `•`).
+- Não fixa (rola com o conteúdo para não competir com o header global futuro).
+- Sem interatividade; foco em leitura imediata.
+- Tipografia reduzida com `tabular-nums` nos valores para estabilidade visual.
+
+#### Skeleton & Carregamento Diferido
+
+Implementado hook `useDeferredLoading(delay=~120ms, minVisible=~300ms)` que:
+
+1. Só exibe skeleton se a requisição ultrapassar o delay (evita “flash”).
+2. Mantém skeleton tempo mínimo para evitar troca abrupta.
+3. Aplica fade de opacidade ao transicionar lista de cards (0.55 ➜ 1).
+
+Skeletons criados:
+
+- `TeamOverviewBar` placeholders (blocos curtos de valor + label).
+- `ReportCardSkeleton`: avatar circular neutro, linhas de texto, badges opacas e barra de progresso parcial.
+
+#### Limpeza de Código
+
+- Removidos arquivos: `ManagerMetricCards.tsx`, `ReportDrawer.tsx`.
+- Exports eliminados do barrel `features/manager/index.ts` para prevenir import acidental.
+- Build verificado pós-removal (nenhum consumidor quebrado).
+
+#### Evoluções Futuras (Sugestões)
+
+- Deep link para subordinado e aba (`/manager?user=<id>&tab=pdi`).
+- Lazy load do painel de detalhes (code splitting) quando usuário é selecionado.
+- Indicadores de atualização em background (ex.: pequena animação de progress bar sob a barra de overview).
+- Métricas agregadas adicionais (lead time médio, throughput semanal) quando endpoint consolidado estiver pronto.
+
 ### Novidades Técnicas
 
 - PRs: Paginação server-side (`GET /prs?page=1&pageSize=20`) retornando `{ items, total, page, pageSize }` e frontend ajustado para usar `serverPaginated` em `PrList`.
@@ -380,6 +442,43 @@ MVP pronto para extensão.
 - PDI: Edição via manager usa `saveForUserId` (PUT `/pdi/:userId`). Garantir que o manager selecione explicitamente o subordinado correto antes de editar.
 - Admin: Removidos imports React obsoletos para build mais limpo (React 19 JSX transform).
 - Infra: Ajustes menores de tipagem e prevenção de BigInt vs number em filtros de PRs.
+- Backend: Modularização (PrismaModule + módulos de domínio) concluída; guard `OwnerOrManagerGuard` substitui verificações manuais; introduzido `LoggingInterceptor` e logs de serviço; util de erro único Prisma para respostas 409 consistentes; remoção de client Prisma direto de arquivos de domínio.
+
+### Atualizações PDI (2025-09-14)
+
+#### UX de Resultados / Competências
+
+- Editor de Resultados redesenhado em cards: cada competência agora tem um bloco com título, seleção de nível Antes / Depois (0–5), barra de evolução com gradiente mostrando progresso e delta textual (+N / Sem mudança / regressão).
+- Valores não definidos exibem traço "—" ao invés de forçar 0; barra só aparece quando há pelo menos um lado definido.
+- Botão Limpar explícito para remover nível (removido comportamento implícito de clique para limpar que causava confusão).
+- Acessibilidade: navegação por teclado (Arrow Left/Right, Home/End, Delete/Backspace/Space para limpar) via radiogroup; foco visível; mensagens úteis para leitores de tela.
+- Área de evidências estilizada, placeholder claro incentivando exemplos.
+- Novo componente de adição (AddResultBar): sugestões filtradas conforme digitação, chips rápidos (até 10 disponíveis), detecção de duplicado com feedback visual e aria-live para sucesso/erro.
+- Destaque visual temporário (pulse + borda verde) no card recém-adicionado para reforçar feedback.
+
+#### Autosave & Merge
+
+- Introduzido campo local `lastEditedAt` (apenas no frontend) em cada record para evitar que respostas de PATCH atrasadas revertam mudanças recentes.
+- Estratégia `mergeServerPlan` compara timestamps por record quando a seção de resultados está em edição e preserva o valor mais recente local.
+- Sanitização antes do envio: `lastEditedAt` removido no hook `useAutoSave` para evitar `400 Bad Request` devido ao `ValidationPipe (forbidNonWhitelisted)` no backend.
+
+#### Validação / Backend
+
+- O erro 400 identificado vinha do envio de campos extras (`lastEditedAt`) não presentes em `PdiCompetencyRecordDto` (whitelist + forbidNonWhitelisted). Ajuste feito no frontend; alternativa futura seria estender DTO ou desativar `forbidNonWhitelisted` (não recomendado agora).
+
+#### Próximas Melhorias Potenciais
+
+- Persistir `lastEditedAt` no backend (opcional) para auditoria e merge mais robusto colaborativo.
+- Animação de scroll automática para card recém-adicionado (foco acessível).
+- Chips de evidência (parse de linhas prefixadas com `- `) com remoção individual.
+- Undo rápido para remoção de competência (toast com timeout).
+- Diff visual quando houver regressão (ex: cor âmbar na barra parcial regressiva).
+
+#### Testes Recomendados (a adicionar)
+
+- Caso de merge: servidor retorna valor antigo após alteração local -> garantir que merge mantém local.
+- Sanitização: função que prepara payload remove `lastEditedAt` e outros campos desconhecidos.
+- Acessibilidade: snapshot de roles/ARIA nos botões de nível.
 
 ### Frontend Refactor (Feature PRs & Shared Layer)
 

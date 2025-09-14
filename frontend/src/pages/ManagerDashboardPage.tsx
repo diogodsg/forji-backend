@@ -24,100 +24,110 @@ import { useMemo, useState } from "react";
  * - Replace `any` cast on reports with stronger shared types.
  */
 import { useMyReports } from "../features/admin";
-import { MyPrsPage } from "./MyPrsPage";
-import { useRemotePdiForUser } from "../features/pdi/hooks/useRemotePdiForUser";
-import { useRemotePrs, usePrCounts } from "@/features/prs";
+// PDI carregado dentro do painel de detalhes agora
+// import { useRemotePrs } from "@/features/prs";
 import {
-  ReportsSidebar,
-  ManagerHeader,
-  ManagerPdiPanel,
+  ReportCard,
+  ReportCardSkeleton,
+  ReportDetailsPanel,
+  useManagerDashboard,
+  type ReportSummary,
+  TeamOverviewBar,
 } from "../features/manager";
+import { useDeferredLoading } from "../features/manager/hooks/useDeferredLoading";
 
 export function ManagerDashboardPage() {
-  const { reports, loading, error } = useMyReports();
-  const [currentId, setCurrentId] = useState<number | undefined>(undefined);
-  // Derive currently selected report user; memoized to avoid unnecessary downstream re-renders.
-  const current = useMemo(
-    () => reports.find((r) => r.id === currentId),
-    [reports, currentId]
+  // Fallback: usar hook legado de reports para compor caso endpoint agregado ainda não exista.
+  const legacy = useMyReports();
+  const {
+    data,
+    loading: loadingSummary,
+    error: summaryError,
+  } = useManagerDashboard();
+  const showSkeletonList = useDeferredLoading(loadingSummary && !data, {
+    delay: 100,
+    minVisible: 300,
+  });
+
+  // Derivar lista de reports: se summary não disponível, usar legacy.
+  const reports: ReportSummary[] =
+    data?.reports ||
+    (legacy.reports || []).map((r) => ({
+      userId: r.id,
+      name: r.name,
+      email: r.email,
+      pdi: { exists: false, progress: 0 },
+      prs: { open: 0, merged: 0, closed: 0 },
+    }));
+
+  const [activeUserId, setActiveUserId] = useState<number | null>(null);
+  const active = useMemo(
+    () => reports.find((r) => r.userId === activeUserId) || null,
+    [reports, activeUserId]
   );
 
-  const [tab, setTab] = useState<"prs" | "pdi">("prs");
-  const {
-    plan,
-    loading: pdiLoading,
-    error: pdiError,
-    upsert: upsertPdi,
-  } = useRemotePdiForUser(current?.id);
+  const [detailsTab, setDetailsTab] = useState("prs"); // 'prs' | 'pdi'
 
-  // Fetch a small PR sample for header chips
-  const { prs: prList, loading: prsLoading } = useRemotePrs(
-    { ownerUserId: current?.id },
-    { skip: !current?.id } // Avoid fetch until a report is selected.
-  );
-  const {
-    open: prOpen,
-    merged: prMerged,
-    closed: prClosed,
-  } = usePrCounts(prList);
-
-  const filteredReports = reports; // FUTURE: apply server / role filtering if necessary.
+  // PR + PDI fetches (individual) quando há usuário selecionado.
+  // const { loading: prsLoading } = useRemotePrs(
+  //   { ownerUserId: active?.userId },
+  //   { skip: !active?.userId }
+  // );
 
   return (
-    <div className="flex h-full min-h-0">
-      <ReportsSidebar
-        reports={filteredReports as any}
-        loading={loading}
-        currentId={currentId}
-        onSelect={setCurrentId}
+    <div className="flex flex-col h-full min-h-0">
+      <TeamOverviewBar
+        data={data || undefined}
+        loading={loadingSummary && !data}
       />
-      <div className="flex-1 flex flex-col min-h-0">
-        <ManagerHeader
-          currentName={current?.name}
-          currentEmail={current?.email}
-          prOpen={prOpen}
-          prMerged={prMerged}
-          prClosed={prClosed}
-          loadingPrs={prsLoading}
-          tab={tab}
-          onTabChange={setTab}
-        />
-        {error && (
-          <div className="p-4 text-sm text-rose-700 bg-rose-50 border border-rose-200">
-            {error}
-          </div>
-        )}
-        <div className="flex-1 overflow-auto min-h-0">
-          {!loading && currentId === undefined && reports.length > 0 && (
-            <div className="p-10 text-sm text-gray-600">
-              Escolha um subordinado na coluna lateral para visualizar PRs ou
-              PDI.
-            </div>
-          )}
-          {!loading && current && (
-            <div>
-              {tab === "prs" && (
-                <MyPrsPage initialFilters={{ ownerUserId: current.id }} />
-              )}
-              {tab === "pdi" && (
-                <ManagerPdiPanel
-                  loading={pdiLoading}
-                  error={pdiError}
-                  plan={plan}
-                  currentUserId={current.id}
-                  onCreate={() =>
-                    upsertPdi({
-                      userId: String(current.id),
-                      competencies: [],
-                      milestones: [],
-                      krs: [],
-                      records: [],
-                    })
-                  }
+      {summaryError && (
+        <div className="mx-4 mb-2 -mt-2 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded p-2">
+          {summaryError}
+        </div>
+      )}
+      {!loadingSummary && reports.length === 0 && (
+        <div className="p-10 text-sm text-surface-600">
+          Você ainda não gerencia ninguém.
+        </div>
+      )}
+      <div className="flex-1 overflow-auto px-4 pb-8">
+        <div
+          className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-300"
+          style={{ opacity: showSkeletonList ? 0.55 : 1 }}
+        >
+          {showSkeletonList
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <ReportCardSkeleton key={i} />
+              ))
+            : reports.map((r) => (
+                <ReportCard
+                  key={r.userId}
+                  report={r}
+                  active={r.userId === activeUserId}
+                  onSelect={(id) => {
+                    setActiveUserId(id === activeUserId ? null : id);
+                    setTimeout(() => {
+                      const el = document.getElementById(
+                        "manager-report-details-panel"
+                      );
+                      if (el)
+                        el.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                    }, 10);
+                  }}
                 />
-              )}
-            </div>
-          )}
+              ))}
+        </div>
+        {active && <div className="h-4" />} {/* Espaço antes do painel */}
+        <div id="manager-report-details-panel">
+          <ReportDetailsPanel
+            report={active}
+            onClose={() => setActiveUserId(null)}
+            tab={detailsTab}
+            onTabChange={setDetailsTab}
+          />
         </div>
       </div>
     </div>

@@ -21,14 +21,15 @@ export const ListEditor: React.FC<{
       </label>
       <textarea
         value={text}
-        onChange={(e) =>
-          onChange(
-            e.target.value
-              .split(/\n+/)
-              .map((x) => x.trim())
-              .filter(Boolean)
-          )
-        }
+        onChange={(e) => {
+          // Anteriormente trimávamos cada linha, impedindo o usuário de inserir espaços
+          // (especialmente no final da linha). Agora preservamos o texto cru e apenas
+          // descartamos linhas completamente vazias.
+          const lines = e.target.value
+            .split(/\n/)
+            .filter((l) => l.trim() !== "");
+          onChange(lines);
+        }}
         rows={3}
         placeholder={placeholder || "Linhas"}
         className="w-full text-[11px] resize-y rounded border border-surface-300 p-1 focus:border-indigo-400"

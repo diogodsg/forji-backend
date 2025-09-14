@@ -1,5 +1,5 @@
 // Painel PDI do gestor
-import { EditablePdiView } from "../../pdi/components/EditablePdiView";
+import { EditablePdiView } from "../../pdi";
 
 interface ManagerPdiPanelProps {
   loading: boolean;

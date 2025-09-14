@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import prisma from "../prisma";
+import { logger } from "../common/logger/pino";
+import { PrismaService } from "../core/prisma/prisma.service";
 
 @Injectable()
 export class PrsService {
+  constructor(private prisma: PrismaService) {}
   async list(filter?: {
     ownerUserId?: number;
     repo?: string;
@@ -21,7 +23,7 @@ export class PrsService {
     const orClauses: any[] = [];
     const andClauses: any[] = [];
     if (filter?.ownerUserId) {
-      const user = await prisma.user.findFirst({
+      const user = await this.prisma.user.findFirst({
         where: { id: filter.ownerUserId as any },
         select: { githubId: true },
       });
@@ -71,13 +73,18 @@ export class PrsService {
       if (field && allowedSortFields.has(field)) orderBy = { [field]: dir };
     }
     const [rawItems, total, meta] = await Promise.all([
-      prisma.pullRequest.findMany({ where, orderBy, skip, take: pageSize }),
-      prisma.pullRequest.count({ where }),
+      this.prisma.pullRequest.findMany({
+        where,
+        orderBy,
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.pullRequest.count({ where }),
       (async () => {
         if (!filter?.includeMeta) return undefined;
         let metaWhere: any = undefined;
         if (filter?.ownerUserId) {
-          const user = await prisma.user.findFirst({
+          const user = await this.prisma.user.findFirst({
             where: { id: filter.ownerUserId as any },
             select: { githubId: true },
           });
@@ -86,7 +93,7 @@ export class PrsService {
             ? { OR: [{ ownerUserId: filter.ownerUserId as any }, { user: gh }] }
             : { ownerUserId: filter.ownerUserId as any };
         }
-        const distinct = await prisma.pullRequest.findMany({
+        const distinct = await this.prisma.pullRequest.findMany({
           where: metaWhere,
           select: { repo: true, user: true },
         });
@@ -100,17 +107,39 @@ export class PrsService {
       })(),
     ]);
     const items = rawItems.map((pr: any) => {
-      const out: any = {};
-      for (const [k, v] of Object.entries(pr))
-        out[k] = typeof v === "bigint" ? Number(v) : v;
-      if (!out.state)
-        out.state = out.mergedAt ? "merged" : out.closedAt ? "closed" : "open";
-      return out;
+      // Apenas adiciona campo state derivado se ausente; deixa BigInt para interceptor serializar
+      if (!(pr as any).state) {
+        (pr as any).state = pr.mergedAt
+          ? "merged"
+          : pr.closedAt
+          ? "closed"
+          : "open";
+      }
+      return pr;
     });
+    logger.debug(
+      {
+        msg: "prs.list",
+        total,
+        page,
+        pageSize,
+        ownerUserId: filter?.ownerUserId,
+        repo: filter?.repo,
+        state: filter?.state,
+        author: filter?.author,
+        q: !!filter?.q,
+        sort: filter?.sort,
+        meta: !!filter?.includeMeta,
+      },
+      "prs.list page=%d size=%d total=%d",
+      page,
+      pageSize,
+      total
+    );
     return { items, total, page, pageSize, meta };
   }
   get(id: number) {
-    return prisma.pullRequest.findUnique({ where: { id } });
+    return this.prisma.pullRequest.findUnique({ where: { id } });
   }
   private mapIncoming(raw: any) {
     if (!raw || typeof raw !== "object") return {};
@@ -149,25 +178,43 @@ export class PrsService {
     if (!data?.id) throw new Error("id is required");
     const mapped = this.mapIncoming(data);
     await this.assignOwnerUserId(mapped);
-    return prisma.pullRequest.create({ data: mapped });
+    const created = await this.prisma.pullRequest.create({ data: mapped });
+    logger.info(
+      {
+        msg: "prs.create",
+        id: created.id,
+        repo: created.repo,
+        user: created.user,
+      },
+      "prs.create id=%s repo=%s",
+      created.id,
+      created.repo
+    );
+    return created;
   }
   async update(id: number, data: any) {
-    const exists = await prisma.pullRequest.findUnique({ where: { id } });
+    const exists = await this.prisma.pullRequest.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException("PR not found");
     const mapped = this.mapIncoming(data);
     delete mapped.id;
     await this.assignOwnerUserId(mapped);
-    return prisma.pullRequest.update({ where: { id }, data: mapped });
+    const updated = await this.prisma.pullRequest.update({
+      where: { id },
+      data: mapped,
+    });
+    logger.info({ msg: "prs.update", id }, "prs.update id=%s", id);
+    return updated;
   }
   async remove(id: number) {
-    await prisma.pullRequest.delete({ where: { id } });
+    await this.prisma.pullRequest.delete({ where: { id } });
+    logger.info({ msg: "prs.delete", id }, "prs.delete id=%s", id);
     return { deleted: true };
   }
   private async assignOwnerUserId(mapped: any) {
     if (mapped.ownerUserId || !mapped.user) return;
     const gh = String(mapped.user).trim();
     if (!gh) return;
-    const owner = (await prisma.user.findFirst({
+    const owner = (await this.prisma.user.findFirst({
       where: { githubId: gh },
     })) as any;
     if (owner) mapped.ownerUserId = owner.id as any;

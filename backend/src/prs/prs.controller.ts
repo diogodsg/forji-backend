@@ -13,13 +13,12 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
+import { OwnerOrManagerGuard } from "../common/guards/owner-or-manager.guard";
 import { PrsService } from "./prs.service";
-import prisma from "../prisma";
-import { PermissionService } from "../permissions/permission.service";
 import { UpsertPullRequestDto } from "../dto/pr.dto";
 
 @Controller("prs")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, OwnerOrManagerGuard)
 export class PrsController {
   constructor(private readonly prsService: PrsService) {}
 
@@ -41,10 +40,7 @@ export class PrsController {
     if (ownerUserId) {
       const uid = parseInt(ownerUserId, 10);
       if (!Number.isFinite(uid)) throw new ForbiddenException("Invalid userId");
-      if (uid !== req.user.id) {
-        const ok = await PermissionService.isOwnerOrManager(req.user.id, uid);
-        if (!ok) throw new ForbiddenException();
-      }
+      // Guard OwnerOrManager cuida de permissões; se chegou aqui está autorizado
       return this.prsService.list({
         ownerUserId: uid,
         repo: repo || undefined,

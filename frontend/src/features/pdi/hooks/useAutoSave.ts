@@ -1,7 +1,14 @@
 // MOVED from src/hooks/useAutoSave.ts
-import { useEffect, useRef } from "react";
 import { mergeServerPlan } from "../lib/pdi";
 import type { PdiPlan } from "..";
+import { api } from "../../../lib/apiClient";
+import { useDebounceEffect } from "../../../shared/hooks/useDebounceEffect";
+
+// Tornar dispatch genérico para aceitar Action específico do reducer externo
+type SaveAction =
+  | { type: "SAVE_STARTED" }
+  | { type: "SAVE_SUCCESS"; server: PdiPlan }
+  | { type: "SAVE_FAIL"; error?: string };
 
 interface UseAutoSaveArgs {
   plan: PdiPlan | null;
@@ -10,20 +17,10 @@ interface UseAutoSaveArgs {
   saving: boolean;
   lastSavedAt: string | null;
   saveForUserId?: string | null;
-  dispatch: (action: any) => void;
+  dispatch: (action: SaveAction) => void;
 }
 
-const useDebouncedCallback = (cb: () => void, delay: number, deps: any[]) => {
-  const timeoutRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(cb, delay);
-    return () => {
-      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-};
+// useDebounceEffect agora fornecido em shared/hooks
 
 export function useAutoSave({
   plan,
@@ -34,24 +31,31 @@ export function useAutoSave({
   saveForUserId,
   dispatch,
 }: UseAutoSaveArgs) {
-  useDebouncedCallback(
+  useDebounceEffect(
     () => {
       if (!pending || saving || !working) return;
-      dispatch({ type: "SAVE_STARTED" });
-      const body: any = { ...working };
-      const controller = new AbortController();
-      const target = saveForUserId
-        ? `/api/pdi/${saveForUserId}`
-        : "/api/pdi/me";
-      fetch(target, {
-        method: saveForUserId ? "PUT" : "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      })
-        .then(async (r) => {
-          if (!r.ok) throw new Error("Failed");
-          const server = (await r.json()) as PdiPlan;
+      const abort = new AbortController();
+      (async () => {
+        dispatch({ type: "SAVE_STARTED" });
+        try {
+          const endpoint = saveForUserId ? `/pdi/${saveForUserId}` : "/pdi/me";
+          const method = saveForUserId ? "PUT" : "PATCH";
+          // Sanitize outgoing records: remove any client-only metadata (e.g., lastEditedAt)
+          const sanitizedRecords = (working.records || []).map((r: any) => {
+            const { lastEditedAt, ...rest } = r; // strip local-only field
+            return rest;
+          });
+          const server = await api<PdiPlan>(endpoint, {
+            method,
+            auth: true,
+            body: JSON.stringify({
+              competencies: working.competencies,
+              milestones: working.milestones,
+              krs: working.krs || [],
+              records: sanitizedRecords,
+            }),
+            signal: abort.signal,
+          });
           const merged = mergeServerPlan(plan || server, server, {
             editingMilestones: new Set<string>(),
             editingSections: {
@@ -61,12 +65,14 @@ export function useAutoSave({
             },
           });
           dispatch({ type: "SAVE_SUCCESS", server: merged });
-        })
-        .catch((err) => {
+        } catch (err: any) {
+          if (err?.name === "AbortError") return; // navegação/unmount
           console.error("Auto-save error", err);
-          dispatch({ type: "SAVE_FAIL" });
-        });
-      return () => controller.abort();
+          dispatch({ type: "SAVE_FAIL", error: err?.message });
+        }
+      })();
+      // cleanup separado
+      return () => abort.abort();
     },
     800,
     [pending, saving, working, saveForUserId, lastSavedAt]

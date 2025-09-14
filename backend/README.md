@@ -1,6 +1,44 @@
 # Forge Backend
 
-API NestJS com autenticação JWT, Prisma + PostgreSQL. PRs e PDI persistidos.
+API NestJS (Node 20+) com autenticação JWT, Prisma + PostgreSQL.
+
+## Arquitetura
+
+Estrutura orientada a domínios:
+
+- `auth/` — autenticação, registro e endpoints administrativos
+- `prs/` — pull requests (CRUD, listagem filtrada, métricas básicas)
+- `pdi/` — plano de desenvolvimento individual (upsert/patch plano completo)
+- `dto/` — DTOs compartilhados (pode futuramente migrar para subpastas de domínio)
+- `permissions/` — serviços de autorização de alto nível
+- `common/` — infra transversal (guards, interceptors, logger, middleware)
+
+Elementos transversais:
+
+- `ValidationPipe` global com `whitelist + forbidNonWhitelisted + transform`
+- Interceptor `BigIntSerializationInterceptor` converte BigInt para string em respostas
+- Logging estruturado via Pino (`common/logger/pino.ts`) com `requestId` injetado por middleware
+- Serviço de permissões centralizado (`PermissionService.isOwnerOrManager`)
+
+### Fluxo de Auth
+
+1. Registro (`/auth/register`) — primeiro usuário vira admin automaticamente
+2. Login retorna JWT (`access_token`)
+3. Guards protegem domínios (`JwtAuthGuard`) e endpoints admin (`AdminGuard`)
+
+### Pull Requests
+
+- Aceita payloads no padrão snake_case (GitHub-like) convertidos internamente para camelCase
+- Filtros suportados: ownerUserId, repo, state, author, q (busca), sort, paginação
+- Meta opcional (repos/autores) via `?meta=1`
+- Auto-vínculo de PR ao usuário se `githubId` combinar (preenche `ownerUserId`).
+
+### PDI
+
+- Armazena plano completo em JSON (milestones, key results, competency records)
+- Operações: criar/substituir (`POST /pdi`), patch parcial (`PATCH /pdi/me`), acesso gerenciado a outros usuários (owner ou manager)
+
+## Endpoints
 
 ## Endpoints
 
@@ -54,6 +92,21 @@ npm run start:dev
 - Para desenvolvimento rápido, o PDI usa colunas JSON. Futuro: normalizar em tabelas.
 - O modelo `User` possui o campo `isAdmin` (boolean, default false). O primeiro usuário registrado é promovido automaticamente a admin no `AuthService.register`.
 - Campo opcional `githubId` permite auto-vínculo de PRs (se `user` do payload de PR corresponder a um githubId cadastrado, o `ownerUserId` é preenchido).
+
+## Observabilidade & Infra
+
+- Logs estruturados (pino) com níveis configuráveis (`LOG_LEVEL`)
+- `requestId` para correlação em cada requisição
+- Serialização BigInt segura evitando perda de precisão no client
+
+## Manutenção / Técnicas
+
+- Código legado duplicado (controllers/services raiz) agendado para remoção definitiva
+- Próximos passos: criar módulos Nest dedicados, DTO de query para PRs, remover conversão `Number(BigInt)` no serviço de PR
+
+## Changelog
+
+Veja `CHANGELOG.md` para histórico de modificações.
 
 ### Tratamento de erros
 

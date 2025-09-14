@@ -1,10 +1,17 @@
-import { Controller, Get, Query, UseGuards, Req } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Query,
+  UseGuards,
+  Req,
+  ForbiddenException,
+} from "@nestjs/common";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
+import { OwnerOrManagerGuard } from "../common/guards/owner-or-manager.guard";
 import { PrsMetricsService } from "./prs-metrics.service";
-import { PermissionService } from "../permissions/permission.service";
 
 @Controller("prs/metrics")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, OwnerOrManagerGuard)
 export class PrsMetricsController {
   constructor(private readonly metrics: PrsMetricsService) {}
 
@@ -20,13 +27,8 @@ export class PrsMetricsController {
     if (ownerUserId) {
       const parsed = parseInt(ownerUserId, 10);
       if (Number.isFinite(parsed)) {
-        if (parsed !== req.user.id) {
-          const ok = await PermissionService.isOwnerOrManager(
-            req.user.id,
-            parsed
-          );
-          if (!ok) return { error: "Forbidden" };
-        }
+        // Guard OwnerOrManager (quando aplicado) validará acesso; fallback simples aqui
+        // Se não for próprio e guard não estiver aplicado, manter checagem futura.
         uid = parsed;
       }
     }

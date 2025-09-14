@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * Displays additions vs deletions with percentages and absolute counts.
  * Suitable for compact diff summaries.

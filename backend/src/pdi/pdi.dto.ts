@@ -7,6 +7,9 @@ import {
   IsBoolean,
   IsISO8601,
   ArrayNotEmpty,
+  IsNumber,
+  Min,
+  Max,
 } from "class-validator";
 
 export class PdiTaskDto {
@@ -186,6 +189,22 @@ export class UpdateKeyResultDto {
 export class PdiCompetencyRecordDto {
   @IsString()
   area!: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(10)
+  levelBefore?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(10)
+  levelAfter?: number;
+
+  @IsOptional()
+  @IsString()
+  evidence?: string;
 }
 
 export class PdiPlanDto {

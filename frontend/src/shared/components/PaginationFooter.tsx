@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * Generic pagination footer: page navigation + page size selector + total items.
  * Stateless: caller owns page/pageSize/total values.
