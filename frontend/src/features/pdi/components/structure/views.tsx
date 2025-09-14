@@ -73,8 +73,16 @@ export const ResultsTable: React.FC<{ records: PdiPlan["records"] }> = ({
             className="border-b last:border-0 border-surface-300/70"
           >
             <td className="py-2 pr-4 text-gray-700">{r.area}</td>
-            <td className="py-2 pr-4 text-gray-700">{r.levelBefore ?? "-"}</td>
-            <td className="py-2 pr-4 text-gray-700">{r.levelAfter ?? "-"}</td>
+            <td className="py-2 pr-4 text-gray-700">
+              <span className="text-sm md:text-base font-semibold tracking-tight">
+                {r.levelBefore ?? "-"}
+              </span>
+            </td>
+            <td className="py-2 pr-4 text-gray-700">
+              <span className="text-sm md:text-base font-semibold tracking-tight">
+                {r.levelAfter ?? "-"}
+              </span>
+            </td>
             <td className="py-2 text-[11px] text-gray-500">
               {r.evidence || "-"}
             </td>
@@ -121,8 +129,12 @@ export const ResultsCardsView: React.FC<{ records: PdiPlan["records"] }> = ({
               <h4 className="text-sm font-semibold text-slate-800 leading-tight">
                 {r.area}
               </h4>
-              <span className={`text-[10px] font-medium ${deltaColor}`}>
-                {hasBefore ? before : "—"} → {hasAfter ? after : "—"}
+              <span
+                className={`text-xs md:text-sm font-semibold ${deltaColor}`}
+              >
+                <span className="font-bold">{hasBefore ? before : "—"}</span>
+                <span className="mx-1 text-slate-400">→</span>
+                <span className="font-bold">{hasAfter ? after : "—"}</span>
               </span>
             </div>
             <div className="mb-3">

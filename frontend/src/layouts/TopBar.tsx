@@ -18,6 +18,21 @@ export function TopBar({
   const navigate = useNavigate();
   useEffect(() => {
     function handler(e: KeyboardEvent) {
+      // Ignorar atalhos quando o usuário está digitando em campos interativos
+      const target = e.target as HTMLElement | null;
+      if (target) {
+        const tag = target.tagName;
+        const isEditable =
+          tag === "INPUT" ||
+          tag === "TEXTAREA" ||
+          (target as any).isContentEditable === true;
+        if (isEditable) {
+          // Resetar flag para não "carregar" o g pressionado de dentro de inputs
+          if (e.key.toLowerCase() === "g")
+            (document as any)._navGPressed = false;
+          return; // Não processa atalhos globais
+        }
+      }
       if (e.metaKey || e.ctrlKey) {
         if (e.key.toLowerCase() === "k") {
           e.preventDefault();

@@ -38,7 +38,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
               value={m.title}
               onChange={(e) => onUpdate(m.id, { title: e.target.value })}
               className="w-full text-lg font-semibold text-indigo-700 bg-transparent focus:outline-none focus:ring-0 placeholder:text-indigo-300"
-              placeholder="Título do encontro"
+              placeholder="Título do acompanhamento"
             />
           ) : (
             <h3 className="text-lg font-semibold text-indigo-700">

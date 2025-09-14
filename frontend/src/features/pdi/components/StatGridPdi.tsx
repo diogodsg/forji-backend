@@ -35,7 +35,7 @@ export const StatGridPdi: React.FC<PdiStatsProps> = ({
       />
       <MetricCard
         icon={FiCalendar}
-        label="Encontros"
+        label="Acompanhamentos"
         value={meetings}
         tone="emerald"
         loading={loading}

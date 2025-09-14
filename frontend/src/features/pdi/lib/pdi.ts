@@ -10,10 +10,11 @@ export function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 export function makeMilestone(partial?: Partial<PdiMilestone>): PdiMilestone {
+  // Novo naming: acompanhamento - YYYY-MM-DD
   return {
     id: crypto.randomUUID(),
     date: todayISO(),
-    title: `Encontro (${todayISO()})`,
+    title: `acompanhamento - ${todayISO()}`,
     summary: "",
     improvements: [],
     positives: [],

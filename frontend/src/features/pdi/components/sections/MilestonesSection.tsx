@@ -33,7 +33,7 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
         onClick={onAdd}
         className="text-xs px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-500"
       >
-        Adicionar encontro
+        Adicionar acompanhamento
       </button>
     </div>
     <div className="space-y-8">

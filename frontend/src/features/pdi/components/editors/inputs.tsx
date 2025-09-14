@@ -8,32 +8,124 @@ export const ListEditor: React.FC<{
   onChange: (v: string[]) => void;
   highlight?: string;
   placeholder?: string;
-}> = ({ label, value, onChange, highlight = "emerald", placeholder }) => {
-  const text = value && value.length ? value.join("\n") : "";
+}> = ({ label, value = [], onChange, highlight = "emerald", placeholder }) => {
+  const [drafts, setDrafts] = useState<string[]>(value.length ? value : [""]);
+  // Sync external changes (e.g. load / merge) when not actively editing empty trailing row differences
+  React.useEffect(() => {
+    const normalized = value.length ? value : [""];
+    // Avoid overwriting while user is typing if arrays are effectively equal (ignoring a single trailing empty)
+    if (
+      JSON.stringify(value) ===
+      JSON.stringify(drafts.filter((d) => d.trim() !== ""))
+    )
+      return;
+    setDrafts(
+      normalized.concat(normalized[normalized.length - 1] === "" ? [] : [])
+    );
+  }, [value]);
+
+  const commit = (next: string[]) => {
+    const cleaned = next.filter((l) => l.trim() !== "");
+    onChange(cleaned);
+    setDrafts(cleaned.length ? [...cleaned, ""] : [""]); // keep one blank row for easy add
+  };
+
+  const updateAt = (idx: number, text: string) => {
+    const next = drafts.slice();
+    next[idx] = text;
+    setDrafts(next);
+  };
+
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+    idx: number
+  ) => {
+    if (e.key === "Enter") {
+      if (e.shiftKey) return; // allow newline inside same item (rare use-case)
+      e.preventDefault();
+      const current = drafts[idx];
+      // If current is empty and not the only row, treat Enter as remove
+      if (current.trim() === "" && drafts.length > 1) {
+        const next = drafts.filter((_, i) => i !== idx);
+        commit(next);
+        return;
+      }
+      // Insert a new item below
+      const next = drafts.slice();
+      if (idx === drafts.length - 1) {
+        next.push("");
+      } else {
+        next.splice(idx + 1, 0, "");
+      }
+      commit(next);
+    } else if (e.key === "Backspace") {
+      const current = drafts[idx];
+      if (current === "" && drafts.length > 1) {
+        // Merge deletion (remove this empty row)
+        e.preventDefault();
+        const next = drafts.filter((_, i) => i !== idx);
+        commit(next);
+      }
+    }
+  };
+
+  const removeAt = (idx: number) => {
+    const next = drafts.filter((_, i) => i !== idx);
+    commit(next);
+  };
+
   return (
     <div
-      className={`rounded-lg border border-${highlight}-200 bg-${highlight}-50/40 p-2`}
+      className={`rounded-lg border border-${highlight}-200 bg-${highlight}-50/40 p-2 space-y-1`}
     >
       <label
         className={`block text-[10px] font-semibold text-${highlight}-700 mb-1 uppercase tracking-wide`}
       >
         {label}
       </label>
-      <textarea
-        value={text}
-        onChange={(e) => {
-          // Anteriormente trimávamos cada linha, impedindo o usuário de inserir espaços
-          // (especialmente no final da linha). Agora preservamos o texto cru e apenas
-          // descartamos linhas completamente vazias.
-          const lines = e.target.value
-            .split(/\n/)
-            .filter((l) => l.trim() !== "");
-          onChange(lines);
-        }}
-        rows={3}
-        placeholder={placeholder || "Linhas"}
-        className="w-full text-[11px] resize-y rounded border border-surface-300 p-1 focus:border-indigo-400"
-      />
+      <div className="flex flex-col gap-1">
+        {drafts.map((line, idx) => {
+          const isLastBlank = idx === drafts.length - 1 && line.trim() === "";
+          return (
+            <div key={idx} className="group flex items-start gap-1">
+              <span
+                className={`mt-1 text-[10px] w-4 text-${highlight}-600 select-none`}
+              >
+                •
+              </span>
+              <textarea
+                value={line}
+                placeholder={placeholder && isLastBlank ? placeholder : ""}
+                rows={1}
+                onChange={(e) => updateAt(idx, e.target.value)}
+                onBlur={() => commit(drafts)}
+                onKeyDown={(e) => handleKeyDown(e, idx)}
+                className="flex-1 resize-none overflow-hidden text-[11px] rounded border border-surface-300 px-2 py-1 leading-snug focus:border-indigo-400 focus:outline-none min-h-[32px]"
+                style={{ height: "auto" }}
+              />
+              {drafts.length > 1 && !isLastBlank && (
+                <button
+                  type="button"
+                  onClick={() => removeAt(idx)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] px-1 py-1 text-gray-400 hover:text-rose-600"
+                  title="Remover linha"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="pt-1 flex justify-end">
+        <button
+          type="button"
+          onClick={() => commit([...drafts, ""])}
+          className={`text-[10px] px-2 py-1 rounded border border-${highlight}-300 text-${highlight}-700 hover:bg-${highlight}-100/40 font-medium`}
+        >
+          + linha
+        </button>
+      </div>
     </div>
   );
 };

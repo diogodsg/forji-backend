@@ -78,14 +78,7 @@ export const PrDetailDrawer: React.FC<Props> = ({ pr, onClose }) => {
             ))}
           </ul>
         </section>
-        <div className="flex gap-3 pt-2">
-          <button className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-sm px-4 py-2 rounded-md font-medium shadow-soft text-white transition-colors">
-            <span>Adicionar ao PDI</span>
-          </button>
-          <button className="inline-flex items-center gap-1.5 bg-surface-200 hover:bg-surface-300 text-sm px-4 py-2 rounded-md font-medium transition-colors">
-            <span>Criar To-do</span>
-          </button>
-        </div>
+        {/* Ações removidas: Adicionar ao PDI / Criar To-do (solicitado) */}
       </div>
     </SidePanel>
   );

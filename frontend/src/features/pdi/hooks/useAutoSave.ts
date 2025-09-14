@@ -17,6 +17,13 @@ interface UseAutoSaveArgs {
   saving: boolean;
   lastSavedAt: string | null;
   saveForUserId?: string | null;
+  // editing context to protect in-progress fields from stale server merges
+  editingMilestones: Set<string>;
+  editingSections: {
+    competencies: boolean;
+    krs: boolean;
+    results: boolean;
+  };
   dispatch: (action: SaveAction) => void;
 }
 
@@ -29,6 +36,8 @@ export function useAutoSave({
   saving,
   lastSavedAt,
   saveForUserId,
+  editingMilestones,
+  editingSections,
   dispatch,
 }: UseAutoSaveArgs) {
   useDebounceEffect(
@@ -57,12 +66,8 @@ export function useAutoSave({
             signal: abort.signal,
           });
           const merged = mergeServerPlan(plan || server, server, {
-            editingMilestones: new Set<string>(),
-            editingSections: {
-              competencies: false,
-              krs: false,
-              results: false,
-            },
+            editingMilestones,
+            editingSections,
           });
           dispatch({ type: "SAVE_SUCCESS", server: merged });
         } catch (err: any) {

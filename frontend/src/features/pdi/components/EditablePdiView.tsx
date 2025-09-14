@@ -1,6 +1,7 @@
 // MOVED from src/components/EditablePdiView.tsx
 // Adjusted import paths for feature module structure
 import React, { useEffect } from "react";
+import { FiEdit2, FiCheckSquare } from "react-icons/fi";
 import type {
   PdiMilestone,
   PdiPlan,
@@ -57,6 +58,8 @@ export const EditablePdiView: React.FC<Props> = ({
     saving,
     lastSavedAt: working.updatedAt,
     saveForUserId: hasTarget ? String(saveForUserId) : undefined,
+    editingMilestones,
+    editingSections,
     dispatch,
   });
 
@@ -103,9 +106,17 @@ export const EditablePdiView: React.FC<Props> = ({
           action={
             <button
               onClick={() => toggleSection("competencies")}
-              className="px-3 py-1.5 text-xs rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
             >
-              {editingSections.competencies ? "Concluir" : "Editar"}
+              {editingSections.competencies ? (
+                <>
+                  <FiCheckSquare className="w-3.5 h-3.5" /> Concluir
+                </>
+              ) : (
+                <>
+                  <FiEdit2 className="w-3.5 h-3.5" /> Editar
+                </>
+              )}
             </button>
           }
         >
@@ -138,9 +149,17 @@ export const EditablePdiView: React.FC<Props> = ({
           action={
             <button
               onClick={() => toggleSection("krs")}
-              className="px-3 py-1.5 text-xs rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
             >
-              {editingSections.krs ? "Concluir" : "Editar"}
+              {editingSections.krs ? (
+                <>
+                  <FiCheckSquare className="w-3.5 h-3.5" /> Concluir
+                </>
+              ) : (
+                <>
+                  <FiEdit2 className="w-3.5 h-3.5" /> Editar
+                </>
+              )}
             </button>
           }
         >
@@ -164,9 +183,17 @@ export const EditablePdiView: React.FC<Props> = ({
           action={
             <button
               onClick={() => toggleSection("results")}
-              className="px-3 py-1.5 text-xs rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
             >
-              {editingSections.results ? "Concluir" : "Editar"}
+              {editingSections.results ? (
+                <>
+                  <FiCheckSquare className="w-3.5 h-3.5" /> Concluir
+                </>
+              ) : (
+                <>
+                  <FiEdit2 className="w-3.5 h-3.5" /> Editar
+                </>
+              )}
             </button>
           }
         >
