@@ -293,10 +293,11 @@ function LineChangesBar({
   additions: number;
   deletions: number;
 }) {
-  const added = additions || 0;
-  const deleted = deletions || 0;
+  const added = +additions || 0;
+  const deleted = +deletions || 0;
   const total = added + deleted;
   const net = added - deleted;
+  // Percentuais proporcionais simples (sem arredondamento que distorce visual).
   const addPct = total ? (added / total) * 100 : 0;
   const delPct = total ? (deleted / total) * 100 : 0;
   return (
@@ -313,20 +314,29 @@ function LineChangesBar({
         </span>
       </div>
       <div
-        className="h-1.5 w-full rounded-full bg-surface-200 relative overflow-hidden"
+        className="h-1.5 w-full rounded-full bg-surface-200 overflow-hidden flex"
         role="img"
-        aria-label={`Adições ${addPct.toFixed(0)}% vs deleções ${delPct.toFixed(
-          0
+        aria-label={`Adições ${addPct.toFixed(1)}% vs deleções ${delPct.toFixed(
+          1
         )}%`}
+        data-total={total}
+        data-add={added}
+        data-del={deleted}
       >
-        <div
-          className="absolute left-0 top-0 h-full bg-emerald-400/80"
-          style={{ width: addPct + "%" }}
-        />
-        <div
-          className="absolute right-0 top-0 h-full bg-rose-400/80"
-          style={{ width: delPct + "%" }}
-        />
+        {added > 0 && (
+          <span
+            className="h-full bg-emerald-400/80"
+            style={{ width: `${addPct}%` }}
+            data-seg="add"
+          />
+        )}
+        {deleted > 0 && (
+          <span
+            className="h-full bg-rose-400/80"
+            style={{ width: `${delPct}%` }}
+            data-seg="del"
+          />
+        )}
       </div>
     </div>
   );

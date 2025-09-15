@@ -1,20 +1,14 @@
 import React from "react";
 import { MetricCard } from "../../../shared/ui";
-import {
-  FiList,
-  FiGitMerge,
-  FiCheckCircle,
-  FiXCircle,
-  FiBarChart2,
-} from "react-icons/fi";
+import { FiList, FiGitMerge, FiCheckCircle, FiXCircle, FiTrendingUp } from "react-icons/fi";
 
 interface PrsStatsProps {
   total: number;
   open: number;
   merged: number;
   closed: number;
-  avgMergeHours?: number; // média em horas
-  totalLines?: number; // additions + deletions
+  additions?: number;
+  deletions?: number;
   loading?: boolean;
 }
 
@@ -23,12 +17,13 @@ export const StatGridPrs: React.FC<PrsStatsProps> = ({
   open,
   merged,
   closed,
-  avgMergeHours = 0,
-  totalLines = 0,
+  additions = 0,
+  deletions = 0,
   loading,
 }) => {
+  const totalChanged = additions + deletions;
   return (
-    <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
       <MetricCard
         icon={FiList}
         label="Total"
@@ -58,17 +53,22 @@ export const StatGridPrs: React.FC<PrsStatsProps> = ({
         loading={loading}
       />
       <MetricCard
-        icon={FiBarChart2}
-        label="Avg Merge (h)"
-        value={avgMergeHours.toFixed(1)}
-        tone="amber"
-        loading={loading}
-      />
-      <MetricCard
-        icon={FiBarChart2}
+        icon={FiTrendingUp}
         label="Linhas"
-        value={totalLines}
-        tone="indigo"
+        value={
+          loading ? "" : (
+            <span className="flex flex-col text-sm leading-tight">
+              <span>
+                <span className="text-emerald-600">+{additions}</span>{" "}
+                <span className="text-rose-600">-{deletions}</span>
+              </span>
+              <span className="text-[11px] text-gray-500 font-normal">
+                total {totalChanged}
+              </span>
+            </span>
+          )
+        }
+        tone="amber"
         loading={loading}
       />
     </div>

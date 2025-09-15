@@ -102,8 +102,8 @@ export function MyPrsPage({
         open={derived.open}
         merged={derived.merged}
         closed={derived.closed}
-        avgMergeHours={derived.avgMergeHours}
-        totalLines={derived.totalLines}
+        additions={derived.additions}
+        deletions={derived.deletions}
         loading={loading}
       />
 

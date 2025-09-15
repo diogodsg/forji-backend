@@ -27,8 +27,10 @@ export interface PrDerivedStats {
   open: number;
   merged: number;
   closed: number;
-  avgMergeHours: number;
-  totalLines: number;
+  avgMergeHours: number; // mantido para outros usos eventuais
+  additions: number;
+  deletions: number;
+  totalLines: number; // = additions + deletions (legacy)
 }
 
 export function getPrStats(prs: PullRequest[]): PrDerivedStats {
@@ -47,9 +49,18 @@ export function getPrStats(prs: PullRequest[]): PrDerivedStats {
       mergedDurationsMinutes.length /
       60
     : 0;
-  const totalLines = prs.reduce(
-    (acc, p) => acc + (p.lines_added || 0) + (p.lines_deleted || 0),
-    0
-  );
-  return { total: prs.length, open, merged, closed, avgMergeHours, totalLines };
+  const toNum = (v: any) => (typeof v === "number" ? v : Number(v) || 0);
+  const additions = prs.reduce((acc, p) => acc + toNum(p.lines_added), 0);
+  const deletions = prs.reduce((acc, p) => acc + toNum(p.lines_deleted), 0);
+  const totalLines = additions + deletions;
+  return {
+    total: prs.length,
+    open,
+    merged,
+    closed,
+    avgMergeHours,
+    additions,
+    deletions,
+    totalLines,
+  };
 }

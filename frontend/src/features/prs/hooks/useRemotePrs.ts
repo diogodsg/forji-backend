@@ -7,6 +7,13 @@ import { mockPrs } from "../mocks/prs";
  * Maps backend PR payload (mixed casing & numeric field names) into internal `PullRequest` shape.
  */
 function mapPr(raw: any): PullRequest {
+  const toNum = (v: any) => {
+    if (v === null || v === undefined || v === "") return 0;
+    // BigInt serializado como string muito grande: tentar Number, se perder precisão ficará grande mas aceitável para exibição agregada.
+    // Se for realmente necessário preservar precisão futura, considerar usar bigint, mas UI só precisa de soma.
+    const n = typeof v === "number" ? v : Number(v);
+    return isNaN(n) ? 0 : n;
+  };
   return {
     id: String(raw.id),
     author: raw.user || "unknown",
@@ -16,9 +23,9 @@ function mapPr(raw: any): PullRequest {
     created_at: raw.createdAt || raw.created_at || new Date().toISOString(),
     merged_at: raw.mergedAt || raw.merged_at || undefined,
     state: (raw.state || "open") as PullRequest["state"],
-    lines_added: raw.totalAdditions ?? 0,
-    lines_deleted: raw.totalDeletions ?? 0,
-    files_changed: raw.totalChanges ?? 0,
+    lines_added: toNum(raw.totalAdditions ?? raw.lines_added ?? 0),
+    lines_deleted: toNum(raw.totalDeletions ?? raw.lines_deleted ?? 0),
+    files_changed: toNum(raw.totalChanges ?? raw.files_changed ?? 0),
     ai_review_summary: raw.reviewText || "",
     review_comments_highlight: [],
   };

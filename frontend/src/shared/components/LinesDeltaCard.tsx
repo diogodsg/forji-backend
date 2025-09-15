@@ -22,8 +22,10 @@ export function LinesDeltaCard({
   label = "Linhas",
 }: LinesDeltaCardProps) {
   const total = additions + deletions;
-  const addPct = total ? (additions / total) * 100 : 0;
-  const delPct = total ? (deletions / total) * 100 : 0;
+  const addPctRaw = total ? (additions / total) * 100 : 0;
+  const delPctRaw = total ? (deletions / total) * 100 : 0;
+  const addPct = addPctRaw;
+  const delPct = delPctRaw;
   return (
     <div
       className={`relative rounded-lg border border-surface-300/70 bg-white/60 backdrop-blur px-3 py-2 flex flex-col justify-between ${className}`}
@@ -45,22 +47,31 @@ export function LinesDeltaCard({
               </span>
             </div>
             <div
-              className="h-2 rounded-full bg-surface-200 overflow-hidden relative"
+              className="h-2 rounded-full bg-surface-200 overflow-hidden flex"
               title={`Add: ${additions}  Del: ${deletions}`}
+              data-total={total}
+              data-add={additions}
+              data-del={deletions}
             >
-              <div
-                className="absolute left-0 top-0 h-full bg-emerald-400/70"
-                style={{ width: addPct + "%" }}
-              />
-              <div
-                className="absolute right-0 top-0 h-full bg-rose-400/70"
-                style={{ width: delPct + "%" }}
-              />
+              {additions > 0 && (
+                <span
+                  className="h-full bg-emerald-400/70"
+                  style={{ width: `${addPct}%` }}
+                  data-seg="add"
+                />
+              )}
+              {deletions > 0 && (
+                <span
+                  className="h-full bg-rose-400/70"
+                  style={{ width: `${delPct}%` }}
+                  data-seg="del"
+                />
+              )}
             </div>
             <span className="text-[9px] tracking-wide text-gray-400">
               {total ? (
                 <>
-                  {addPct.toFixed(0)}% + / {delPct.toFixed(0)}% - (total {total}
+                  {addPct.toFixed(1)}% + / {delPct.toFixed(1)}% - (total {total}
                   )
                 </>
               ) : (
