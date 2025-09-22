@@ -1,6 +1,12 @@
 import React from "react";
 import { MetricCard } from "../../../shared/ui";
-import { FiList, FiGitMerge, FiCheckCircle, FiXCircle, FiTrendingUp } from "react-icons/fi";
+import {
+  FiList,
+  FiGitMerge,
+  FiCheckCircle,
+  FiXCircle,
+  FiTrendingUp,
+} from "react-icons/fi";
 
 interface PrsStatsProps {
   total: number;
@@ -56,7 +62,9 @@ export const StatGridPrs: React.FC<PrsStatsProps> = ({
         icon={FiTrendingUp}
         label="Linhas"
         value={
-          loading ? "" : (
+          loading ? (
+            ""
+          ) : (
             <span className="flex flex-col text-sm leading-tight">
               <span>
                 <span className="text-emerald-600">+{additions}</span>{" "}

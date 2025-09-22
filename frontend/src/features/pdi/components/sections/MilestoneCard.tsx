@@ -1,5 +1,5 @@
 // MOVED from src/components/MilestoneCard.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -280,13 +280,61 @@ const MarkdownField: React.FC<{
   const [mode, setMode] = useState<"edit" | "preview">(
     value ? "preview" : "edit"
   );
+  const [draft, setDraft] = useState(value);
+  const lastExternal = useRef(value);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [dirty, setDirty] = useState(false);
+
+  const autoResize = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    const next = Math.min(el.scrollHeight, 640);
+    el.style.height = next + "px";
+  }, []);
+
+  const flush = useCallback(() => {
+    if (draft !== lastExternal.current) {
+      onChange(draft);
+      lastExternal.current = draft;
+      setDirty(false);
+    }
+  }, [draft, onChange]);
+
+  useEffect(() => {
+    const id = setTimeout(() => flush(), 450); // debounce reduzido
+    return () => clearTimeout(id);
+  }, [draft, flush]);
+
+  useEffect(() => {
+    if (value !== lastExternal.current) {
+      setDraft(value);
+      lastExternal.current = value;
+      setDirty(false);
+    }
+  }, [value]);
+
+  useEffect(() => {
+    autoResize();
+  }, [draft, autoResize, mode]);
+
+  const switchMode = (next: "edit" | "preview") => {
+    if (next === "preview") flush();
+    setMode(next);
+  };
+
   return (
-    <div className="border rounded-lg border-surface-300">
+    <div className="border rounded-lg border-surface-300 relative">
+      {dirty && mode === "edit" && (
+        <span className="absolute right-2 top-1.5 text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200 font-medium">
+          Draft
+        </span>
+      )}
       <div className="flex items-center justify-between border-b bg-surface-50 px-2 py-1 text-[10px] font-medium">
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setMode("edit")}
+            onClick={() => switchMode("edit")}
             className={`px-2 py-0.5 rounded ${
               mode === "edit"
                 ? "bg-indigo-600 text-white"
@@ -297,7 +345,7 @@ const MarkdownField: React.FC<{
           </button>
           <button
             type="button"
-            onClick={() => setMode("preview")}
+            onClick={() => switchMode("preview")}
             className={`px-2 py-0.5 rounded ${
               mode === "preview"
                 ? "bg-indigo-600 text-white"
@@ -310,16 +358,21 @@ const MarkdownField: React.FC<{
       </div>
       {mode === "edit" ? (
         <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          ref={textareaRef}
+          value={draft}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setDirty(true);
+          }}
+          onBlur={flush}
           rows={6}
-          className="w-full text-xs p-2 bg-white rounded-b-lg focus:outline-none"
+          className="w-full text-xs p-2 bg-white rounded-b-lg focus:outline-none resize-none leading-snug"
           placeholder="Escreva em markdown..."
         />
       ) : (
         <div className="p-3 prose prose-sm max-w-none text-[13px] prose-headings:mt-3">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {value || "_Sem conteúdo_"}
+            {draft || "_Sem conteúdo_"}
           </ReactMarkdown>
         </div>
       )}

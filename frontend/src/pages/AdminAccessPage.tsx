@@ -23,13 +23,11 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/features/auth";
 import {
   useAdminUsers,
-  ManagerDrawer,
   CreateUserModal,
   AdminUsersToolbar,
   AdminUsersTable,
   AccessDeniedPanel,
 } from "@/features/admin";
-import type { UserRow } from "@/features/admin";
 
 export default function AdminAccessPage() {
   const { user } = useAuth();
@@ -48,9 +46,7 @@ export default function AdminAccessPage() {
   const [query, setQuery] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
-  const [managerDrawerUser, setManagerDrawerUser] = useState<UserRow | null>(
-    null
-  );
+  // Drawer removed; manager selection now inline popover per-row.
 
   const filteredUsers = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -111,9 +107,8 @@ export default function AdminAccessPage() {
           error={error}
           onToggleAdmin={toggleAdmin}
           onUpdateGithub={setGithubId}
-          onOpenManagers={(id: number) =>
-            setManagerDrawerUser(users.find((x) => x.id === id) || null)
-          }
+          onAddManager={setManager}
+          onRemoveManager={removeManager}
           onRemove={deleteUser}
         />
       </section>
@@ -125,15 +120,7 @@ export default function AdminAccessPage() {
         creating={busy.creating}
         error={createError}
       />
-      {managerDrawerUser && (
-        <ManagerDrawer
-          target={managerDrawerUser}
-          allUsers={users}
-          onClose={() => setManagerDrawerUser(null)}
-          onAdd={setManager}
-          onRemove={removeManager}
-        />
-      )}
+      {/* ManagerDrawer removed */}
     </div>
   );
 }

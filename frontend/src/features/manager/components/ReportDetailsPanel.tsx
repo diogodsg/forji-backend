@@ -35,9 +35,12 @@ export function ReportDetailsPanel({
   );
   const counts = usePrCounts(prs);
 
-  // Reset aba para PRs quando trocar usuário
+  // Ajuste: ao trocar usuário, priorizar PDI como primeira aba.
+  // Mantemos a aba atual se o usuário apenas re-selecionar o mesmo card.
   useEffect(() => {
-    onTabChange("prs");
+    if (!userId) return;
+    // Força para 'pdi' sempre que mudar de usuário.
+    onTabChange("pdi");
   }, [userId]);
 
   if (!report) return null;

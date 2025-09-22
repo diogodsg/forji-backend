@@ -4,7 +4,7 @@ export * from "./FormField";
 export * from "./CreateUserModal";
 export * from "./AdminUserRow";
 export * from "./RowMenu";
-export * from "./ManagerDrawer";
+export * from "./ManagerPickerPopover";
 export * from "./AdminUsersToolbar";
 export * from "./AdminUsersTable";
 export * from "./AccessDeniedPanel";

@@ -28,8 +28,28 @@ async function bootstrap() {
     console.log(`[BOOT] App created in ${Date.now() - t0}ms`);
     app.use(httpLogger);
     app.use(new RequestContextMiddleware().use);
+    const defaultOrigins = [
+      "https://forge.driva.io",
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+    ];
+    const envOrigins = process.env.CORS_ORIGINS
+      ? process.env.CORS_ORIGINS.split(",")
+          .map((o) => o.trim())
+          .filter(Boolean)
+      : [];
+    const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
     app.enableCors({
-      origin: "*",
+      origin: (origin, callback) => {
+        // Allow non-browser clients (no origin) and whitelisted domains
+        if (!origin || allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        // eslint-disable-next-line no-console
+        console.warn(`[CORS] Origin not allowed: ${origin}`);
+        return callback(new Error("Not allowed by CORS"));
+      },
       credentials: true,
     });
     app.useGlobalPipes(

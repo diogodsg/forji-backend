@@ -57,9 +57,24 @@ export function mergeServerPlan(
     ctx.editingSections.results;
   if (ctx.editingMilestones.size === 0 && !anySectionEditing) return server;
   const mergedMilestones = local.milestones.map((m) => {
-    if (ctx.editingMilestones.has(m.id)) return m;
+    const isEditing = ctx.editingMilestones.has(m.id);
     const s = server.milestones.find((sm) => sm.id === m.id);
-    return s || m;
+    if (!s) return m; // milestone só local ainda
+    if (isEditing) {
+      // Protege campos ativos de edição (summary, lists) contra overwrite de server enquanto edita
+      return {
+        ...s,
+        summary: m.summary,
+        improvements: m.improvements,
+        positives: m.positives,
+        resources: m.resources,
+        tasks: m.tasks,
+        suggestions: m.suggestions,
+        title: m.title, // manter título que pode estar em edição
+        date: m.date, // evitar salto de data se usuário ajustou
+      } as PdiMilestone;
+    }
+    return s; // não editando: server authoritative
   });
   server.milestones.forEach((sm) => {
     if (!mergedMilestones.some((m) => m.id === sm.id))

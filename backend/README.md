@@ -99,6 +99,27 @@ npm run start:dev
 - `requestId` para correlação em cada requisição
 - Serialização BigInt segura evitando perda de precisão no client
 
+### CORS
+
+Por padrão o backend agora libera somente origens explícitas (em vez de `*`).
+
+Origens default permitidas:
+
+- https://forge.driva.io
+- http://localhost:3000
+- http://localhost:5173
+- http://127.0.0.1:5173
+
+Você pode adicionar mais origens via variável de ambiente `CORS_ORIGINS` (lista separada por vírgula). Exemplo:
+
+```
+CORS_ORIGINS="https://staging.forge.driva.io,https://admin.driva.io"
+```
+
+Implementação: em `main.ts` a função `enableCors` valida a origem dinamicamente. Requisições sem header `Origin` (ex: clients CLI, curl, testes) são aceitas.
+
+Se uma origem não estiver na lista, será logado um aviso `[CORS] Origin not allowed: <origin>` e o browser bloqueará a resposta.
+
 ## Manutenção / Técnicas
 
 - Código legado duplicado (controllers/services raiz) agendado para remoção definitiva

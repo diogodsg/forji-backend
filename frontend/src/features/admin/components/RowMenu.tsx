@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 
 interface Props {
   isAdmin: boolean;
+  hasGithub: boolean;
   onEditGithub: () => void;
+  onClearGithub: () => void;
   onOpenManagers: () => void;
   onToggleAdmin: () => void;
   onRemove: () => void;
@@ -10,7 +12,9 @@ interface Props {
 
 export function RowMenu({
   isAdmin,
+  hasGithub,
   onEditGithub,
+  onClearGithub,
   onOpenManagers,
   onToggleAdmin,
   onRemove,
@@ -42,8 +46,19 @@ export function RowMenu({
             }}
             className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700"
           >
-            Editar GitHub
+            {hasGithub ? "Editar GitHub" : "Definir GitHub"}
           </button>
+          {hasGithub && (
+            <button
+              onClick={() => {
+                onClearGithub();
+                setOpen(false);
+              }}
+              className="w-full text-left px-3 py-1.5 text-xs hover:bg-rose-50 text-rose-600"
+            >
+              Limpar GitHub
+            </button>
+          )}
           <button
             onClick={() => {
               onOpenManagers();

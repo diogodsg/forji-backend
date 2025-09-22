@@ -18,13 +18,14 @@ type NavItemDef = {
   activeIcon?: React.ReactNode; // ícone preenchido / ativo
 };
 
+// Ordem ajustada: PDI primeiro, depois PRs
 const baseNavItems: Array<NavItemDef> = [
+  { to: "/me/pdi", label: "PDI", icon: <FiTarget className="w-4 h-4" /> },
   {
     to: "/me/prs",
     label: "PRs",
     icon: <FiGitPullRequest className="w-4 h-4" />,
   },
-  { to: "/me/pdi", label: "PDI", icon: <FiTarget className="w-4 h-4" /> },
 ];
 
 export function Sidebar({

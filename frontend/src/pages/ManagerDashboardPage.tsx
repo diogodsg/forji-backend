@@ -66,7 +66,8 @@ export function ManagerDashboardPage() {
     [reports, activeUserId]
   );
 
-  const [detailsTab, setDetailsTab] = useState("prs"); // 'prs' | 'pdi'
+  // Default tab ajustado para 'pdi' (prioridade solicitada)
+  const [detailsTab, setDetailsTab] = useState("pdi"); // 'prs' | 'pdi'
 
   // PR + PDI fetches (individual) quando há usuário selecionado.
   // const { loading: prsLoading } = useRemotePrs(

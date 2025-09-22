@@ -8,7 +8,8 @@ interface Props {
   error: string | null;
   onToggleAdmin: (id: number, next: boolean) => Promise<void> | void;
   onUpdateGithub: (id: number, githubId: string | null) => Promise<void> | void;
-  onOpenManagers: (id: number) => void;
+  onAddManager: (userId: number, managerId: number) => Promise<void> | void;
+  onRemoveManager: (userId: number, managerId: number) => Promise<void> | void;
   onRemove: (id: number) => Promise<void> | void;
 }
 
@@ -19,7 +20,8 @@ export function AdminUsersTable({
   error,
   onToggleAdmin,
   onUpdateGithub,
-  onOpenManagers,
+  onAddManager,
+  onRemoveManager,
   onRemove,
 }: Props) {
   if (loading) {
@@ -37,11 +39,11 @@ export function AdminUsersTable({
       <table className="min-w-full text-sm">
         <thead className="bg-surface-100/70 text-gray-600 sticky top-0 z-10">
           <tr className="text-left">
-            <th className="py-2.5 px-3 w-[42%]">User</th>
-            <th className="py-2.5 px-3 w-[12%]">Role</th>
+            <th className="py-2.5 px-3 w-[42%]">Usuário</th>
+            <th className="py-2.5 px-3 w-[12%]">Função</th>
             <th className="py-2.5 px-3 w-[18%]">GitHub</th>
-            <th className="py-2.5 px-3 w-[20%]">Managers</th>
-            <th className="py-2.5 px-3 w-[8%] text-right">Actions</th>
+            <th className="py-2.5 px-3 w-[20%]">Gerentes</th>
+            <th className="py-2.5 px-3 w-[8%] text-right">Ações</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-surface-200/70">
@@ -52,7 +54,8 @@ export function AdminUsersTable({
               allUsers={users}
               onToggleAdmin={onToggleAdmin}
               onUpdateGithub={onUpdateGithub}
-              onOpenManagers={onOpenManagers}
+              onAddManager={onAddManager}
+              onRemoveManager={onRemoveManager}
               onRemove={onRemove}
             />
           ))}

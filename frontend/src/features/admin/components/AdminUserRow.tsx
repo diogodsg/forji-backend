@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import type { AdminUser } from "../types";
-import { RowMenu } from "./RowMenu";
+import { ManagerPickerPopover } from "./ManagerPickerPopover";
 
 interface Props {
   user: AdminUser;
   allUsers: AdminUser[];
   onToggleAdmin: (id: number, next: boolean) => void;
   onUpdateGithub: (id: number, gh: string | null) => void;
-  onOpenManagers: (id: number) => void;
+  onAddManager: (userId: number, managerId: number) => void;
+  onRemoveManager: (userId: number, managerId: number) => void;
   onRemove: (id: number) => void;
 }
 
@@ -16,20 +17,38 @@ export function AdminUserRow({
   allUsers,
   onToggleAdmin,
   onUpdateGithub,
-  onOpenManagers,
+  onAddManager,
+  onRemoveManager,
   onRemove,
 }: Props) {
   const [editingGh, setEditingGh] = useState(false);
   const [ghValue, setGhValue] = useState(user.githubId || "");
   useEffect(() => setGhValue(user.githubId || ""), [user.githubId]);
 
-  const managerNames = user.managers
-    .map((m) => allUsers.find((x) => x.id === m.id)?.name || `#${m.id}`)
-    .slice(0, 2);
-  const extra = user.managers.length - managerNames.length;
+  // Filtrar self e mapear managers
+  const managersData = useMemo(
+    () =>
+      user.managers
+        .filter((m) => m.id !== user.id)
+        .map((m) => {
+          const ref = allUsers.find((x) => x.id === m.id);
+          return {
+            id: m.id,
+            name: ref?.name || `#${m.id}`,
+            initial: (ref?.name?.[0] || "?").toUpperCase(),
+          };
+        }),
+    [user.managers, allUsers, user.id]
+  );
+  const totalManagers = managersData.length;
+  const visible = managersData.slice(0, 3);
+  const extra = totalManagers - visible.length;
 
+  const [openManagers, setOpenManagers] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const mgrAnchorRef = useRef<HTMLDivElement | null>(null);
   return (
-    <tr className="group bg-white/60 hover:bg-surface-50/80">
+    <tr className="group bg-white/60 hover:bg-surface-100/80 transition-colors relative">
       <td className="py-2.5 px-3 align-top">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-xs font-semibold flex items-center justify-center">
@@ -37,7 +56,10 @@ export function AdminUserRow({
           </div>
           <div className="min-w-0">
             <div className="font-medium text-gray-800 truncate">
-              {user.name} <span className="text-gray-400">#{user.id}</span>
+              {user.name}{" "}
+              <span className="text-gray-300 text-[11px] align-middle">
+                #{user.id}
+              </span>
             </div>
             <div className="text-[12px] text-gray-500 truncate">
               {user.email}
@@ -48,11 +70,16 @@ export function AdminUserRow({
       <td className="py-2.5 px-3 align-top">
         <button
           onClick={() => onToggleAdmin(user.id, !user.isAdmin)}
-          className={`px-2 py-1 rounded text-[11px] font-medium border transition ${
+          className={`px-2 py-1 rounded text-[11px] font-medium border transition focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
             user.isAdmin
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-surface-100 text-gray-600 border-surface-300"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+              : "bg-surface-100 text-gray-600 border-surface-300 hover:bg-surface-200"
           }`}
+          title={
+            user.isAdmin
+              ? "Clique para remover acesso admin"
+              : "Clique para tornar admin"
+          }
         >
           {user.isAdmin ? "Admin" : "Padrão"}
         </button>
@@ -65,84 +92,161 @@ export function AdminUserRow({
               onUpdateGithub(user.id, ghValue.trim() || null);
               setEditingGh(false);
             }}
-            className="flex flex-col gap-1"
+            className="flex items-center gap-2"
           >
             <input
               value={ghValue}
+              autoFocus
               onChange={(e) => setGhValue(e.target.value)}
               placeholder="login"
               className="w-32 rounded-md border border-surface-300 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
-            <div className="flex gap-1">
-              <button className="px-2 py-0.5 text-[11px] rounded bg-indigo-600 text-white">
-                Salvar
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditingGh(false)}
-                className="px-2 py-0.5 text-[11px] rounded border border-surface-300"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] text-gray-700">
-              {user.githubId ? `@${user.githubId}` : "—"}
-            </span>
             <button
-              onClick={() => setEditingGh(true)}
-              className="opacity-0 group-hover:opacity-100 text-xs text-indigo-600"
+              className="px-2 py-1 text-[11px] rounded bg-indigo-600 text-white hover:bg-indigo-500"
+              title="Salvar GitHub"
             >
-              {user.githubId ? "Editar" : "Definir"}
+              Salvar
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditingGh(false);
+                setGhValue(user.githubId || "");
+              }}
+              className="px-2 py-1 text-[11px] rounded border border-surface-300 hover:bg-surface-100"
+            >
+              Cancelar
             </button>
             {user.githubId && (
               <button
-                onClick={() => onUpdateGithub(user.id, null)}
-                className="opacity-0 group-hover:opacity-100 text-xs text-rose-600"
+                type="button"
+                onClick={() => {
+                  onUpdateGithub(user.id, null);
+                  setGhValue("");
+                  setEditingGh(false);
+                }}
+                className="px-2 py-1 text-[11px] rounded border border-rose-200 text-rose-600 hover:bg-rose-50"
+                title="Limpar GitHub"
               >
                 Limpar
               </button>
             )}
-          </div>
+          </form>
+        ) : (
+          <button
+            onClick={() => setEditingGh(true)}
+            className="text-[13px] text-gray-700 hover:text-indigo-600 underline decoration-dotted"
+            title={user.githubId ? "Editar GitHub" : "Definir GitHub"}
+          >
+            {user.githubId ? `@${user.githubId}` : "Definir"}
+          </button>
         )}
       </td>
       <td className="py-2.5 px-3 align-top">
-        <div className="flex items-center gap-1 flex-wrap">
-          {managerNames.map((n) => (
-            <span
-              key={n}
-              className="px-2 py-0.5 rounded-full bg-surface-200 border border-surface-300 text-[11px] text-gray-700"
-            >
-              {n}
-            </span>
-          ))}
-          {extra > 0 && (
+        <div className="flex items-center gap-2" ref={mgrAnchorRef}>
+          {totalManagers === 0 ? (
             <button
-              onClick={() => onOpenManagers(user.id)}
-              className="text-[11px] text-indigo-600"
+              onClick={() => setOpenManagers((v) => !v)}
+              className="text-[11px] text-gray-500 hover:text-indigo-600"
             >
-              +{extra}
+              Definir
             </button>
+          ) : (
+            <div className="flex items-center">
+              <AvatarStack
+                avatars={visible}
+                extra={extra}
+                onClick={() => setOpenManagers((v) => !v)}
+              />
+              <button
+                onClick={() => setOpenManagers((v) => !v)}
+                className="ml-2 text-[11px] text-gray-500 hover:text-indigo-600"
+              >
+                Gerenciar
+              </button>
+            </div>
           )}
-          <button
-            onClick={() => onOpenManagers(user.id)}
-            className="text-[11px] text-gray-500 hover:text-indigo-600"
-          >
-            Gerenciar
-          </button>
+          {openManagers && (
+            <div className="absolute z-40 mt-1" style={{ minWidth: "18rem" }}>
+              <ManagerPickerPopover
+                target={user}
+                allUsers={allUsers}
+                onAdd={onAddManager}
+                onRemove={onRemoveManager}
+                onClose={() => setOpenManagers(false)}
+                align="left"
+              />
+            </div>
+          )}
         </div>
       </td>
       <td className="py-2.5 px-3 align-top text-right">
-        <RowMenu
-          onEditGithub={() => setEditingGh(true)}
-          onOpenManagers={() => onOpenManagers(user.id)}
-          onToggleAdmin={() => onToggleAdmin(user.id, !user.isAdmin)}
-          isAdmin={!!user.isAdmin}
-          onRemove={() => onRemove(user.id)}
-        />
+        {!confirmDelete ? (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="px-2 py-1 rounded border border-surface-300 bg-white text-rose-600 text-xs hover:bg-rose-50"
+            title="Remover usuário"
+          >
+            🗑️
+          </button>
+        ) : (
+          <div className="inline-flex items-center gap-1">
+            <button
+              onClick={() => onRemove(user.id)}
+              className="px-2 py-1 rounded bg-rose-600 text-white text-xs hover:bg-rose-500"
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="px-2 py-1 rounded border border-surface-300 text-xs text-gray-600 hover:bg-surface-100"
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
       </td>
     </tr>
+  );
+}
+
+interface AvatarStackItem {
+  id: number;
+  name: string;
+  initial: string;
+}
+function AvatarStack({
+  avatars,
+  extra,
+  onClick,
+}: {
+  avatars: AvatarStackItem[];
+  extra: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex -space-x-2 items-center group"
+      title={
+        avatars.map((a) => a.name).join(", ") +
+        (extra > 0 ? ` (+${extra})` : "")
+      }
+    >
+      {avatars.map((a) => (
+        <span
+          key={a.id}
+          className="inline-flex items-center justify-center h-6 w-6 rounded-full border border-white shadow-sm bg-gradient-to-br from-indigo-500 to-sky-500 text-[11px] font-semibold text-white ring-1 ring-surface-300"
+        >
+          {a.initial}
+        </span>
+      ))}
+      {extra > 0 && (
+        <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-surface-200 border border-surface-300 text-[11px] font-medium text-gray-600 ring-1 ring-surface-300">
+          +{extra}
+        </span>
+      )}
+    </button>
   );
 }

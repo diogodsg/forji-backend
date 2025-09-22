@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { FormField } from "./FormField";
 
@@ -24,6 +24,17 @@ export function CreateUserModal({
   error,
 }: Props) {
   const [localError, setLocalError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  // Track last creating state to detect successful transition
+  const prevCreating = useRef<boolean>(false);
+  useEffect(() => {
+    if (prevCreating.current && !creating && open && !error && !localError) {
+      // Assume success transition
+      formRef.current?.reset();
+      onClose();
+    }
+    prevCreating.current = creating;
+  }, [creating, open, error, localError, onClose]);
   if (!open) return null;
 
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -41,8 +52,7 @@ export function CreateUserModal({
     setLocalError(null);
     try {
       await onCreate(payload);
-      (e.currentTarget as HTMLFormElement).reset();
-      onClose();
+      // Success handling deferred to effect observing creating flag.
     } catch (err: any) {
       setLocalError(err?.message || "Erro ao criar");
     }
@@ -76,6 +86,7 @@ export function CreateUserModal({
           </div>
         )}
         <form
+          ref={formRef}
           onSubmit={submit}
           className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end"
         >

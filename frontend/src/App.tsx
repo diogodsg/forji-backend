@@ -70,8 +70,8 @@ function InnerApp() {
       >
         <Suspense fallback={<PageLoading />}>
           <Routes>
-            {/* Redirect root to canonical PR route */}
-            <Route index element={<Navigate to="/me/prs" replace />} />
+            {/* Redirect root to PDI (prioridade solicitada) */}
+            <Route index element={<Navigate to="/me/pdi" replace />} />
             <Route path="/me/prs" element={<MyPrsPage />} />
             <Route path="/me/pdi" element={<MyPdiPage />} />
             <Route path="/manager" element={<ManagerDashboardPage />} />
