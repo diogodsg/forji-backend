@@ -1,6 +1,9 @@
 import { useEffect, useState, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
+import { useAuth } from "@/features/auth";
 import type { AdminUser } from "../types";
 import { ManagerPickerPopover } from "./ManagerPickerPopover";
+import { FiTrash2 } from "react-icons/fi";
 
 interface Props {
   user: AdminUser;
@@ -21,6 +24,8 @@ export function AdminUserRow({
   onRemoveManager,
   onRemove,
 }: Props) {
+  const { user: me } = useAuth();
+  const isSelf = me?.id === user.id;
   const [editingGh, setEditingGh] = useState(false);
   const [ghValue, setGhValue] = useState(user.githubId || "");
   useEffect(() => setGhValue(user.githubId || ""), [user.githubId]);
@@ -47,6 +52,17 @@ export function AdminUserRow({
   const [openManagers, setOpenManagers] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const mgrAnchorRef = useRef<HTMLDivElement | null>(null);
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    if (openManagers && mgrAnchorRef.current) {
+      const rect = mgrAnchorRef.current.getBoundingClientRect();
+      // Position below and left-aligned to anchor, within viewport
+      const top = Math.min(window.innerHeight - 8, rect.bottom + window.scrollY + 4);
+      const left = Math.max(8, Math.min(rect.left + window.scrollX, window.innerWidth - 320));
+      setPopoverPos({ top, left });
+    }
+  }, [openManagers]);
   return (
     <tr className="group bg-white/60 hover:bg-surface-100/80 transition-colors relative">
       <td className="py-2.5 px-3 align-top">
@@ -69,14 +85,21 @@ export function AdminUserRow({
       </td>
       <td className="py-2.5 px-3 align-top">
         <button
-          onClick={() => onToggleAdmin(user.id, !user.isAdmin)}
+          onClick={() => {
+            // Evita remover o próprio acesso admin
+            if (isSelf && user.isAdmin) return;
+            onToggleAdmin(user.id, !user.isAdmin);
+          }}
+          disabled={isSelf && user.isAdmin}
           className={`px-2 py-1 rounded text-[11px] font-medium border transition focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
             user.isAdmin
               ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
               : "bg-surface-100 text-gray-600 border-surface-300 hover:bg-surface-200"
-          }`}
+          } ${isSelf && user.isAdmin ? "opacity-60 cursor-not-allowed hover:bg-emerald-50" : ""}`}
           title={
-            user.isAdmin
+            isSelf && user.isAdmin
+              ? "Você não pode remover seu próprio acesso admin"
+              : user.isAdmin
               ? "Clique para remover acesso admin"
               : "Clique para tornar admin"
           }
@@ -143,7 +166,7 @@ export function AdminUserRow({
         )}
       </td>
       <td className="py-2.5 px-3 align-top">
-        <div className="flex items-center gap-2" ref={mgrAnchorRef}>
+  <div className="flex items-center gap-2" ref={mgrAnchorRef}>
           {totalManagers === 0 ? (
             <button
               onClick={() => setOpenManagers((v) => !v)}
@@ -166,28 +189,32 @@ export function AdminUserRow({
               </button>
             </div>
           )}
-          {openManagers && (
-            <div className="absolute z-40 mt-1" style={{ minWidth: "18rem" }}>
-              <ManagerPickerPopover
-                target={user}
-                allUsers={allUsers}
-                onAdd={onAddManager}
-                onRemove={onRemoveManager}
-                onClose={() => setOpenManagers(false)}
-                align="left"
-              />
-            </div>
-          )}
+          {openManagers && popoverPos &&
+            createPortal(
+              <div
+                style={{ position: "absolute", top: popoverPos.top, left: popoverPos.left, zIndex: 1000 }}
+              >
+                <ManagerPickerPopover
+                  target={user}
+                  allUsers={allUsers}
+                  onAdd={onAddManager}
+                  onRemove={onRemoveManager}
+                  onClose={() => setOpenManagers(false)}
+                />
+              </div>,
+              document.body
+            )}
         </div>
       </td>
       <td className="py-2.5 px-3 align-top text-right">
         {!confirmDelete ? (
           <button
             onClick={() => setConfirmDelete(true)}
-            className="px-2 py-1 rounded border border-surface-300 bg-white text-rose-600 text-xs hover:bg-rose-50"
+            className="px-2 py-1 rounded border border-surface-300 bg-white text-rose-600 text-xs hover:bg-rose-50 inline-flex items-center justify-center"
             title="Remover usuário"
+            aria-label="Remover usuário"
           >
-            🗑️
+            <FiTrash2 className="w-4 h-4" />
           </button>
         ) : (
           <div className="inline-flex items-center gap-1">

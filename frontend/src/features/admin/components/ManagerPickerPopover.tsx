@@ -7,7 +7,6 @@ interface ManagerPickerPopoverProps {
   onAdd: (userId: number, managerId: number) => void | Promise<void>;
   onRemove: (userId: number, managerId: number) => void | Promise<void>;
   onClose: () => void;
-  align?: "left" | "right";
 }
 
 // Lightweight popover inspired by GitHub style assignee picker.
@@ -23,7 +22,6 @@ export function ManagerPickerPopover({
   onAdd,
   onRemove,
   onClose,
-  align = "left",
 }: ManagerPickerPopoverProps) {
   const [query, setQuery] = useState("");
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -125,9 +123,7 @@ export function ManagerPickerPopover({
   return (
     <div
       ref={containerRef}
-      className={`absolute z-40 w-72 rounded-md border border-surface-300 bg-white shadow-xl overflow-hidden ${
-        align === "right" ? "right-0" : "left-0"
-      }`}
+      className="w-72 rounded-md border border-surface-300 bg-white shadow-xl overflow-hidden"
     >
       <div className="p-2 border-b border-surface-200">
         <input

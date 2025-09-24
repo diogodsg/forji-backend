@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { FiMoreHorizontal, FiGithub, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
 
 interface Props {
   isAdmin: boolean;
@@ -33,9 +34,11 @@ export function RowMenu({
     <div className="relative inline-block" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="px-2 py-1 rounded border border-surface-300 bg-white text-gray-600 text-xs hover:bg-surface-100"
+        className="px-2 py-1 rounded border border-surface-300 bg-white text-gray-600 text-xs hover:bg-surface-100 inline-flex items-center justify-center"
+        aria-label="Mais ações"
+        title="Mais ações"
       >
-        ⋯
+        <FiMoreHorizontal className="w-4 h-4" />
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-40 rounded-md border border-surface-300 bg-white shadow-lg z-20 py-1">
@@ -44,9 +47,9 @@ export function RowMenu({
               onEditGithub();
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700"
+            className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700 inline-flex items-center gap-2"
           >
-            {hasGithub ? "Editar GitHub" : "Definir GitHub"}
+            <FiGithub className="w-4 h-4" /> {hasGithub ? "Editar GitHub" : "Definir GitHub"}
           </button>
           {hasGithub && (
             <button
@@ -54,9 +57,9 @@ export function RowMenu({
                 onClearGithub();
                 setOpen(false);
               }}
-              className="w-full text-left px-3 py-1.5 text-xs hover:bg-rose-50 text-rose-600"
+              className="w-full text-left px-3 py-1.5 text-xs hover:bg-rose-50 text-rose-600 inline-flex items-center gap-2"
             >
-              Limpar GitHub
+              <FiGithub className="w-4 h-4" /> Limpar GitHub
             </button>
           )}
           <button
@@ -64,27 +67,27 @@ export function RowMenu({
               onOpenManagers();
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700"
+            className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700 inline-flex items-center gap-2"
           >
-            Gerenciar gerentes
+            <FiUsers className="w-4 h-4" /> Gerenciar gerentes
           </button>
           <button
             onClick={() => {
               onToggleAdmin();
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700"
+            className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700 inline-flex items-center gap-2"
           >
-            {isAdmin ? "Remover admin" : "Tornar admin"}
+            <FiShield className="w-4 h-4" /> {isAdmin ? "Remover admin" : "Tornar admin"}
           </button>
           <button
             onClick={() => {
               onRemove();
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 text-xs hover:bg-rose-50 text-rose-600"
+            className="w-full text-left px-3 py-1.5 text-xs hover:bg-rose-50 text-rose-600 inline-flex items-center gap-2"
           >
-            Remover usuário
+            <FiTrash2 className="w-4 h-4" /> Remover usuário
           </button>
         </div>
       )}

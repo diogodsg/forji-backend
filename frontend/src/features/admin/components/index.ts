@@ -8,3 +8,8 @@ export * from "./ManagerPickerPopover";
 export * from "./AdminUsersToolbar";
 export * from "./AdminUsersTable";
 export * from "./AccessDeniedPanel";
+export * from "./AdminTeamsToolbar";
+export * from "./AdminTeamsTable";
+export * from "./CreateTeamModal";
+export * from "./TeamDetailPanel";
+export * from "./TeamMetricsCards";
