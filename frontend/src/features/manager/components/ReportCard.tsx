@@ -10,15 +10,21 @@ export function ReportCard({ report, onSelect, active }: ReportCardProps) {
   const { prs, pdi } = report;
   const totalPrs = prs.open + prs.merged + prs.closed;
   const progressPct = Math.round((pdi.progress || 0) * 100);
+
+  const handleClick = () => {
+    onSelect(report.userId);
+  };
+
   return (
     <button
-      onClick={() => onSelect(report.userId)}
+      onClick={handleClick}
       className={`text-left w-full rounded-xl border p-4 flex flex-col gap-3 transition shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400/50
         ${
           active
             ? "bg-indigo-50 border-indigo-300"
             : "bg-white border-surface-200"
         }`}
+      title="Abrir edição do colaborador"
     >
       <div className="flex items-center gap-3">
         <Avatar name={report.name} />

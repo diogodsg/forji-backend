@@ -10,6 +10,7 @@ interface ReportDetailsPanelProps {
   onClose: () => void;
   tab: string; // 'prs' | 'pdi'
   onTabChange: (tab: string) => void;
+  closeLabel?: string;
 }
 
 /**
@@ -21,6 +22,7 @@ export function ReportDetailsPanel({
   onClose,
   tab,
   onTabChange,
+  closeLabel,
 }: ReportDetailsPanelProps) {
   const userId = report?.userId;
   const {
@@ -77,7 +79,7 @@ export function ReportDetailsPanel({
             onClick={onClose}
             className="ml-2 px-2 py-1 text-[11px] rounded bg-surface-100 hover:bg-surface-200 text-surface-600"
           >
-            Fechar
+            {closeLabel ?? "Fechar"}
           </button>
         </div>
       </div>

@@ -6,6 +6,7 @@ import {
   Put,
   Delete,
   Param,
+  Query,
   UseGuards,
   Req,
 } from "@nestjs/common";
@@ -25,8 +26,38 @@ export class TeamsController {
   constructor(private readonly teams: TeamsService) {}
 
   @Get()
-  async list() {
-    const data = await this.teams.list(true);
+  async list(@Query("details") includeDetails?: string) {
+    const withDetails = includeDetails === "true";
+    const data = await this.teams.list(!withDetails);
+
+    if (withDetails) {
+      // Retornar com detalhes completos (memberships)
+      return data.map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        createdAt: t.createdAt,
+        memberships: t.memberships.map((m: any) => ({
+          user: { id: m.user.id, name: m.user.name, email: m.user.email },
+          role: m.role,
+        })),
+      }));
+    } else {
+      // Retornar apenas sumário
+      return data.map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        createdAt: t.createdAt,
+        managers: t.memberships.filter((m: any) => m.role === "MANAGER").length,
+        members: t.memberships.length,
+      }));
+    }
+  }
+
+  @Get("mine")
+  async listManaged(@Req() req: any) {
+    const data = await this.teams.listManagedBy(req.user.id);
     return data.map((t: any) => ({
       id: t.id,
       name: t.name,

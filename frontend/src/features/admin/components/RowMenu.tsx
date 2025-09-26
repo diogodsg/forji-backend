@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { FiMoreHorizontal, FiGithub, FiShield, FiTrash2, FiUsers } from "react-icons/fi";
+import {
+  FiMoreHorizontal,
+  FiGithub,
+  FiShield,
+  FiTrash2,
+  FiUsers,
+} from "react-icons/fi";
 
 interface Props {
   isAdmin: boolean;
@@ -49,7 +55,8 @@ export function RowMenu({
             }}
             className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700 inline-flex items-center gap-2"
           >
-            <FiGithub className="w-4 h-4" /> {hasGithub ? "Editar GitHub" : "Definir GitHub"}
+            <FiGithub className="w-4 h-4" />{" "}
+            {hasGithub ? "Editar GitHub" : "Definir GitHub"}
           </button>
           {hasGithub && (
             <button
@@ -78,7 +85,8 @@ export function RowMenu({
             }}
             className="w-full text-left px-3 py-1.5 text-xs hover:bg-surface-100 text-gray-700 inline-flex items-center gap-2"
           >
-            <FiShield className="w-4 h-4" /> {isAdmin ? "Remover admin" : "Tornar admin"}
+            <FiShield className="w-4 h-4" />{" "}
+            {isAdmin ? "Remover admin" : "Tornar admin"}
           </button>
           <button
             onClick={() => {

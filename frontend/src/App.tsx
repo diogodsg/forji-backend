@@ -18,6 +18,11 @@ const ManagerDashboardPage = lazy(() =>
     default: m.ManagerDashboardPage,
   }))
 );
+const ManagerUserEditPage = lazy(() =>
+  import("./pages/ManagerUserEditPage").then((m) => ({
+    default: m.ManagerUserEditPage,
+  }))
+);
 const MyPdiPage = lazy(() =>
   import("./pages/MyPdiPage").then((m) => ({ default: m.MyPdiPage }))
 );
@@ -75,6 +80,10 @@ function InnerApp() {
             <Route path="/me/prs" element={<MyPrsPage />} />
             <Route path="/me/pdi" element={<MyPdiPage />} />
             <Route path="/manager" element={<ManagerDashboardPage />} />
+            <Route
+              path="/manager/users/:userId"
+              element={<ManagerUserEditPage />}
+            />
             {user.isAdmin && (
               <Route path="/admin" element={<AdminAccessPage />} />
             )}

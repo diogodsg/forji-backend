@@ -21,7 +21,9 @@ function StatCard({
 }) {
   return (
     <div className="flex items-center gap-4 rounded-xl border border-surface-300/70 bg-white/80 backdrop-blur px-4 py-3 shadow-sm">
-      <div className={`h-11 w-11 flex items-center justify-center rounded-lg ${accent}`}>
+      <div
+        className={`h-11 w-11 flex items-center justify-center rounded-lg ${accent}`}
+      >
         <span className="text-[18px] text-current inline-flex items-center justify-center">
           {icon}
         </span>
@@ -53,14 +55,24 @@ export function TeamMetricsCards({ metrics, loading }: Props) {
   if (!metrics) return skeleton;
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-      <StatCard label="Times" value={metrics.totalTeams} icon={<FiUsers />} accent="bg-indigo-50 text-indigo-600" />
+      <StatCard
+        label="Times"
+        value={metrics.totalTeams}
+        icon={<FiUsers />}
+        accent="bg-indigo-50 text-indigo-600"
+      />
       <StatCard
         label="Managers"
         value={metrics.totalManagers}
         icon={<FiStar />}
         accent="bg-amber-50 text-amber-600"
       />
-      <StatCard label="Membros" value={metrics.totalMembers} icon={<FiGrid />} accent="bg-emerald-50 text-emerald-600" />
+      <StatCard
+        label="Membros"
+        value={metrics.totalMembers}
+        icon={<FiGrid />}
+        accent="bg-emerald-50 text-emerald-600"
+      />
       <StatCard
         label="Sem Equipe"
         value={metrics.usersWithoutTeam}

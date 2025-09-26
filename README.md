@@ -11,10 +11,12 @@ Arquitetura frontend migrou recentemente de um modelo "global components + globa
 #### Mudanças Arquiteturais Principais
 
 **Filosofia de Gestão Revisada:**
+
 - **Antes**: Foco em times gerenciados → pessoas aparecem como membros de times
 - **Depois**: Foco em pessoas gerenciadas → times aparecem apenas se contém pessoas gerenciadas
 
 **Performance API Drasticamente Melhorada:**
+
 ```
 Antes:  1 requisição (/teams) + N requisições (/teams/:id)
 Depois: 1 requisição única (/teams?details=true)
@@ -22,37 +24,44 @@ Resultado: ~85% redução de chamadas de API
 ```
 
 **Novo Endpoint Backend:**
+
 - `GET /teams?details=true` - Retorna times completos com memberships
 - Retrocompatível com `GET /teams` (sumário apenas)
 
 #### Melhorias de UX/UI
 
 **Header Modernizado:**
+
 - Ícone com badge de contagem (verde: times organizados, âmbar: aguardando organização)
 - Contextualização inteligente: "Gerenciando X pessoas em Y times" vs "Gerenciando X pessoas (aguardando organização em times)"
 - Gradientes e micro-interações modernas
 
 **Estados Visuais Refinados:**
+
 - Loading sem interferência de alertas prematuros
 - Alerta específico para pessoas sem times organizados com instruções detalhadas
 - Distinção clara entre "Pessoas que gerencio" e "Outros membros do time"
 
 **Navegação Aprimorada:**
+
 - Cards clicáveis levam a páginas dedicadas (`/manager/users/:id`)
 - Melhor aproveitamento de espaço comparado ao painel inline anterior
 
 #### Limpeza Técnica Completa
 
 **6 Arquivos Removidos (Código Morto):**
+
 - `useAllTeams.ts`, `useMyTeams.ts`, `useDeferredLoading.ts`
 - `TeamOverviewBar.tsx`, `ManagerHeader.tsx`, `ReportsSidebar.tsx`
 
 **Impacto Mensurado:**
+
 - ManagerDashboardPage: -6.9% bundle size (16.89kB → 15.73kB)
 - ManagerUserEditPage: -9.7% bundle size (7.19kB → 6.49kB)
 - Arquitetura 100% focada: apenas componentes e hooks ativamente usados
 
 **Hook Unificado:**
+
 ```typescript
 // Múltiplos hooks complexos → Hook único otimizado
 const allTeams = useAllTeamsWithDetails(); // Uma call, dados completos
@@ -259,10 +268,10 @@ Para adicionar mais PRs basta inserir novos objetos no array `mockPrs` respeitan
 - PR stats com distribuição de linhas adicionadas/deletadas (barra empilhada).
 - AuthContext gerencia token + user.
 - PDI agora persiste no backend; UI desativou localStorage para PDI na tela.
- - Emojis removidos de ações/tabelas na área administrativa; padronizado com `react-icons`.
- - Cabeçalhos da tabela de equipes sem ícones (texto simples para legibilidade e densidade).
- - Picker de gerentes (admin > usuários) agora abre via portal fixo no `document.body`, evitando scrollbars horizontais/verticais indesejados quando aberto dentro de tabelas.
- - Botão de alternar admin desativado para o próprio usuário logado (não permite auto‑remoção de privilégio admin).
+- Emojis removidos de ações/tabelas na área administrativa; padronizado com `react-icons`.
+- Cabeçalhos da tabela de equipes sem ícones (texto simples para legibilidade e densidade).
+- Picker de gerentes (admin > usuários) agora abre via portal fixo no `document.body`, evitando scrollbars horizontais/verticais indesejados quando aberto dentro de tabelas.
+- Botão de alternar admin desativado para o próprio usuário logado (não permite auto‑remoção de privilégio admin).
 
 ## Próximos Passos Sugeridos
 

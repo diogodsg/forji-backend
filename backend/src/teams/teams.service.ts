@@ -29,6 +29,18 @@ export class TeamsService {
     });
   }
 
+  listManagedBy(userId: number) {
+    return (this.prisma as any).team.findMany({
+      orderBy: { id: "asc" },
+      where: {
+        memberships: {
+          some: { userId: BigInt(userId), role: "MANAGER" },
+        },
+      },
+      include: { memberships: { select: { role: true } } },
+    });
+  }
+
   async metrics() {
     const [teams, memberships, users] = await Promise.all([
       (this.prisma as any).team.findMany({
