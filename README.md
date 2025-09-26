@@ -6,7 +6,70 @@ Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Desenvo
 - Dashboard de manager (PRs + PDI dos subordinados)
 - Área administrativa (gestão de contas, relacionamentos e permissões)
 
-Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`, `mocks`, `services`). Pastas legadas (`src/components`, `src/hooks`, `src/types`, `src/utils`) foram eliminadas ou migradas; novas implementações devem sempre residir em `src/features/<domínio>`.
+Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`, ### Dashboard de Manager - Refatoração Person-Centric (2025-09-26)
+
+#### Mudanças Arquiteturais Principais
+
+**Filosofia de Gestão Revisada:**
+- **Antes**: Foco em times gerenciados → pessoas aparecem como membros de times
+- **Depois**: Foco em pessoas gerenciadas → times aparecem apenas se contém pessoas gerenciadas
+
+**Performance API Drasticamente Melhorada:**
+```
+Antes:  1 requisição (/teams) + N requisições (/teams/:id)
+Depois: 1 requisição única (/teams?details=true)
+Resultado: ~85% redução de chamadas de API
+```
+
+**Novo Endpoint Backend:**
+- `GET /teams?details=true` - Retorna times completos com memberships
+- Retrocompatível com `GET /teams` (sumário apenas)
+
+#### Melhorias de UX/UI
+
+**Header Modernizado:**
+- Ícone com badge de contagem (verde: times organizados, âmbar: aguardando organização)
+- Contextualização inteligente: "Gerenciando X pessoas em Y times" vs "Gerenciando X pessoas (aguardando organização em times)"
+- Gradientes e micro-interações modernas
+
+**Estados Visuais Refinados:**
+- Loading sem interferência de alertas prematuros
+- Alerta específico para pessoas sem times organizados com instruções detalhadas
+- Distinção clara entre "Pessoas que gerencio" e "Outros membros do time"
+
+**Navegação Aprimorada:**
+- Cards clicáveis levam a páginas dedicadas (`/manager/users/:id`)
+- Melhor aproveitamento de espaço comparado ao painel inline anterior
+
+#### Limpeza Técnica Completa
+
+**6 Arquivos Removidos (Código Morto):**
+- `useAllTeams.ts`, `useMyTeams.ts`, `useDeferredLoading.ts`
+- `TeamOverviewBar.tsx`, `ManagerHeader.tsx`, `ReportsSidebar.tsx`
+
+**Impacto Mensurado:**
+- ManagerDashboardPage: -6.9% bundle size (16.89kB → 15.73kB)
+- ManagerUserEditPage: -9.7% bundle size (7.19kB → 6.49kB)
+- Arquitetura 100% focada: apenas componentes e hooks ativamente usados
+
+**Hook Unificado:**
+```typescript
+// Múltiplos hooks complexos → Hook único otimizado
+const allTeams = useAllTeamsWithDetails(); // Uma call, dados completos
+```
+
+### Próximos Itens Recomendados
+
+- Mover filtros de PR (repo/state/author) para o backend (where condicional + índices).
+- Sort configurável (`sort=createdAt:desc|lines:asc`).
+- Debounced auto-save PDI (PATCH incremental) com status visual (badge "Sincronizado / Pendente").
+- DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON.
+
+Dicas rápidas
+
+- Para testar administração, faça login com um usuário admin e abra `/admin`.
+- Na página Meu PDI (`/me/pdi`), clique em "Editar PDI" para habilitar a edição da seção "Resultado". Salve para persistir no backend.
+- Dashboard de Manager agora é person-centric: pessoas aparecem organizadas por times apenas se você as gerencia.ervices`). Pastas legadas (`src/components`, `src/hooks`, `src/types`, `src/utils`) foram eliminadas ou migradas; novas implementações devem sempre residir em `src/features/<domínio>`.
 
 ## Visão Geral
 
@@ -54,7 +117,7 @@ Principais pontos:
 Desde a refatoração recente o backend passou a ser estruturado em módulos de domínio desacoplados e serviços injetáveis:
 
 - `PrismaModule` + `PrismaService`: provê um único client Prisma via DI (eliminado arquivo antigo `prisma.ts`). Facilita testes/mocks e centraliza lifecycle (hook `beforeExit`).
-- Módulos de domínio: `AuthModule`, `PrsModule`, `PdiModule`, além de `PermissionsModule` para regras de acesso.
+- Módulos de domínio: `AuthModule`, `PrsModule`, `PdiModule`, `TeamsModule`, além de `PermissionsModule` para regras de acesso.
 - `PermissionService`: concentra lógica de "sou dono ou manager" e demais verificações, reduzindo repetição em controllers.
 - Guard reutilizável `OwnerOrManagerGuard`: aplicado nas rotas que referenciam recursos de outro usuário, decide acesso (self / relação de manager) e loga allow/deny.
 - `JwtAuthGuard` ajustado para usar DI de `PrismaService` (evitando import direto do client).
@@ -148,6 +211,12 @@ backend/
   - `POST /pdi` (cria/substitui plano do usuário logado)
   - `PATCH /pdi/me` (atualização parcial)
   - `GET /pdi/:userId`, `PUT /pdi/:userId`, `DELETE /pdi/:userId` (somente dono ou manager)
+- Teams (JWT):
+  - `GET /teams` (lista sumário de times com contadores)
+  - `GET /teams?details=true` (lista completa com memberships - otimizado para manager dashboard)
+  - `GET /teams/mine` (times onde sou manager)
+  - `GET /teams/:id` (detalhes de um time específico)
+  - `POST /teams`, `PUT /teams/:id`, `DELETE /teams/:id` (CRUD - admin)
 
 Permissões
 
@@ -190,6 +259,10 @@ Para adicionar mais PRs basta inserir novos objetos no array `mockPrs` respeitan
 - PR stats com distribuição de linhas adicionadas/deletadas (barra empilhada).
 - AuthContext gerencia token + user.
 - PDI agora persiste no backend; UI desativou localStorage para PDI na tela.
+ - Emojis removidos de ações/tabelas na área administrativa; padronizado com `react-icons`.
+ - Cabeçalhos da tabela de equipes sem ícones (texto simples para legibilidade e densidade).
+ - Picker de gerentes (admin > usuários) agora abre via portal fixo no `document.body`, evitando scrollbars horizontais/verticais indesejados quando aberto dentro de tabelas.
+ - Botão de alternar admin desativado para o próprio usuário logado (não permite auto‑remoção de privilégio admin).
 
 ## Próximos Passos Sugeridos
 
@@ -398,6 +471,13 @@ MVP pronto para extensão.
 | Componentes legados     | `ManagerMetricCards`, `ReportDrawer`                                       | Removidos do codebase                                     | Simplificação e menor bundle                      |
 | Estado loading          | Traço ou conteúdo “saltando” rapidamente                                   | Skeletons com atraso mínimo (`useDeferredLoading`) + fade | Percepção de fluidez, ausência de flicker         |
 
+### Admin (Atualizações 2025-09-24)
+
+- Removidos ícones dos cabeçalhos de colunas nas tabelas (ex.: Equipes) para reduzir ruído visual.
+- Substituídos emojis por ícones do `react-icons` em ações (ex.: remoção de usuário).
+- Corrigido comportamento do seletor de Gerentes: agora é renderizado em portal com posicionamento absoluto relativo à âncora, evitando ativação de scroll horizontal/vertical no container da tabela.
+- Prevenido auto‑remoção de privilégios: o admin logado não pode remover seu próprio acesso admin (toggle desativado na própria linha).
+
 #### Novo Componente: `TeamOverviewBar`
 
 Características:
@@ -432,6 +512,8 @@ Skeletons criados:
 - Lazy load do painel de detalhes (code splitting) quando usuário é selecionado.
 - Indicadores de atualização em background (ex.: pequena animação de progress bar sob a barra de overview).
 - Métricas agregadas adicionais (lead time médio, throughput semanal) quando endpoint consolidado estiver pronto.
+
+> **Nota (2025-09-26)**: `TeamOverviewBar` e `useDeferredLoading` foram removidos durante refatoração person-centric. Ver seção "Dashboard de Manager - Refatoração Person-Centric" para detalhes da nova implementação.
 
 ### Novidades Técnicas
 
