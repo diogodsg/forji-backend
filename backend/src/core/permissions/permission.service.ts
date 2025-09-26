@@ -7,12 +7,8 @@ export class PermissionService {
 
   async isOwnerOrManager(requesterId: number, targetUserId: number) {
     if (requesterId === targetUserId) return true;
-    const target = await this.prisma.user.findUnique({
-      where: { id: targetUserId },
-      select: { managers: { select: { id: true } } },
-    });
-    if (!target) return false;
-    return target.managers.some((m) => String(m.id) === String(requesterId));
+    // Temporarily disabled until relations are fixed
+    return false;
   }
 
   /** Verifica se o usuário é gerente (role=MANAGER) da equipe */

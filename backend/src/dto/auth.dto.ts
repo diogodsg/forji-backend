@@ -87,8 +87,39 @@ export class UserProfileDto {
   email!: string;
   name!: string;
   githubId?: string | null;
+  position?: string;
+  bio?: string;
   isAdmin!: boolean;
   isManager!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+}
+
+export class UpdateProfileDto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  position?: string;
+
+  @IsOptional()
+  @IsString()
+  bio?: string;
+
+  @IsOptional()
+  @IsString()
+  githubId?: string;
+}
+
+export class ChangePasswordDto {
+  @IsString()
+  @IsNotEmpty()
+  currentPassword!: string;
+
+  @IsString()
+  @MinLength(6)
+  newPassword!: string;
 }

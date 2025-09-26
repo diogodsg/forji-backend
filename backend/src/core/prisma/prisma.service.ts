@@ -21,6 +21,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         "DATABASE_URL não definida – verifique seu .env"
       );
     }
+
     const started = Date.now();
     logger.info({ msg: "prisma.connect.start" }, "Conectando ao banco...");
     try {

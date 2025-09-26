@@ -129,7 +129,24 @@ export class TeamsService {
   async delete(id: number, requesterId: number) {
     const can = await this.permissions.canManageTeam(requesterId, id);
     if (!can) throw new BadRequestException("Not allowed");
-    await (this.prisma as any).team.delete({ where: { id: BigInt(id) } });
+
+    // Verificar se a equipe existe
+    const team = await (this.prisma as any).team.findUnique({
+      where: { id: BigInt(id) },
+    });
+    if (!team) throw new NotFoundException("Team not found");
+
+    // Usar transação para garantir atomicidade
+    await (this.prisma as any).$transaction(async (tx: any) => {
+      // Primeiro, remover todos os memberships da equipe
+      await tx.teamMembership.deleteMany({
+        where: { teamId: BigInt(id) },
+      });
+
+      // Depois, deletar a equipe
+      await tx.team.delete({ where: { id: BigInt(id) } });
+    });
+
     return { deleted: true };
   }
 

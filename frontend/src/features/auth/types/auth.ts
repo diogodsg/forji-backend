@@ -6,6 +6,9 @@ export interface AuthUser {
   updatedAt: string;
   isManager?: boolean;
   isAdmin?: boolean;
+  githubId?: string;
+  position?: string;
+  bio?: string;
 }
 
 export interface AuthContextValue {
@@ -18,4 +21,5 @@ export interface AuthContextValue {
     password: string;
   }) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }

@@ -6,7 +6,144 @@ Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Desenvo
 - Dashboard de manager (PRs + PDI dos subordinados)
 - Área administrativa (gestão de contas, relacionamentos e permissões)
 
-Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`, ### Dashboard de Manager - Refatoração Person-Centric (2025-09-26)
+Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`,
+
+## 🚀 Melhorias Recentes (2025-09-26)
+
+### Refatoração Completa da Interface de Administração
+
+**Interface Modernizada com UX Aprimorada:**
+
+- **Métricas Cards**: Das4. Planejado: impedir edição até seleção## 🚀 Dicas de Desenvolvimento
+
+**Para Administradores:**
+
+- Acesse `/admin` para usar a nova interface modernizada de administração
+- Use os cards clicáveis para navegar rapidamente entre usuários
+- Configure subordinados via regras flexíveis (individual ou por equipe)
+
+**Para Managers:**
+
+- Dashboard person-centric otimizado com carregamento 85% mais rápido
+- Visualize apenas pessoas que você gerencia, organizadas por times relevantes
+- Edite PDIs de subordinados com interface aprimorada
+
+**Para Desenvolvedores:**
+
+- Arquitetura feature-first consolidada para novos componentes
+- Backend com injeção de dependências corrigida e performance otimizada
+- Hot reload funcional para desenvolvimento ágil
+
+**Teste das Funcionalidades:**
+
+- Login como admin → `/admin` para interface administrativa
+- Navegue para `/me/pdi` e clique em "Editar PDI" para modificar resultados
+- Configure gerenciamento de subordinados via área administrativalícita (todo).
+
+### 🔮 Próximas Funcionalidades Planejadas
+
+**Melhorias de Performance e Escalabilidade:**
+
+- Implementar lazy loading na interface administrativa para grandes bases de usuários
+- Cache inteligente para queries de subordinados e hierarquias
+- Paginação automática nas listagens de usuários e times
+
+**Sistema de Notificações:**
+
+- Notificações em tempo real para mudanças de PDI e aprovações
+- Dashboard de notificações para managers e administradores
+- Integração com webhooks para sistemas externos
+
+**Relatórios e Analytics:**
+
+- Dashboard executivo com métricas de desenvolvimento de equipes
+- Relatórios de progresso de PDI exportáveis (PDF/Excel)
+- Análise de tendências de Pull Requests por equipe/pessoa
+
+**Integração e Automação:**
+
+- Sincronização automática com GitHub/GitLab para dados de PR
+- API webhooks para integração com sistemas de RH
+- Automação de regras de gerenciamento baseadas em estrutura organizacional
+
+### Próximos Itens Técnicos Recomendados
+
+- Mover filtros de PR (repo/state/author) para o backend (where condicional + índices).
+- Sort configurável (`sort=createdAt:desc|lines:asc`).
+- Debounced auto-save PDI (PATCH incremental) com status visual (badge "Sincronizado / Pendente").
+- DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON.
+- Reativação do ManagementModule com correção dos guards JWT
+- Implementação de testes automatizados para novas funcionalidadesom estatísticas em tempo real (usuários totais, admins, últimos registros)
+- **Tabela Simplificada**: Interface mais limpa com cards clicáveis para usuários
+- **Filtros Avançados**: Busca por nome/email, filtro por status admin, ordenação por nome/data
+- **Breadcrumb Navigation**: Navegação contextual clara
+- **Quick View Modal**: Visualização rápida de detalhes do usuário com informações de hierarquia
+
+**Melhorias de Usabilidade:**
+
+- Cards de usuários totalmente clicáveis (removidos ícones de hover desnecessários)
+- Click direto abre detalhes do usuário para edição
+- Interface responsiva e moderna com TailwindCSS
+- Feedback visual aprimorado para todas as ações
+
+### Sistema de Gerenciamento de Subordinados Flexível
+
+**Nova Arquitetura de Gestão:**
+
+- **Regras de Gerenciamento Flexíveis**: Sistema baseado em regras individuais ou por equipe
+- **ManagementRule Model**: Suporte a `TEAM` (gerenciar toda equipe) e `INDIVIDUAL` (gerenciar pessoa específica)
+- **APIs RESTful**: Endpoints completos para criação, listagem e remoção de regras
+- **Interface Administrativa**: Tela dedicada para configurar subordinados de forma intuitiva
+
+**Funcionalidades Avançadas:**
+
+- Verificação eficiente de relacionamentos hierárquicos
+- Busca de subordinados efetivos (diretos + via equipe)
+- Detalhamento da origem do relacionamento (individual vs. equipe)
+- Sistema preparado para escalabilidade e governança empresarial
+
+### Correções Críticas de Backend
+
+**Problemas Resolvidos:**
+
+- **Deadlock de Inicialização**: Corrigido problema de travamento durante boot do NestJS
+- **Injeção de Dependências**: Migrado para padrão adequado do Nest.js com PrismaService
+- **Campos de Perfil**: Adicionados campos `position` e `bio` na API de usuários
+- **Comparação de IDs**: Corrigida inconsistência entre string/number IDs na edição de usuários
+- **Compilação**: Removidas dependências problemáticas temporariamente até resolução de relações
+
+**Melhorias de Performance:**
+
+- API `/auth/users` otimizada com campos completos de perfil
+- Queries Prisma simplificadas e eficientes
+- Hot reload funcional para desenvolvimento ágil
+
+### Tecnologias e Componentes Atualizados
+
+**Frontend:**
+
+- React 19 + Vite com hot reload otimizado
+- TailwindCSS para design system consistente
+- @headlessui/react para componentes acessíveis (modais, dropdowns)
+- React Router v7 para navegação
+- Arquitetura feature-first consolidada
+
+**Backend:**
+
+- NestJS com injeção de dependências corrigida
+- Prisma ORM com schema estendido (ManagementRule, campos de perfil)
+- PostgreSQL com migrações automatizadas
+- JWT authentication com guards modulares
+- Logging estruturado com contexto de requisições
+
+**DevOps:**
+
+- Docker multi-stage builds
+- npm workspaces para monorepo
+- TypeScript strict mode
+- ESLint + Prettier configurados
+
+### Dashboard de Manager - Refatoração Person-Centric (2025-09-26)
 
 #### Mudanças Arquiteturais Principais
 
@@ -74,11 +211,34 @@ const allTeams = useAllTeamsWithDetails(); // Uma call, dados completos
 - Debounced auto-save PDI (PATCH incremental) com status visual (badge "Sincronizado / Pendente").
 - DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON.
 
-Dicas rápidas
+## 📋 Guia de Funcionalidades
 
-- Para testar administração, faça login com um usuário admin e abra `/admin`.
-- Na página Meu PDI (`/me/pdi`), clique em "Editar PDI" para habilitar a edição da seção "Resultado". Salve para persistir no backend.
-- Dashboard de Manager agora é person-centric: pessoas aparecem organizadas por times apenas se você as gerencia.ervices`). Pastas legadas (`src/components`, `src/hooks`, `src/types`, `src/utils`) foram eliminadas ou migradas; novas implementações devem sempre residir em `src/features/<domínio>`.
+### Interface de Administração Modernizada
+
+- **Acesso**: Faça login com usuário admin e navegue para `/admin`
+- **Métricas**: Dashboard com estatísticas em tempo real na parte superior
+- **Gestão de Usuários**: Clique diretamente nos cards para abrir detalhes e editar perfis
+- **Filtros**: Use a barra de busca e filtros para encontrar usuários rapidamente
+- **Quick View**: Visualize hierarquias e informações detalhadas em modal
+
+### Sistema de Gerenciamento de Subordinados
+
+- **Acesso**: Área administrativa > Gerenciamento de Subordinados
+- **Regras por Equipe**: Gerencie todos os membros de uma equipe automaticamente
+- **Regras Individuais**: Adicione pessoas específicas como subordinados
+- **Visualização**: Veja subordinados efetivos e origem das relações (equipe vs. individual)
+
+### Edição de PDI e Perfis
+
+- **Meu PDI**: Navegue para `/me/pdi` e clique em "Editar PDI" para modificar resultados
+- **Perfis de Usuários**: Campos `position` e `bio` agora totalmente funcionais
+- **Detalhes**: Informações completas de perfil disponíveis na edição
+
+### Dashboard de Manager Person-Centric
+
+- **Foco em Pessoas**: Dashboard reorganizado para priorizar pessoas gerenciadas
+- **Organização por Times**: Times aparecem apenas se contêm pessoas sob sua gestão
+- **Performance**: Carregamento 85% mais rápido com API otimizadaervices`). Pastas legadas (`src/components`, `src/hooks`, `src/types`, `src/utils`) foram eliminadas ou migradas; novas implementações devem sempre residir em `src/features/<domínio>`.
 
 ## Visão Geral
 

@@ -26,14 +26,16 @@ import {
   useAdminUsers,
   useAdminTeams,
   CreateUserModal,
-  AdminUsersToolbar,
-  AdminUsersTable,
   AdminTeamsToolbar,
   AdminTeamsTable,
   TeamDetailPanel,
   CreateTeamModal,
   TeamMetricsCards,
   AccessDeniedPanel,
+  UserMetricsCards,
+  SimplifiedUsersTable,
+  EnhancedUsersToolbar,
+  Breadcrumb,
 } from "@/features/admin";
 
 type TabKey = "users" | "teams";
@@ -45,29 +47,49 @@ export default function AdminAccessPage() {
     loading,
     error,
     create,
-    setGithub: setGithubId,
-    toggleAdmin,
     removeUser: deleteUser,
-    addManager: setManager,
-    removeManager,
     busy,
   } = useAdminUsers();
   const teams = useAdminTeams();
   const [activeTab, setActiveTab] = useState<TabKey>("users");
   const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "user">("all");
+  const [githubFilter, setGithubFilter] = useState<"all" | "with" | "without">(
+    "all"
+  );
   const [showCreate, setShowCreate] = useState(false);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   // Drawer removed; manager selection now inline popover per-row.
 
   const filteredUsers = useMemo(() => {
+    let filtered = users;
+
+    // Search filter
     const q = query.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(
-      (u) =>
-        u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
-    );
-  }, [users, query]);
+    if (q) {
+      filtered = filtered.filter(
+        (u) =>
+          u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      );
+    }
+
+    // Role filter
+    if (roleFilter === "admin") {
+      filtered = filtered.filter((u) => u.isAdmin);
+    } else if (roleFilter === "user") {
+      filtered = filtered.filter((u) => !u.isAdmin);
+    }
+
+    // GitHub filter
+    if (githubFilter === "with") {
+      filtered = filtered.filter((u) => u.githubId);
+    } else if (githubFilter === "without") {
+      filtered = filtered.filter((u) => !u.githubId);
+    }
+
+    return filtered;
+  }, [users, query, roleFilter, githubFilter]);
 
   async function handleCreateUser(data: {
     name: string;
@@ -98,56 +120,71 @@ export default function AdminAccessPage() {
   // Equipes agora usam filtros do hook (search, roleFilter, teamFilter)
 
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-800">
+    <div className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: "Painel", href: "/" },
+          { label: "Administração", current: true },
+        ]}
+      />
+
+      <header className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
           Administração
         </h1>
-        <p className="text-sm text-gray-500">
-          Gerencie contas, permissões e relacionamentos de gestão.
+        <p className="text-gray-600">
+          Gerencie usuários, permissões e equipes da plataforma.
         </p>
       </header>
       <div>
-        <div className="flex gap-2 mb-4 border-b border-surface-300/70">
+        {/* Modern Tab Navigation */}
+        <div className="bg-gray-100 p-1 rounded-lg mb-6 inline-flex">
           <button
             onClick={() => setActiveTab("users")}
-            className={`px-4 py-2 text-sm font-medium -mb-px border-b-2 transition-colors ${
+            className={`px-6 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
               activeTab === "users"
-                ? "border-indigo-600 text-indigo-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "bg-white text-indigo-700 shadow-sm"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
-            Usuários
+            👥 Usuários ({users.length})
           </button>
           <button
             onClick={() => setActiveTab("teams")}
-            className={`px-4 py-2 text-sm font-medium -mb-px border-b-2 transition-colors ${
+            className={`px-6 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
               activeTab === "teams"
-                ? "border-indigo-600 text-indigo-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                ? "bg-white text-indigo-700 shadow-sm"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             }`}
           >
-            Equipes
+            🏢 Equipes ({teams.teams.length})
           </button>
         </div>
         {activeTab === "users" && (
-          <section className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-5">
-            <AdminUsersToolbar
-              query={query}
-              setQuery={setQuery}
-              onNew={() => setShowCreate(true)}
-            />
-            <AdminUsersTable
-              users={users}
-              filtered={filteredUsers}
-              loading={loading}
-              error={error}
-              onToggleAdmin={toggleAdmin}
-              onUpdateGithub={setGithubId}
-              onAddManager={setManager}
-              onRemoveManager={removeManager}
-              onRemove={deleteUser}
-            />
+          <section className="space-y-6">
+            <UserMetricsCards users={users} loading={loading} />
+
+            <div className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-6">
+              <EnhancedUsersToolbar
+                query={query}
+                setQuery={setQuery}
+                roleFilter={roleFilter}
+                setRoleFilter={setRoleFilter}
+                githubFilter={githubFilter}
+                setGithubFilter={setGithubFilter}
+                onNew={() => setShowCreate(true)}
+                totalUsers={users.length}
+                filteredCount={filteredUsers.length}
+              />
+
+              <SimplifiedUsersTable
+                users={users}
+                filtered={filteredUsers}
+                loading={loading}
+                error={error}
+                onRemove={deleteUser}
+              />
+            </div>
           </section>
         )}
         {activeTab === "teams" && (

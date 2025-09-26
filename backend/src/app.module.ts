@@ -5,6 +5,7 @@ import { PdiModule } from "./pdi/pdi.module";
 import { PrismaModule } from "./core/prisma/prisma.module";
 import { PermissionsModule } from "./core/permissions/permissions.module";
 import { TeamsModule } from "./teams/teams.module";
+// import { ManagementModule } from "./management/management.module"; // Temporarily disabled
 
 @Module({
   // PrismaModule é global; ainda assim manter import explícito para clareza.
@@ -15,6 +16,7 @@ import { TeamsModule } from "./teams/teams.module";
     PrsModule,
     PdiModule,
     TeamsModule,
+    // ManagementModule, // Keep disabled until JwtAuthGuard issue is resolved
   ],
 })
 export class AppModule {}

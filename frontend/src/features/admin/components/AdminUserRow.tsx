@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth";
 import type { AdminUser } from "../types";
 import { ManagerPickerPopover } from "./ManagerPickerPopover";
-import { FiTrash2 } from "react-icons/fi";
+import { FiTrash2, FiEdit2 } from "react-icons/fi";
 
 interface Props {
   user: AdminUser;
@@ -25,6 +26,7 @@ export function AdminUserRow({
   onRemove,
 }: Props) {
   const { user: me } = useAuth();
+  const navigate = useNavigate();
   const isSelf = me?.id === user.id;
   const [editingGh, setEditingGh] = useState(false);
   const [ghValue, setGhValue] = useState(user.githubId || "");
@@ -226,31 +228,41 @@ export function AdminUserRow({
         </div>
       </td>
       <td className="py-2.5 px-3 align-top text-right">
-        {!confirmDelete ? (
+        <div className="flex items-center gap-1 justify-end">
           <button
-            onClick={() => setConfirmDelete(true)}
-            className="px-2 py-1 rounded border border-surface-300 bg-white text-rose-600 text-xs hover:bg-rose-50 inline-flex items-center justify-center"
-            title="Remover usuário"
-            aria-label="Remover usuário"
+            onClick={() => navigate(`/admin/users/${user.id}`)}
+            className="px-2 py-1 rounded border border-surface-300 bg-white text-blue-600 text-xs hover:bg-blue-50 inline-flex items-center justify-center"
+            title="Editar perfil"
+            aria-label="Editar perfil"
           >
-            <FiTrash2 className="w-4 h-4" />
+            <FiEdit2 className="w-4 h-4" />
           </button>
-        ) : (
-          <div className="inline-flex items-center gap-1">
+          {!confirmDelete ? (
             <button
-              onClick={() => onRemove(user.id)}
-              className="px-2 py-1 rounded bg-rose-600 text-white text-xs hover:bg-rose-500"
+              onClick={() => setConfirmDelete(true)}
+              className="px-2 py-1 rounded border border-surface-300 bg-white text-rose-600 text-xs hover:bg-rose-50 inline-flex items-center justify-center"
+              title="Remover usuário"
+              aria-label="Remover usuário"
             >
-              Confirmar
+              <FiTrash2 className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setConfirmDelete(false)}
-              className="px-2 py-1 rounded border border-surface-300 text-xs text-gray-600 hover:bg-surface-100"
-            >
-              Cancelar
-            </button>
-          </div>
-        )}
+          ) : (
+            <div className="inline-flex items-center gap-1">
+              <button
+                onClick={() => onRemove(user.id)}
+                className="px-2 py-1 rounded bg-rose-600 text-white text-xs hover:bg-rose-500"
+              >
+                Confirmar
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="px-2 py-1 rounded border border-surface-300 text-xs text-gray-600 hover:bg-surface-100"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
+        </div>
       </td>
     </tr>
   );

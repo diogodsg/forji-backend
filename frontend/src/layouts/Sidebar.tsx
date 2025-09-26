@@ -1,11 +1,13 @@
 import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FiGitPullRequest,
   FiTarget,
   FiUsers,
   FiShield,
   FiLogOut,
+  FiSettings,
+  FiUserCheck,
 } from "react-icons/fi";
 import { HiOutlineHashtag } from "react-icons/hi2";
 
@@ -26,6 +28,11 @@ const baseNavItems: Array<NavItemDef> = [
     label: "PRs",
     icon: <FiGitPullRequest className="w-4 h-4" />,
   },
+  {
+    to: "/management",
+    label: "Subordinados",
+    icon: <FiUserCheck className="w-4 h-4" />,
+  },
 ];
 
 export function Sidebar({
@@ -40,6 +47,7 @@ export function Sidebar({
   showAdmin?: boolean;
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const initial = userName?.[0]?.toUpperCase() || "U";
   // Colapso desativado: sidebar sempre expandida (estado removido)
 
@@ -144,6 +152,14 @@ export function Sidebar({
             role="menu"
             className={`absolute z-20 left-2 right-2 bottom-[calc(100%+6px)] origin-bottom shadow-lg rounded-md p-1 backdrop-blur bg-white/80 ring-1 ring-surface-300/70 flex flex-col animate-fade-in-up ${""}`}
           >
+            <MenuItem
+              icon={<FiSettings className="text-gray-500" />}
+              label="Configurações"
+              onSelect={() => {
+                setUserMenuOpen(false);
+                navigate("/settings");
+              }}
+            />
             <MenuItem
               icon={<FiLogOut className="text-rose-500" />}
               label="Sair"

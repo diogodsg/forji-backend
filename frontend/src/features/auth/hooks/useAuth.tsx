@@ -69,8 +69,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (token) {
+      try {
+        const me = await api<AuthUser>("/auth/me", { auth: true });
+        setUser(me);
+      } catch (e) {
+        // Se falhar, não fazemos logout automático para não interromper a sessão
+        console.error("Erro ao atualizar dados do usuário:", e);
+      }
+    }
+  }, [token]);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

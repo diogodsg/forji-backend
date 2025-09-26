@@ -26,8 +26,17 @@ const ManagerUserEditPage = lazy(() =>
 const MyPdiPage = lazy(() =>
   import("./pages/MyPdiPage").then((m) => ({ default: m.MyPdiPage }))
 );
+const SettingsPage = lazy(() =>
+  import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage }))
+);
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const AdminAccessPage = lazy(() => import("./pages/AdminAccessPage"));
+const AdminUserEditPage = lazy(() =>
+  import("./pages/AdminUserEditPage").then((m) => ({
+    default: m.AdminUserEditPage,
+  }))
+);
+const ManagementPage = lazy(() => import("./pages/ManagementPage"));
 
 /**
  * Root component: sets up auth + router context.
@@ -79,13 +88,21 @@ function InnerApp() {
             <Route index element={<Navigate to="/me/pdi" replace />} />
             <Route path="/me/prs" element={<MyPrsPage />} />
             <Route path="/me/pdi" element={<MyPdiPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/management" element={<ManagementPage />} />
             <Route path="/manager" element={<ManagerDashboardPage />} />
             <Route
               path="/manager/users/:userId"
               element={<ManagerUserEditPage />}
             />
             {user.isAdmin && (
-              <Route path="/admin" element={<AdminAccessPage />} />
+              <>
+                <Route path="/admin" element={<AdminAccessPage />} />
+                <Route
+                  path="/admin/users/:userId"
+                  element={<AdminUserEditPage />}
+                />
+              </>
             )}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
