@@ -19,3 +19,5 @@ export * from "./UserQuickView";
 export * from "./SimplifiedUsersTable";
 export * from "./EnhancedUsersToolbar";
 export * from "./Breadcrumb";
+export * from "./AdminSubordinatesManagement";
+export * from "./AdminCreateRuleModal";

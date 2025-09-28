@@ -1,14 +1,20 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject, forwardRef } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { ManagementService } from "../../management/management.service";
 
 @Injectable()
 export class PermissionService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => ManagementService))
+    private managementService: ManagementService
+  ) {}
 
   async isOwnerOrManager(requesterId: number, targetUserId: number) {
     if (requesterId === targetUserId) return true;
-    // Temporarily disabled until relations are fixed
-    return false;
+    
+    // Verificar se requesterId é manager de targetUserId usando as regras de gerenciamento
+    return await this.managementService.isSubordinate(requesterId, targetUserId);
   }
 
   /** Verifica se o usuário é gerente (role=MANAGER) da equipe */

@@ -8,12 +8,15 @@ import {
   UseGuards,
   Request,
   ParseIntPipe,
+  Query,
+  BadRequestException,
 } from "@nestjs/common";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
+import { AdminGuard } from "../common/guards/admin.guard";
 import { ManagementService, ManagementRuleDto } from "./management.service";
 
 @Controller("management")
-// @UseGuards(JwtAuthGuard) // Temporarily disabled due to initialization deadlock
+@UseGuards(JwtAuthGuard)
 export class ManagementController {
   constructor(private managementService: ManagementService) {}
 
@@ -88,5 +91,67 @@ export class ManagementController {
       throw new Error("User not authenticated");
     }
     return this.managementService.getSubordinateSource(managerId, userId);
+  }
+
+  // Obter dados completos do dashboard do manager
+  @Get("dashboard")
+  async getManagerDashboard(@Request() req: any) {
+    const managerId = req.user?.id;
+    if (!managerId) {
+      throw new Error("User not authenticated");
+    }
+    return this.managementService.getManagerDashboard(managerId);
+  }
+
+  // ============ ADMIN ENDPOINTS ============
+
+  // Admin: Criar regra para qualquer usuário
+  @Post("admin/rules")
+  @UseGuards(AdminGuard)
+  async adminCreateRule(
+    @Body() data: ManagementRuleDto & { managerId: number }
+  ) {
+    const { managerId, ...rule } = data;
+    return this.managementService.createRule(managerId, rule);
+  }
+
+  // Admin: Listar regras de qualquer usuário
+  @Get("admin/rules")
+  @UseGuards(AdminGuard)
+  async adminGetRules(@Query("managerId") managerId?: string) {
+    if (managerId) {
+      const managerIdNum = parseInt(managerId, 10);
+      if (isNaN(managerIdNum)) {
+        throw new BadRequestException("Invalid managerId parameter");
+      }
+      return this.managementService.getManagerRules(managerIdNum);
+    }
+    // Se não especificar managerId, retorna todas as regras do sistema
+    return this.managementService.getAllRules();
+  }
+
+  // Admin: Remover regra de qualquer usuário
+  @Delete("admin/rules/:id")
+  @UseGuards(AdminGuard)
+  async adminRemoveRule(@Param("id", ParseIntPipe) ruleId: number) {
+    return this.managementService.adminRemoveRule(ruleId);
+  }
+
+  // Admin: Listar subordinados de qualquer usuário
+  @Get("admin/subordinates")
+  @UseGuards(AdminGuard)
+  async adminGetSubordinates(
+    @Query("managerId", ParseIntPipe) managerId: number
+  ) {
+    return this.managementService.getEffectiveSubordinates(managerId);
+  }
+
+  // Admin: Obter dashboard de qualquer manager
+  @Get("admin/dashboard")
+  @UseGuards(AdminGuard)
+  async adminGetManagerDashboard(
+    @Query("managerId", ParseIntPipe) managerId: number
+  ) {
+    return this.managementService.getManagerDashboard(managerId);
   }
 }

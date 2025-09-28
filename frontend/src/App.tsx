@@ -36,7 +36,6 @@ const AdminUserEditPage = lazy(() =>
     default: m.AdminUserEditPage,
   }))
 );
-const ManagementPage = lazy(() => import("./pages/ManagementPage"));
 
 /**
  * Root component: sets up auth + router context.
@@ -89,7 +88,6 @@ function InnerApp() {
             <Route path="/me/prs" element={<MyPrsPage />} />
             <Route path="/me/pdi" element={<MyPdiPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/management" element={<ManagementPage />} />
             <Route path="/manager" element={<ManagerDashboardPage />} />
             <Route
               path="/manager/users/:userId"

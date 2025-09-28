@@ -19,10 +19,9 @@ export function useManagerDashboard(options: Options = {}) {
       try {
         setLoading(true);
         setError(null);
-        const res = await api<ManagerDashboardData>(
-          "/auth/my-reports/summary",
-          { auth: true }
-        );
+        const res = await api<ManagerDashboardData>("/management/dashboard", {
+          auth: true,
+        });
         if (!cancelled) setData(res);
       } catch (e: any) {
         if (!cancelled) setError(e.message || "Erro ao carregar dashboard");

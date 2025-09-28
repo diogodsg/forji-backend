@@ -7,3 +7,4 @@ export * from "./hooks/useRemotePdiForUser";
 export * from "./hooks/useEnsurePdi";
 export { EditablePdiView } from "./components/EditablePdiView";
 export { MilestonesSection } from "./components/sections/MilestonesSection";
+export { CompetenciesAndResultsSection } from "./components/sections/CompetenciesAndResultsSection";

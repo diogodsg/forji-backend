@@ -182,4 +182,137 @@ export class ManagementService {
 
     return sources;
   }
+
+  // Obter dados completos do dashboard do manager
+  async getManagerDashboard(managerId: number) {
+    const subordinates = await this.getEffectiveSubordinates(managerId);
+
+    // Buscar dados de PRs e PDI para cada subordinado
+    const reports = await Promise.all(
+      subordinates.map(async (sub) => {
+        // Buscar PRs do subordinado
+        const prs = await this.prisma.pullRequest.findMany({
+          where: { ownerUserId: BigInt(sub.id) },
+          select: { state: true, updatedAt: true },
+        });
+
+        const prsStats = {
+          open: prs.filter((pr) => pr.state === "open").length,
+          merged: prs.filter((pr) => pr.state === "merged").length,
+          closed: prs.filter((pr) => pr.state === "closed").length,
+          lastActivity:
+            prs.length > 0
+              ? prs
+                  .sort((a, b) => {
+                    const dateA = a.updatedAt
+                      ? new Date(a.updatedAt).getTime()
+                      : 0;
+                    const dateB = b.updatedAt
+                      ? new Date(b.updatedAt).getTime()
+                      : 0;
+                    return dateB - dateA;
+                  })[0]
+                  .updatedAt?.toISOString()
+              : undefined,
+        };
+
+        // Buscar PDI do subordinado
+        const pdi = await this.prisma.pdiPlan.findUnique({
+          where: { userId: BigInt(sub.id) },
+        });
+
+        const pdiInfo = {
+          exists: !!pdi,
+          progress: pdi ? this.calculatePdiProgress(pdi) : 0,
+          updatedAt: pdi?.updatedAt.toISOString(),
+        };
+
+        return {
+          userId: sub.id,
+          name: sub.name,
+          email: sub.email,
+          pdi: pdiInfo,
+          prs: prsStats,
+        };
+      })
+    );
+
+    // Calcular métricas agregadas
+    const totalReports = reports.length;
+    const totalPrs = {
+      open: reports.reduce((sum, r) => sum + r.prs.open, 0),
+      merged: reports.reduce((sum, r) => sum + r.prs.merged, 0),
+      closed: reports.reduce((sum, r) => sum + r.prs.closed, 0),
+    };
+    const pdiActive = reports.filter((r) => r.pdi.exists).length;
+    const avgPdiProgress =
+      totalReports > 0
+        ? reports.reduce((sum, r) => sum + r.pdi.progress, 0) / totalReports
+        : 0;
+
+    return {
+      reports,
+      metrics: {
+        totalReports,
+        prs: totalPrs,
+        pdiActive,
+        avgPdiProgress,
+      },
+    };
+  }
+
+  // ============ ADMIN METHODS ============
+
+  // Admin: Obter todas as regras do sistema
+  async getAllRules() {
+    return this.prisma.managementRule.findMany({
+      include: {
+        manager: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        team: true,
+        subordinate: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  // Admin: Remover qualquer regra (sem verificação de ownership)
+  async adminRemoveRule(ruleId: number) {
+    const rule = await this.prisma.managementRule.findUnique({
+      where: { id: BigInt(ruleId) },
+    });
+
+    if (!rule) {
+      throw new Error("Management rule not found");
+    }
+
+    return this.prisma.managementRule.delete({
+      where: { id: BigInt(ruleId) },
+    });
+  }
+
+  // Método auxiliar para calcular progresso do PDI
+  private calculatePdiProgress(pdi: any): number {
+    // Implementação simples - pode ser refinada
+    if (!pdi.milestones || !Array.isArray(pdi.milestones)) return 0;
+
+    const completedMilestones = pdi.milestones.filter(
+      (m: any) => m.status === "completed" || m.completed === true
+    ).length;
+
+    return pdi.milestones.length > 0
+      ? completedMilestones / pdi.milestones.length
+      : 0;
+  }
 }

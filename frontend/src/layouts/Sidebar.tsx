@@ -7,7 +7,6 @@ import {
   FiShield,
   FiLogOut,
   FiSettings,
-  FiUserCheck,
 } from "react-icons/fi";
 import { HiOutlineHashtag } from "react-icons/hi2";
 
@@ -27,11 +26,6 @@ const baseNavItems: Array<NavItemDef> = [
     to: "/me/prs",
     label: "PRs",
     icon: <FiGitPullRequest className="w-4 h-4" />,
-  },
-  {
-    to: "/management",
-    label: "Subordinados",
-    icon: <FiUserCheck className="w-4 h-4" />,
   },
 ];
 

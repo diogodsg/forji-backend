@@ -59,7 +59,12 @@ export function pdiEditingReducer(
       return {
         working: action.plan,
         editing: {
-          sections: { competencies: false, krs: false, results: false },
+          sections: {
+            competencies: false,
+            krs: false,
+            results: false,
+            competenciesAndResults: false,
+          },
           milestones: new Set(),
         },
         meta: {

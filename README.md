@@ -1,6 +1,20 @@
 # Forge
 
-Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Desenvolvimento Individual (PDI). Stack: **NestJS + Prisma/PostgreSQL** (backend) e **React 19 + Vite + TailwindCSS** (frontend). Inclui:
+Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Des### 🎯 Correções de Integração e Permissões
+
+**Problemas de Acesso Resolvidos:**
+
+- **PDI 403 Forbidden**: Correção do PermissionService para usar ManagementService
+- **ID Type Comparison**: Correção de comparação BigInt vs Number no dashboard de managers
+- **Circular Dependencies**: Resolução usando forwardRef entre PermissionService e ManagementService
+- **Team Display**: Pessoas organizadas em times agora aparecem corretamente no dashboard
+
+**Melhorias de UX/UI:**
+
+- **Keyboard Shortcuts**: Alt+1/2/3 para navegação rápida entre abas admin
+- **Visual Feedback**: Estados hover, loading e transições suaves
+- **Responsive Design**: Interface otimizada para desktop e mobile
+- **Accessibility**: ARIA labels e navegação por teclado aprimoradavidual (PDI). Stack: **NestJS + Prisma/PostgreSQL** (backend) e **React 19 + Vite + TailwindCSS** (frontend). Inclui:
 
 - Área do desenvolvedor (PRs e PDI próprio)
 - Dashboard de manager (PRs + PDI dos subordinados)
@@ -8,7 +22,211 @@ Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Desenvo
 
 Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`,
 
-## 🚀 Melhorias Recentes (2025-09-26)
+## 🚀 Atualizações Mais Recentes (2025-09-28)
+
+### �️ Sistema Administrativo Revolucionário
+
+**Interface Admin Completamente Redesenhada:**
+
+- **Navegação por Abas Moderna**: Interface com gradientes, animações e atalhos de teclado (Alt+1/2/3)
+- **Tabs Temáticas**: Cores distintas para cada seção (Indigo/Usuários, Emerald/Equipes, Purple/Subordinados)
+- **Loading States**: Transições suaves entre abas com indicadores visuais
+- **Layout Padronizado**: Estrutura consistente com métricas no topo e containers glassmorphism
+- **Breadcrumbs Contextuais**: Navegação clara mostrando seção ativa
+- **Hover Effects**: Feedback visual aprimorado com sombras temáticas
+
+### 🔐 Sistema de Subordinados Admin-Only
+
+**Migração de Segurança Arquitetural:**
+
+- **Acesso Restrito**: Gerenciamento de subordinados movido para área administrativa
+- **Seletor de Usuários**: Interface para admins gerenciarem subordinados de qualquer usuário
+- **Controle Centralizado**: Todas as regras hierárquicas em uma interface consolidada
+- **Endpoints Protegidos**: Novos endpoints `/management/admin/*` com AdminGuard
+- **Remoção de Rota**: `/management` removido da navegação geral por segurança
+
+### 🐛 Correções Críticas de Backend
+
+**Validação de Parâmetros Opcional:**
+
+- **Erro Resolvido**: "Validation failed (numeric string is expected)" em `GET /management/admin/rules`
+- **ParseIntPipe Opcional**: Correção da validação de query parameters opcionais
+- **Tratamento de Erros**: BadRequestException apropriado para parâmetros inválidos
+- **Compatibilidade**: Suporte tanto para busca específica (`?managerId=123`) quanto geral (sem parâmetros)
+
+### �🔧 Sistema de Gerenciamento Aprimorado
+
+**ManagementModule Totalmente Funcional:**
+
+- **Reativado e Corrigido**: ManagementModule estava desabilitado devido a deadlocks de inicialização - agora totalmente funcional
+- **Endpoint `/management/dashboard`**: Novo endpoint que retorna dados completos de subordinados (PRs + PDI + métricas)
+- **Detecção Automática de Manager**: Campo `isManager` agora é calculado dinamicamente baseado em regras de gerenciamento existentes
+- **Correção do Hook useMyReports**: Migrado de endpoint inexistente `/auth/my-reports` para `/management/subordinates`
+- **PermissionService Integrado**: Correção da validação de acesso usando ManagementService
+
+### 🎨 Interface de Criação de Regras Revolucionária
+
+**Modal de Criação de Regras Completamente Redesenhado:**
+
+- **Seleção Múltipla**: Criar regras para múltiplas equipes/usuários simultaneamente
+- **Sistema Anti-Duplicação**:
+  - Detecta automaticamente equipes/usuários já em regras existentes
+  - Indicadores visuais (verde + "Já gerenciada/o") para itens existentes
+  - Checkboxes desabilitados para prevenir duplicação
+- **Busca Inteligente**: Campo de busca para filtrar equipes e usuários
+- **Ações em Lote**:
+  - "Selecionar Disponíveis" (só itens não duplicados)
+  - "Limpar Seleção"
+  - Contadores dinâmicos de disponibilidade
+- **Resumo de Regras**: Painel informativo mostra regras existentes no topo do modal
+- **Criação Paralela**: Múltiplas regras criadas simultaneamente com Promise.all
+
+### 👥 Dashboard Manager Person-Centric Aprimorado
+
+**Visibilidade Total de Pessoas Gerenciadas:**
+
+- **Problema Resolvido**: Pessoas gerenciadas agora aparecem SEMPRE, mesmo sem organização em times
+- **Nova Seção**: "Pessoas que Gerencio" com interface moderna e informativa
+- **Cards Interativos**:
+  - Avatar com iniciais personalizadas
+  - Estatísticas de PRs com badges coloridos (merged/open/closed)
+  - Status visual do PDI (existe/não existe + progresso %)
+  - Click direto para página de detalhes
+- **Interface Limpa**: Removido alerta redundante, foco na funcionalidade útil
+- **Contexto Claro**: Subtítulo indica "Aguardando organização em times"
+
+### �️ Gerenciamento de Subordinados Movido para Admin (2025-09-28)
+
+**Mudança Arquitetural de Segurança:**
+
+- **Migração Completa**: Gerenciamento de subordinados movido de `/management` para `/admin`
+- **Acesso Restrito**: Apenas administradores podem configurar relações hierárquicas
+- **Nova Aba Admin**: "🔗 Subordinados" integrada no painel administrativo
+- **Endpoints Admin**: Novos endpoints `/management/admin/*` para operações privilegiadas
+- **Segurança Aprimorada**: Admins podem gerenciar subordinados de qualquer usuário
+- **Interface Consolidada**: Todas as regras do sistema visíveis em uma interface única
+- **Rota Removida**: `/management` removida da navegação geral
+
+**Benefícios de Segurança:**
+
+- Centralização do controle hierárquico
+- Prevenção de auto-atribuição de subordinados
+- Auditoria completa das relações de gerenciamento
+- Controle granular sobre estruturas organizacionais
+
+### �🔄 Correções de Backend Críticas
+
+**Problemas de Conectividade Resolvidos:**
+
+- **Configuração de Banco**: Corrigida string de conexão para ambiente local (localhost vs remoto)
+- **Endpoints Funcionais**: `/management/*` agora totalmente operacionais
+- **Dados Completos**: Endpoint `/management/dashboard` retorna informações completas de subordinados
+- **Performance**: Queries otimizadas para cálculo de métricas de PRs e PDI
+- **Correção de Permissões**: PermissionService agora usa ManagementService para validar acesso de managers
+
+**Novos Endpoints Implementados:**
+
+```typescript
+// Endpoints Gerais de Management
+GET /management/dashboard        // Dados completos do manager (PRs + PDI + métricas)
+GET /management/subordinates     // Lista subordinados efetivos
+POST /management/rules           // Criar regra de gerenciamento
+GET /management/rules            // Listar regras do manager atual
+DELETE /management/rules/:id     // Remover regra específica
+
+// Endpoints Admin (protegidos por AdminGuard)
+POST /management/admin/rules                    // Criar regra para qualquer usuário
+GET /management/admin/rules[?managerId=X]      // Listar regras específicas ou todas (corrigido)
+DELETE /management/admin/rules/:id             // Remover qualquer regra
+GET /management/admin/subordinates?managerId=X // Subordinados de qualquer usuário
+GET /management/admin/dashboard?managerId=X    // Dashboard de qualquer manager
+```
+
+**Melhorias Técnicas:**
+
+- **Validação Robusta**: Query parameters opcionais com parsing manual e BadRequestException
+- **Circular Dependencies**: ForwardRef entre PermissionService e ManagementService
+- **Type Safety**: Correção de comparações BigInt vs Number com casting apropriado
+- **Dynamic Calculations**: `isManager` calculado em tempo real baseado em regras existentes
+- **Optimized Queries**: Includes Prisma específicos para performance
+- **Parallel Operations**: Promise.all para criação simultânea de múltiplas regras
+- **Real-time Validation**: Verificação de duplicatas no frontend durante seleção
+- **Modern UI Patterns**: CSS transitions, backdrop-blur, gradient shadows e animations
+
+### 📋 Sistema PDI Revolucionário - Interface Colapsável (2025-09-28)
+
+**Redesign Completo da Experiência PDI:**
+
+**Seções Colapsáveis Implementadas:**
+
+- **🎯 Key Results**: Seção totalmente colapsável com preview inteligente
+
+  - Badge numerado com contador de objetivos
+  - Preview visual dos primeiros KRs com critérios de sucesso
+  - Cards com gradientes e numeração circular
+  - Estado vazio informativo com call-to-action claro
+
+- **💡 Competências & Resultados**: Seção unificada e colapsável
+
+  - Badges coloridos para competências (verde) e avaliações (azul)
+  - Layout em grid com seções distintas para cada tipo
+  - Preview do conteúdo mostrando primeiras competências e níveis
+  - Estados inteligentes baseados na existência de dados
+
+- **📅 Acompanhamentos & Marcos**: Totalmente colapsável com estatísticas
+  - Badge principal com contador de acompanhamentos
+  - Badges secundários para tarefas (azul) e melhorias (âmbar)
+  - Badge de "recentes" para marcos dos últimos 30 dias
+  - Preview com cards mostrando título, data e estatísticas
+  - Contador visual de tarefas e melhorias por marco
+
+**Milestones com Subseções Colapsáveis:**
+
+- **📝 Notas / Registro**: Área principal de markdown colapsável
+- **🤖 Sugestões da IA**: Recomendações automáticas colapsáveis
+- **✅ Tarefas / Próximos passos**: Lista de tasks colapsável
+- **👍 Pontos Positivos**: Aspectos destacados colapsáveis
+- **⚠️ Pontos de Melhoria**: Áreas para desenvolvimento colapsáveis
+- **🔗 Referências**: Links e recursos externos colapsáveis
+
+**Comportamentos Inteligentes:**
+
+- **Estado Inicial Inteligente**: Seções abrem automaticamente se contêm dados
+- **Modo Edição**: Todas as seções forçadamente abertas durante edição
+- **Modo Visualização**: Seções livremente colapsáveis pelo usuário
+- **Memória de Estado**: Sistema lembra preferências do usuário
+- **Animações Suaves**: Transições de 300ms para melhor UX
+
+**Design System Modernizado:**
+
+- **Ícones React Icons**: Substituição completa de emojis por ícones profissionais
+
+  - `FiTarget` para objetivos, `FiBarChart` para estatísticas
+  - `HiLightBulb` para competências, `FiTrendingUp` para progresso
+  - `FiCalendar` para datas, `FiCheckSquare` para tarefas
+  - `FiClock` para tempo, `FiPlus` para adicionar, `FiTrash2` para remover
+
+- **Paleta Temática Consistente**:
+
+  - Indigo para KRs, Verde para competências, Azul para avaliações
+  - Roxo para acompanhamentos, Âmbar para melhorias, Esmeralda para positivos
+
+- **Componentes Visuais Aprimorados**:
+  - Cards com gradientes suaves e bordas arredondadas
+  - Badges numerados circulares para identificação
+  - Seções coloridas para categorização visual
+  - Preview informativos com estatísticas em tempo real
+
+**Melhorias de UX:**
+
+- **Interface mais limpa**: Seções vazias ficam colapsadas por padrão
+- **Foco no conteúdo**: Usuário vê apenas o que importa
+- **Navegação eficiente**: Menos scroll, mais organização
+- **Edição completa**: Todos os campos acessíveis quando editando
+- **Feedback visual**: Estados claros de carregamento e expansão
+- **Responsividade**: Layout adapta-se a diferentes tamanhos de tela
+
+## 🚀 Melhorias Anteriores (2025-09-26)
 
 ### Refatoração Completa da Interface de Administração
 
@@ -18,27 +236,48 @@ Arquitetura frontend migrou recentemente de um modelo "global components + globa
 
 **Para Administradores:**
 
-- Acesse `/admin` para usar a nova interface modernizada de administração
-- Use os cards clicáveis para navegar rapidamente entre usuários
-- Configure subordinados via regras flexíveis (individual ou por equipe)
+- **Interface Moderna**: Acesse `/admin` para usar a nova interface com navegação por abas aprimorada
+- **Atalhos de Teclado**: Use Alt+1 (Usuários), Alt+2 (Equipes), Alt+3 (Subordinados) para navegação rápida
+- **Gerenciamento Centralizado**: Configure relações hierárquicas de qualquer usuário na aba Subordinados
+- **Seletor de Usuários**: Interface intuitiva para escolher qual usuário gerenciar
+- **Layout Consistente**: Design padronizado com glassmorphism e cores temáticas por seção
 
 **Para Managers:**
 
-- Dashboard person-centric otimizado com carregamento 85% mais rápido
-- Visualize apenas pessoas que você gerencia, organizadas por times relevantes
-- Edite PDIs de subordinados com interface aprimorada
+- **Dashboard Totalmente Funcional**: Veja TODAS as pessoas que você gerencia, com ou sem times
+- **Interface Person-Centric**: Cards interativos com dados em tempo real de PRs e PDI
+- **Acesso Direto**: Click em qualquer pessoa para gerenciar seus detalhes
+- **Seleção Múltipla**: Crie regras de gerenciamento para várias pessoas/equipes de uma vez
+- **Anti-Duplicação**: Sistema inteligente previne criação de regras duplicadas
+
+**Para Usuários PDI:**
+
+- **Interface Colapsável**: Navigate entre seções colapsáveis para focar no que importa
+- **KRs Modernos**: Use os novos Key Results com design aprimorado e badges numerados
+- **Acompanhamentos Inteligentes**: Milestones com subseções colapsáveis para melhor organização
+- **Estados Inteligentes**: Seções abrem automaticamente se contêm dados, permanecem fechadas se vazias
+- **Edição Eficiente**: Modo edição mantém todas as seções abertas para acesso completo
+- **Navegação Visual**: Use os ícones React Icons profissionais para identificação rápida
 
 **Para Desenvolvedores:**
 
 - Arquitetura feature-first consolidada para novos componentes
 - Backend com injeção de dependências corrigida e performance otimizada
 - Hot reload funcional para desenvolvimento ágil
+- Sistema colapsável reutilizável via `CollapsibleSectionCard` (shared component)
+- Design system consistente com paleta temática por funcionalidade
 
 **Teste das Funcionalidades:**
 
-- Login como admin → `/admin` para interface administrativa
-- Navegue para `/me/pdi` e clique em "Editar PDI" para modificar resultados
-- Configure gerenciamento de subordinados via área administrativalícita (todo).
+- **Admin Interface**: Login como admin → `/admin` → Use Alt+1/2/3 para navegar entre abas
+- **Subordinados Admin**: Aba "Subordinados" → Selecione usuário → Gerencie suas relações hierárquicas
+- **PDI Colapsável**: Acesse `/me/pdi` → Teste colapso/expansão das seções → Edite e veja comportamento
+- **Milestones Organizados**: Crie acompanhamentos → Teste subseções colapsáveis (Notas, Tarefas, etc.)
+- **KRs Modernizados**: Adicione Key Results → Veja badges numerados e previews informativos
+- **Manager Dashboard**: `/manager` mostra pessoas gerenciadas mesmo sem organização em times
+- **PDI Access**: Teste acesso a PDIs de subordinados (bug 403 Forbidden resolvido)
+- **Criação de Regras**: Modal com seleção múltipla e prevenção de duplicatas
+- **Keyboard Navigation**: Teste atalhos Alt+1/2/3 na interface administrativa
 
 ### 🔮 Próximas Funcionalidades Planejadas
 
@@ -68,12 +307,27 @@ Arquitetura frontend migrou recentemente de um modelo "global components + globa
 
 ### Próximos Itens Técnicos Recomendados
 
-- Mover filtros de PR (repo/state/author) para o backend (where condicional + índices).
-- Sort configurável (`sort=createdAt:desc|lines:asc`).
-- Debounced auto-save PDI (PATCH incremental) com status visual (badge "Sincronizado / Pendente").
-- DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON.
-- Reativação do ManagementModule com correção dos guards JWT
-- Implementação de testes automatizados para novas funcionalidadesom estatísticas em tempo real (usuários totais, admins, últimos registros)
+**Backend API:**
+
+- Mover filtros de PR (repo/state/author) para o backend (where condicional + índices)
+- Sort configurável (`sort=createdAt:desc|lines:asc`)
+- DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON
+
+**Frontend Avançado:**
+
+- ✅ ~~Debounced auto-save PDI com status visual~~ (Implementado)
+- ✅ ~~Sistema colapsável para PDI~~ (Implementado)
+- ✅ ~~Substituição de emojis por ícones React Icons~~ (Implementado)
+- Command Palette (Ctrl/⌘+K) para navegação rápida
+- Dark mode toggle com persistência
+- Export/import de PDI (JSON/Markdown)
+
+**Performance e Qualidade:**
+
+- ✅ ~~Reativação do ManagementModule~~ (Concluído)
+- Testes automatizados E2E para funcionalidades críticas
+- Lazy loading para grandes datasets administrativos
+- Cache inteligente para hierarquias organizacionais
 - **Tabela Simplificada**: Interface mais limpa com cards clicáveis para usuários
 - **Filtros Avançados**: Busca por nome/email, filtro por status admin, ordenação por nome/data
 - **Breadcrumb Navigation**: Navegação contextual clara
@@ -210,6 +464,9 @@ const allTeams = useAllTeamsWithDetails(); // Uma call, dados completos
 - Sort configurável (`sort=createdAt:desc|lines:asc`).
 - Debounced auto-save PDI (PATCH incremental) com status visual (badge "Sincronizado / Pendente").
 - DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON.
+- ~~Reativação do ManagementModule com correção dos guards JWT~~ ✅ **CONCLUÍDO**
+- ~~Implementação de endpoint para dados completos de manager dashboard~~ ✅ **CONCLUÍDO**
+- ~~Sistema anti-duplicação para regras de gerenciamento~~ ✅ **CONCLUÍDO**
 
 ## 📋 Guia de Funcionalidades
 
@@ -221,12 +478,16 @@ const allTeams = useAllTeamsWithDetails(); // Uma call, dados completos
 - **Filtros**: Use a barra de busca e filtros para encontrar usuários rapidamente
 - **Quick View**: Visualize hierarquias e informações detalhadas em modal
 
-### Sistema de Gerenciamento de Subordinados
+### Sistema de Gerenciamento de Subordinados (Admin Only)
 
-- **Acesso**: Área administrativa > Gerenciamento de Subordinados
+- **Acesso Restrito**: `/admin` > Aba "🔗 Subordinados" (apenas administradores)
+- **Controle Centralizado**: Configure relações hierárquicas para qualquer usuário
+- **Seleção Múltipla**: Crie regras para várias equipes/usuários simultaneamente
+- **Anti-Duplicação**: Sistema inteligente previne regras duplicadas com indicadores visuais
+- **Busca Inteligente**: Filtre equipes e usuários em tempo real
 - **Regras por Equipe**: Gerencie todos os membros de uma equipe automaticamente
 - **Regras Individuais**: Adicione pessoas específicas como subordinados
-- **Visualização**: Veja subordinados efetivos e origem das relações (equipe vs. individual)
+- **Auditoria Completa**: Veja todas as regras do sistema com informações do manager responsável
 
 ### Edição de PDI e Perfis
 
@@ -236,9 +497,13 @@ const allTeams = useAllTeamsWithDetails(); // Uma call, dados completos
 
 ### Dashboard de Manager Person-Centric
 
+- **Visibilidade Total**: Todas as pessoas gerenciadas aparecem, com ou sem organização em times
+- **Seção "Pessoas que Gerencio"**: Interface moderna com cards interativos
+- **Dados em Tempo Real**: PRs (merged/open/closed) e status de PDI atualizados
+- **Navegação Direta**: Click em qualquer pessoa para acessar detalhes completos
+- **Avatars Personalizados**: Iniciais com cores gradiente para cada pessoa
 - **Foco em Pessoas**: Dashboard reorganizado para priorizar pessoas gerenciadas
-- **Organização por Times**: Times aparecem apenas se contêm pessoas sob sua gestão
-- **Performance**: Carregamento 85% mais rápido com API otimizadaervices`). Pastas legadas (`src/components`, `src/hooks`, `src/types`, `src/utils`) foram eliminadas ou migradas; novas implementações devem sempre residir em `src/features/<domínio>`.
+- **Performance**: Carregamento 85% mais rápido com API otimizada (`/management/dashboard`)ervices`). Pastas legadas (`src/components`, `src/hooks`, `src/types`, `src/utils`) foram eliminadas ou migradas; novas implementações devem sempre residir em `src/features/<domínio>`.
 
 ## Visão Geral
 
@@ -415,23 +680,66 @@ Para adicionar mais PRs basta inserir novos objetos no array `mockPrs` respeitan
 
 ## Componentes Chave (Exemplos)
 
-- PDI: `EditablePdiView`, `sections/MilestonesSection`, `editors/KeyResultsEditor`, `structure/SaveStatusBar`
-- PRs: `PrList`, `PrDetailDrawer`, `PrStats`, `ProgressCharts`, `SummaryCards`
-- Admin: `AdminUserRow`, `ManagerDrawer`, `CreateUserModal`, `AdminGate`
-- Auth: `LoginForm`
+**PDI (Sistema Colapsável Completo):**
+
+- `EditablePdiView` - Orquestração principal com seções colapsáveis
+- `CollapsibleSectionCard` - Componente base para seções colapsáveis (shared)
+- `MilestonesSection` - Acompanhamentos com preview e estatísticas
+- `MilestoneCard` - Cards individuais com subseções colapsáveis
+- `KeyResultsEditor`/`KeyResultsView` - KRs com design modernizado
+- `CompetenciesAndResultsSection` - Seção unificada colapsável
+- `SaveStatusBar` - Indicador de sincronização
+
+**PRs:**
+
+- `PrList`, `PrDetailDrawer`, `PrStats`, `ProgressCharts`, `SummaryCards`
+
+**Admin:**
+
+- `AdminUserRow`, `ManagerDrawer`, `CreateUserModal`, `AdminGate`
+
+**Auth:**
+
+- `LoginForm`
 
 ## Decisões de Design / UI
 
-- Light mode padrão; paleta `surface` minimalista.
-- Sidebar persistente desktop; TopBar só em mobile.
-- Redução de excesso de cores nas métricas (cards neutros com pontos de cor).
-- PR stats com distribuição de linhas adicionadas/deletadas (barra empilhada).
-- AuthContext gerencia token + user.
-- PDI agora persiste no backend; UI desativou localStorage para PDI na tela.
-- Emojis removidos de ações/tabelas na área administrativa; padronizado com `react-icons`.
-- Cabeçalhos da tabela de equipes sem ícones (texto simples para legibilidade e densidade).
-- Picker de gerentes (admin > usuários) agora abre via portal fixo no `document.body`, evitando scrollbars horizontais/verticais indesejados quando aberto dentro de tabelas.
-- Botão de alternar admin desativado para o próprio usuário logado (não permite auto‑remoção de privilégio admin).
+**Layout e Navegação:**
+
+- Light mode padrão; paleta `surface` minimalista
+- Sidebar persistente desktop; TopBar só em mobile
+- Redução de excesso de cores nas métricas (cards neutros com pontos de cor)
+- PR stats com distribuição de linhas adicionadas/deletadas (barra empilhada)
+
+**Sistema PDI Colapsável:**
+
+- Interface colapsável para todas as seções principais (KRs, Competências, Acompanhamentos)
+- Estado inicial inteligente: seções abrem automaticamente se contêm dados
+- Modo edição força todas as seções abertas; modo visualização permite colapso livre
+- Animações suaves de 300ms para transições de expansão/colapso
+- Preview informativos com estatísticas em tempo real para seções colapsadas
+- Milestones com subseções colapsáveis (Notas, Sugestões, Tarefas, Pontos Positivos/Melhoria, Referências)
+
+**Design System:**
+
+- Substituição completa de emojis por ícones `react-icons` profissionais
+- Paleta temática consistente: Indigo (KRs), Verde (competências), Azul (avaliações), Roxo (acompanhamentos)
+- Cards com gradientes suaves e bordas arredondadas
+- Badges numerados circulares para identificação visual
+- Componente `CollapsibleSectionCard` reutilizável para consistência
+
+**Backend e Persistência:**
+
+- AuthContext gerencia token + user
+- PDI persiste no backend; UI desativou localStorage para PDI
+- Debounced auto-save para melhor performance
+
+**Área Administrativa:**
+
+- Emojis removidos de ações/tabelas; padronizado com `react-icons`
+- Cabeçalhos da tabela de equipes sem ícones (texto simples para legibilidade)
+- Picker de gerentes via portal fixo no `document.body` (evita scrollbars indesejados)
+- Botão de alternar admin desativado para o próprio usuário logado (prevenção de auto-remoção)
 
 ## Próximos Passos Sugeridos
 
@@ -730,6 +1038,64 @@ Skeletons criados:
 - Caso de merge: servidor retorna valor antigo após alteração local -> garantir que merge mantém local.
 - Sanitização: função que prepara payload remove `lastEditedAt` e outros campos desconhecidos.
 - Acessibilidade: snapshot de roles/ARIA nos botões de nível.
+
+## 🧪 Testes e Validação
+
+### Backend Tests
+
+Para executar os testes do backend:
+
+```bash
+cd backend
+npm test                # Testes unitários
+npm run test:e2e        # Testes de integração
+npm run test:cov        # Cobertura de código
+```
+
+**Casos de Teste Implementados:**
+
+- Criação de regras de gerenciamento (`management.service.test.ts`)
+- Cálculo dinâmico de subordinados
+- Autenticação e autorização
+- Queries complexas com Prisma
+
+### Testando Funcionalidades Novas (2025-09-28)
+
+**Sistema de Gerenciamento:**
+
+```bash
+# 1. Testar criação de múltiplas regras
+POST /management/rules
+Body: { personIds: [1,2], teamIds: [3] }
+
+# 2. Verificar dashboard do manager
+GET /management/dashboard
+# Deve retornar: subordinados + PRs + PDI stats
+
+# 3. Testar anti-duplicação
+# Tentar criar regra já existente - deve falhar graciosamente
+```
+
+**Frontend Multi-Select:**
+
+- Abrir modal "Adicionar Regra"
+- Selecionar múltiplas pessoas/equipes
+- Verificar que duplicatas não aparecem na lista
+- Confirmar criação em lote (Promise.all)
+
+**Validação Completa:**
+
+```bash
+# 1. Setup inicial
+bash script.sh  # Popula dados completos
+
+# 2. Login como admin
+POST /auth/login { "username": "admin", "password": "admin123" }
+
+# 3. Criar manager e devs via admin panel
+# 4. Testar fluxo completo de gerenciamento
+# 5. Validar dashboard com dados reais
+```
 
 ### Frontend Refactor (Feature PRs & Shared Layer)
 

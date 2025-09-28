@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 /**
  * AdminAccessPage
@@ -8,7 +8,12 @@ import { FiArrowLeft } from "react-icons/fi";
  * them to the administrative data hook `useAdminUsers`.
  *
  * Portuguese UI copy is preserved (product decision), while documentation/comments
- * are in English for code readability and onboarding.
+ * are in English for code                     })}
+                  />
+                  </div>
+                </div>
+              </div>
+            )}bility and onboarding.
  *
  * Responsibilities:
  * - Fetch & hold admin user list state via `useAdminUsers`.
@@ -36,9 +41,10 @@ import {
   SimplifiedUsersTable,
   EnhancedUsersToolbar,
   Breadcrumb,
+  AdminSubordinatesManagement,
 } from "@/features/admin";
 
-type TabKey = "users" | "teams";
+type TabKey = "users" | "teams" | "subordinates";
 
 export default function AdminAccessPage() {
   const { user } = useAuth();
@@ -52,6 +58,7 @@ export default function AdminAccessPage() {
   } = useAdminUsers();
   const teams = useAdminTeams();
   const [activeTab, setActiveTab] = useState<TabKey>("users");
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "user">("all");
   const [githubFilter, setGithubFilter] = useState<"all" | "with" | "without">(
@@ -61,6 +68,19 @@ export default function AdminAccessPage() {
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   // Drawer removed; manager selection now inline popover per-row.
+
+  const handleTabChange = useCallback(
+    (newTab: TabKey) => {
+      if (newTab === activeTab) return;
+
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setActiveTab(newTab);
+        setIsTransitioning(false);
+      }, 150); // Short transition delay
+    },
+    [activeTab]
+  );
 
   const filteredUsers = useMemo(() => {
     let filtered = users;
@@ -114,6 +134,31 @@ export default function AdminAccessPage() {
     }
   }
 
+  // Keyboard shortcuts for tab navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey) {
+        switch (e.key) {
+          case "1":
+            e.preventDefault();
+            handleTabChange("users");
+            break;
+          case "2":
+            e.preventDefault();
+            handleTabChange("teams");
+            break;
+          case "3":
+            e.preventDefault();
+            handleTabChange("subordinates");
+            break;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Early auth/role gate – avoids rendering internal admin structure needlessly.
   if (!user?.isAdmin) return <AccessDeniedPanel />;
 
@@ -124,47 +169,233 @@ export default function AdminAccessPage() {
       <Breadcrumb
         items={[
           { label: "Painel", href: "/" },
-          { label: "Administração", current: true },
+          { label: "Administração" },
+          {
+            label:
+              activeTab === "users"
+                ? "Usuários"
+                : activeTab === "teams"
+                ? "Equipes"
+                : "Subordinados",
+            current: true,
+          },
         ]}
       />
 
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-          Administração
-        </h1>
-        <p className="text-gray-600">
-          Gerencie usuários, permissões e equipes da plataforma.
-        </p>
-      </header>
-      <div>
-        {/* Modern Tab Navigation */}
-        <div className="bg-gray-100 p-1 rounded-lg mb-6 inline-flex">
-          <button
-            onClick={() => setActiveTab("users")}
-            className={`px-6 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
-              activeTab === "users"
-                ? "bg-white text-indigo-700 shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-            }`}
-          >
-            👥 Usuários ({users.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("teams")}
-            className={`px-6 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
-              activeTab === "teams"
-                ? "bg-white text-indigo-700 shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-            }`}
-          >
-            🏢 Equipes ({teams.teams.length})
-          </button>
+      <header className="flex flex-col gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            Administração
+          </h1>
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-gray-600">
+              Gerencie usuários, permissões e equipes da plataforma.
+            </p>
+            <div className="hidden md:flex items-center gap-2 text-xs text-gray-400">
+              <span>Atalhos:</span>
+              <div className="flex items-center gap-1">
+                <kbd className="bg-gray-100 px-1.5 py-0.5 rounded border text-gray-500">
+                  Alt
+                </kbd>
+                <span>+</span>
+                <kbd className="bg-gray-100 px-1.5 py-0.5 rounded border text-gray-500">
+                  1-3
+                </kbd>
+              </div>
+            </div>
+          </div>
         </div>
-        {activeTab === "users" && (
-          <section className="space-y-6">
+
+        {/* Enhanced Tab Navigation */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100/80 p-2 rounded-2xl border border-gray-200/60 shadow-sm">
+          <nav className="flex space-x-2" role="tablist">
+            <button
+              onClick={() => handleTabChange("users")}
+              className={`group relative flex-1 flex items-center justify-center gap-3 px-6 py-4 text-sm font-medium rounded-xl transition-all duration-300 ${
+                activeTab === "users"
+                  ? "bg-white text-indigo-700 shadow-lg shadow-indigo-500/10 border border-indigo-100"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+              }`}
+              role="tab"
+              aria-selected={activeTab === "users"}
+            >
+              <div
+                className={`p-2 rounded-lg transition-colors ${
+                  activeTab === "users"
+                    ? "bg-indigo-100 text-indigo-600"
+                    : "bg-gray-200 text-gray-500 group-hover:bg-gray-300"
+                }`}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m9 5.197v1M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              </div>
+              <div className="text-left">
+                <div className="font-semibold">Usuários</div>
+                <div
+                  className={`text-xs ${
+                    activeTab === "users" ? "text-indigo-500" : "text-gray-400"
+                  }`}
+                >
+                  {users.length} cadastrados
+                </div>
+              </div>
+              <div
+                className={`absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                  activeTab === "users" ? "text-indigo-400" : "text-gray-300"
+                }`}
+              >
+                <kbd className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded border">
+                  Alt+1
+                </kbd>
+              </div>
+              {activeTab === "users" && (
+                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
+              )}
+            </button>
+
+            <button
+              onClick={() => handleTabChange("teams")}
+              className={`group relative flex-1 flex items-center justify-center gap-3 px-6 py-4 text-sm font-medium rounded-xl transition-all duration-300 ${
+                activeTab === "teams"
+                  ? "bg-white text-emerald-700 shadow-lg shadow-emerald-500/10 border border-emerald-100"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+              }`}
+              role="tab"
+              aria-selected={activeTab === "teams"}
+            >
+              <div
+                className={`p-2 rounded-lg transition-colors ${
+                  activeTab === "teams"
+                    ? "bg-emerald-100 text-emerald-600"
+                    : "bg-gray-200 text-gray-500 group-hover:bg-gray-300"
+                }`}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+              </div>
+              <div className="text-left">
+                <div className="font-semibold">Equipes</div>
+                <div
+                  className={`text-xs ${
+                    activeTab === "teams" ? "text-emerald-500" : "text-gray-400"
+                  }`}
+                >
+                  {teams.teams.length} ativas
+                </div>
+              </div>
+              <div
+                className={`absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                  activeTab === "teams" ? "text-emerald-400" : "text-gray-300"
+                }`}
+              >
+                <kbd className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded border">
+                  Alt+2
+                </kbd>
+              </div>
+              {activeTab === "teams" && (
+                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"></div>
+              )}
+            </button>
+
+            <button
+              onClick={() => handleTabChange("subordinates")}
+              className={`group relative flex-1 flex items-center justify-center gap-3 px-6 py-4 text-sm font-medium rounded-xl transition-all duration-300 ${
+                activeTab === "subordinates"
+                  ? "bg-white text-purple-700 shadow-lg shadow-purple-500/10 border border-purple-100"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+              }`}
+              role="tab"
+              aria-selected={activeTab === "subordinates"}
+            >
+              <div
+                className={`p-2 rounded-lg transition-colors ${
+                  activeTab === "subordinates"
+                    ? "bg-purple-100 text-purple-600"
+                    : "bg-gray-200 text-gray-500 group-hover:bg-gray-300"
+                }`}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
+                </svg>
+              </div>
+              <div className="text-left">
+                <div className="font-semibold">Subordinados</div>
+                <div
+                  className={`text-xs ${
+                    activeTab === "subordinates"
+                      ? "text-purple-500"
+                      : "text-gray-400"
+                  }`}
+                >
+                  Hierarquias
+                </div>
+              </div>
+              <div
+                className={`absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                  activeTab === "subordinates"
+                    ? "text-purple-400"
+                    : "text-gray-300"
+                }`}
+              >
+                <kbd className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded border">
+                  Alt+3
+                </kbd>
+              </div>
+              {activeTab === "subordinates" && (
+                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
+              )}
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      <div className="mt-8">
+        {isTransitioning && (
+          <section className="flex items-center justify-center py-16">
+            <div className="flex items-center gap-3 text-gray-500">
+              <div className="animate-spin w-6 h-6 border-2 border-gray-300 border-t-indigo-600 rounded-full"></div>
+              <span className="text-sm">Carregando...</span>
+            </div>
+          </section>
+        )}
+
+        {!isTransitioning && activeTab === "users" && (
+          <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <UserMetricsCards users={users} loading={loading} />
 
-            <div className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-6">
+            <div className="bg-white/90 backdrop-blur border border-surface-300/70 shadow-lg shadow-indigo-500/5 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10">
               <EnhancedUsersToolbar
                 query={query}
                 setQuery={setQuery}
@@ -187,80 +418,94 @@ export default function AdminAccessPage() {
             </div>
           </section>
         )}
-        {activeTab === "teams" && (
-          <section className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-5">
+        {!isTransitioning && activeTab === "teams" && (
+          <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {!teams.selectedTeam && (
-              <div className="space-y-6">
+              <>
                 <TeamMetricsCards
                   metrics={teams.metrics}
                   loading={teams.loading}
                 />
-                <AdminTeamsToolbar
-                  search={teams.search}
-                  onSearch={teams.setSearch}
-                  role={teams.roleFilter}
-                  onRole={teams.setRoleFilter}
-                  teamId={teams.teamFilter}
-                  onTeam={teams.setTeamFilter}
-                  teams={teams.teams}
-                  onNew={() => setShowCreateTeam(true)}
-                  hint="Clique em uma equipe para ver detalhes"
-                />
-                <AdminTeamsTable
-                  filtered={teams.filteredTeams}
-                  loading={teams.loading}
-                  error={teams.error}
-                  onSelect={(id) => teams.selectTeam(id)}
-                  selectedId={
-                    (teams.selectedTeam && (teams.selectedTeam as any).id) ||
-                    null
-                  }
-                  onRemove={(id) => teams.deleteTeam(id)}
-                  onRename={(id, name) => teams.updateTeam(id, { name })}
-                />
-              </div>
-            )}
-            {teams.selectedTeam && (
-              <div className="space-y-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => teams.selectTeam(null)}
-                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
-                    >
-                      <FiArrowLeft className="w-4 h-4" /> Voltar
-                    </button>
-                    <h2 className="text-lg font-semibold text-gray-800 tracking-tight">
-                      Detalhes da equipe
-                    </h2>
-                  </div>
-                </div>
-                <div className="border-t border-surface-200/70 pt-4">
-                  <TeamDetailPanel
-                    team={teams.selectedTeam}
-                    busy={teams.refreshingTeam}
-                    onAddMember={(userId, role) =>
-                      teams.addMember(teams.selectedTeam!.id, userId, role)
+
+                <div className="bg-white/90 backdrop-blur border border-surface-300/70 shadow-lg shadow-emerald-500/5 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10">
+                  <AdminTeamsToolbar
+                    search={teams.search}
+                    onSearch={teams.setSearch}
+                    role={teams.roleFilter}
+                    onRole={teams.setRoleFilter}
+                    teamId={teams.teamFilter}
+                    onTeam={teams.setTeamFilter}
+                    teams={teams.teams}
+                    onNew={() => setShowCreateTeam(true)}
+                    hint="Clique em uma equipe para ver detalhes"
+                  />
+                  <AdminTeamsTable
+                    filtered={teams.filteredTeams}
+                    loading={teams.loading}
+                    error={teams.error}
+                    onSelect={(id) => teams.selectTeam(id)}
+                    selectedId={
+                      (teams.selectedTeam && (teams.selectedTeam as any).id) ||
+                      null
                     }
-                    onUpdateRole={(userId, role) =>
-                      teams.updateMemberRole(
-                        teams.selectedTeam!.id,
-                        userId,
-                        role
-                      )
-                    }
-                    onRemove={(userId) =>
-                      teams.removeMember(teams.selectedTeam!.id, userId)
-                    }
-                    availableUsers={users.map((u) => ({
-                      id: u.id,
-                      name: u.name,
-                      email: u.email,
-                    }))}
+                    onRemove={(id) => teams.deleteTeam(id)}
+                    onRename={(id, name) => teams.updateTeam(id, { name })}
                   />
                 </div>
+              </>
+            )}
+            {teams.selectedTeam && (
+              <div className="bg-white/90 backdrop-blur border border-surface-300/70 shadow-lg shadow-emerald-500/5 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10">
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => teams.selectTeam(null)}
+                        className="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                      >
+                        <FiArrowLeft className="w-4 h-4" /> Voltar
+                      </button>
+                      <h2 className="text-lg font-semibold text-gray-800 tracking-tight">
+                        Detalhes da equipe
+                      </h2>
+                    </div>
+                  </div>
+                  <div className="border-t border-surface-200/70 pt-4">
+                    <TeamDetailPanel
+                      team={teams.selectedTeam}
+                      busy={teams.refreshingTeam}
+                      onAddMember={(userId, role) =>
+                        teams.addMember(teams.selectedTeam!.id, userId, role)
+                      }
+                      onUpdateRole={(userId, role) =>
+                        teams.updateMemberRole(
+                          teams.selectedTeam!.id,
+                          userId,
+                          role
+                        )
+                      }
+                      onRemove={(userId) =>
+                        teams.removeMember(teams.selectedTeam!.id, userId)
+                      }
+                      availableUsers={users.map((u) => ({
+                        id: u.id,
+                        name: u.name,
+                        email: u.email,
+                      }))}
+                    />
+                  </div>
+                </div>
               </div>
             )}
+          </section>
+        )}
+        {!isTransitioning && activeTab === "subordinates" && (
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white/90 backdrop-blur border border-surface-300/70 shadow-lg shadow-purple-500/5 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
+              <AdminSubordinatesManagement
+                onBack={() => handleTabChange("users")}
+              />
+            </div>
           </section>
         )}
       </div>

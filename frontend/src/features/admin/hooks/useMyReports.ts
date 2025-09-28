@@ -19,7 +19,9 @@ export function useMyReports() {
     let active = true;
     (async () => {
       try {
-        const res = await api<ReportUser[]>("/auth/my-reports", { auth: true });
+        const res = await api<ReportUser[]>("/management/subordinates", {
+          auth: true,
+        });
         if (!active) return;
         setReports(res || []);
       } catch (e: any) {

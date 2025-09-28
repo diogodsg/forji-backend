@@ -1,5 +1,6 @@
 // MOVED from src/components/editors/KeyResultsEditor.tsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { FiTarget, FiEdit3, FiList, FiTrash2, FiPlus } from "react-icons/fi";
 import type { PdiKeyResult } from "../..";
 
 interface Props {
@@ -16,21 +17,49 @@ export const KeyResultsEditor: React.FC<Props> = ({
   onUpdate,
 }) => {
   return (
-    <div className="space-y-4">
-      <div>
+    <div className="space-y-6 pt-4">
+      {/* Header com botão de adicionar */}
+      <div className="flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border border-indigo-200">
+        <div>
+          <h3 className="text-sm font-semibold text-indigo-900 mb-1">
+            Objetivos Chave & Resultados Mensuráveis
+          </h3>
+          <p className="text-xs text-indigo-700">
+            Defina metas SMART com critérios claros de sucesso
+          </p>
+        </div>
         <button
           type="button"
           onClick={onAdd}
-          className="text-xs px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-500"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
         >
-          Adicionar KR
+          <FiPlus className="w-4 h-4" />
+          Novo KR
         </button>
       </div>
+
       {krs.length === 0 && (
-        <div className="text-xs text-gray-500">Nenhuma KR.</div>
+        <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-200 rounded-full mb-3">
+            <span className="text-lg font-bold text-gray-500">KR</span>
+          </div>
+          <p className="text-sm text-gray-600 mb-1">
+            Comece criando seu primeiro Key Result
+          </p>
+          <p className="text-xs text-gray-500">
+            Use o botão "Novo KR" acima para adicionar
+          </p>
+        </div>
       )}
-      {krs.map((kr) => (
-        <KrEditor key={kr.id} kr={kr} onRemove={onRemove} onUpdate={onUpdate} />
+
+      {krs.map((kr, index) => (
+        <KrEditor
+          key={kr.id}
+          kr={kr}
+          index={index + 1}
+          onRemove={onRemove}
+          onUpdate={onUpdate}
+        />
       ))}
     </div>
   );
@@ -67,9 +96,10 @@ function useAutoResizeTextarea(
 
 const KrEditor: React.FC<{
   kr: PdiKeyResult;
+  index?: number;
   onRemove: (id: string) => void;
   onUpdate: (id: string, patch: Partial<PdiKeyResult>) => void;
-}> = ({ kr, onRemove, onUpdate }) => {
+}> = ({ kr, index, onRemove, onUpdate }) => {
   const [tab, setTab] = useState<"main" | "actions">("main");
   // Estados locais espelham o reducer global para reduzir dispatch por tecla
   const [desc, setDesc] = useState(kr.description || "");
@@ -146,89 +176,150 @@ const KrEditor: React.FC<{
     actionsDraft !== (kr.improvementActions || []).join("\n");
 
   return (
-    <div className="border border-surface-300 rounded-lg p-3 bg-surface-50/60 text-xs space-y-2 relative">
-      {isDraft && (
-        <span className="absolute right-2 top-2 text-[10px] px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200 font-medium">
-          Draft
-        </span>
+    <div className="relative bg-gradient-to-br from-white to-indigo-50/30 border border-indigo-200/60 rounded-xl p-6 shadow-sm">
+      {/* Badge numerado */}
+      {index && (
+        <div className="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+          {index}
+        </div>
       )}
-      <div className="flex items-center justify-between">
-        <input
-          ref={descRef}
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          onBlur={flushAll}
-          className="flex-1 bg-transparent font-medium text-indigo-700"
-          placeholder="Descrição da KR"
-        />
-        <button
-          type="button"
-          onClick={() => onRemove(kr.id)}
-          className="ml-2 text-[10px] px-2 py-1 rounded bg-red-50 text-red-600 border border-red-300"
-        >
-          Remover
-        </button>
-      </div>
-      <textarea
-        ref={successRef}
-        value={success}
-        onChange={(e) => setSuccess(e.target.value)}
-        onBlur={flushAll}
-        rows={1}
-        className="w-full resize-none rounded border border-surface-300 p-1 leading-snug"
-        placeholder="Critério de sucesso"
-      />
-      <textarea
-        ref={statusRef}
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-        onBlur={flushAll}
-        rows={1}
-        className="w-full resize-none rounded border border-surface-300 p-1 leading-snug"
-        placeholder="Status atual"
-      />
-      <div>
-        <div className="flex gap-2 mb-2">
+
+      {/* Indicador de draft */}
+      {isDraft && (
+        <div className="absolute -top-2 -right-2 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full border border-amber-200 shadow-sm">
+          <FiEdit3 className="w-3 h-3" /> Editando
+        </div>
+      )}
+
+      <div className="space-y-5">
+        {/* Header com título e botão remover */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <FiTarget className="w-4 h-4" /> Descrição do Objetivo
+            </label>
+            <input
+              ref={descRef}
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              onBlur={flushAll}
+              className="w-full text-lg font-semibold text-indigo-900 bg-transparent border-0 border-b-2 border-indigo-200 focus:border-indigo-500 outline-none pb-2 transition-colors"
+              placeholder="Ex: Aumentar conversão de leads em 25%"
+            />
+          </div>
           <button
             type="button"
-            onClick={() => setTab("main")}
-            className={`px-2 py-0.5 rounded ${
-              tab === "main"
-                ? "bg-indigo-600 text-white"
-                : "bg-white border border-indigo-200 text-indigo-600"
-            }`}
+            onClick={() => onRemove(kr.id)}
+            className="shrink-0 px-3 py-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
           >
-            Ações
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("actions")}
-            className={`px-2 py-0.5 rounded ${
-              tab === "actions"
-                ? "bg-indigo-600 text-white"
-                : "bg-white border border-indigo-200 text-indigo-600"
-            }`}
-          >
-            Lista
+            <FiTrash2 className="w-4 h-4" /> Remover
           </button>
         </div>
-        {tab === "main" ? (
-          <textarea
-            ref={actionsRef}
-            value={actionsDraft}
-            onChange={(e) => setActionsDraft(e.target.value)}
-            onBlur={flushAll}
-            rows={1}
-            className="w-full resize-none rounded border border-surface-300 p-1 leading-snug"
-            placeholder="Ações de melhoria (uma por linha)"
-          />
-        ) : (
-          <ul className="list-disc ml-4 space-y-1">
-            {(kr.improvementActions || []).map((a, i) => (
-              <li key={i}>{a}</li>
-            ))}
-          </ul>
-        )}
+
+        <div className="grid md:grid-cols-2 gap-5">
+          {/* Critério de Sucesso */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <label className="block text-sm font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+              Critério de Sucesso
+            </label>
+            <textarea
+              ref={successRef}
+              value={success}
+              onChange={(e) => setSuccess(e.target.value)}
+              onBlur={flushAll}
+              rows={3}
+              className="w-full resize-none border border-emerald-300 rounded-lg p-3 text-sm text-emerald-900 bg-white/80 focus:bg-white focus:border-emerald-500 outline-none transition-colors"
+              placeholder="Como você saberá que atingiu este objetivo? Seja específico e mensurável..."
+            />
+          </div>
+
+          {/* Status Atual */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <label className="block text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              Status Atual
+            </label>
+            <textarea
+              ref={statusRef}
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              onBlur={flushAll}
+              rows={3}
+              className="w-full resize-none border border-blue-300 rounded-lg p-3 text-sm text-blue-900 bg-white/80 focus:bg-white focus:border-blue-500 outline-none transition-colors"
+              placeholder="Qual é a situação atual? O que já foi feito até agora?"
+            />
+          </div>
+        </div>
+
+        {/* Próximos Passos */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-semibold text-amber-800 flex items-center gap-2">
+              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+              Próximos Passos
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setTab("main")}
+                className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                  tab === "main"
+                    ? "bg-amber-600 text-white shadow-sm"
+                    : "bg-white text-amber-700 border border-amber-300 hover:bg-amber-100"
+                }`}
+              >
+                <FiEdit3 className="w-3 h-3" /> Editar
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("actions")}
+                className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                  tab === "actions"
+                    ? "bg-amber-600 text-white shadow-sm"
+                    : "bg-white text-amber-700 border border-amber-300 hover:bg-amber-100"
+                }`}
+              >
+                <FiList className="w-3 h-3" /> Lista
+              </button>
+            </div>
+          </div>
+
+          {tab === "main" ? (
+            <textarea
+              ref={actionsRef}
+              value={actionsDraft}
+              onChange={(e) => setActionsDraft(e.target.value)}
+              onBlur={flushAll}
+              rows={4}
+              className="w-full resize-none border border-amber-300 rounded-lg p-3 text-sm text-amber-900 bg-white/80 focus:bg-white focus:border-amber-500 outline-none transition-colors"
+              placeholder="Liste as ações específicas que precisa tomar (uma por linha)&#10;&#10;Ex:&#10;• Implementar sistema de analytics&#10;• Otimizar landing page&#10;• Criar campanha de email marketing"
+            />
+          ) : (
+            <div className="bg-white/80 rounded-lg p-3 border border-amber-300">
+              {(kr.improvementActions || []).length === 0 ? (
+                <p className="text-sm text-amber-700 italic">
+                  Nenhuma ação definida ainda. Use a aba "Editar" para
+                  adicionar.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {(kr.improvementActions || []).map((action, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 text-sm text-amber-900"
+                    >
+                      <span className="inline-block w-6 h-6 bg-amber-200 text-amber-800 rounded-full text-xs font-bold flex items-center justify-center mt-0.5 shrink-0">
+                        {i + 1}
+                      </span>
+                      <span className="leading-relaxed">{action}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

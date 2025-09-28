@@ -52,12 +52,11 @@ export function ManagerDashboardPage() {
         const myReportsInTeam = team.memberships
           .map((m) => {
             const foundReport = myDirectReports.find(
-              (r) => r.userId === m.user.id
+              (r) => Number(r.userId) === Number(m.user.id)
             );
             return foundReport || null;
           })
           .filter(Boolean) as ReportSummary[];
-
         if (myReportsInTeam.length === 0) return null;
 
         return {
@@ -215,70 +214,125 @@ export function ManagerDashboardPage() {
             </div>
           )}
 
+          {/* Seção para mostrar todas as pessoas gerenciadas, mesmo sem times */}
           {!allTeams.loading &&
-            myTeamsWithMyReports.length === 0 &&
-            myDirectReports.length > 0 && (
-              <div className="bg-gradient-to-br from-amber-50 via-orange-50/80 to-yellow-50/60 border border-amber-200/60 rounded-2xl p-8 shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full shadow-inner">
-                    <svg
-                      className="w-6 h-6 text-amber-600 flex-shrink-0"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <h3 className="font-bold text-amber-900 text-lg">
-                        Times não encontrados
+            myDirectReports.length > 0 &&
+            myTeamsWithMyReports.length === 0 && (
+              <div className="mt-6">
+                <div className="bg-gradient-to-br from-indigo-50 via-blue-50/80 to-purple-50/60 border border-indigo-200/60 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-indigo-100 rounded-lg">
+                      <svg
+                        className="w-5 h-5 text-indigo-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m9 5.197v1M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-indigo-900 text-lg">
+                        Pessoas que Gerencio
                       </h3>
-                      <span className="bg-amber-200 text-amber-800 text-xs font-semibold px-2 py-1 rounded-full">
+                      <p className="text-indigo-700 text-sm">
                         {myDirectReports.length} pessoa
-                        {myDirectReports.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    <p className="text-amber-700 leading-relaxed mb-4">
-                      Você gerencia{" "}
-                      <span className="font-semibold bg-amber-100 px-2 py-1 rounded-md">
-                        {myDirectReports.length} pessoa
-                        {myDirectReports.length !== 1 ? "s" : ""}
-                      </span>
-                      , mas elas não estão organizadas em times ainda.
-                    </p>
-                    <div className="bg-white/50 rounded-lg p-4 border border-amber-200/40">
-                      <p className="text-sm text-amber-600 mb-3">
-                        <span className="font-semibold">💡 O que fazer:</span>
+                        {myDirectReports.length !== 1 ? "s" : ""} sob sua gestão
+                        <span className="text-indigo-500 ml-2">
+                          • Aguardando organização em times
+                        </span>
                       </p>
-                      <ul className="text-sm text-amber-700 space-y-2">
-                        <li className="flex items-start gap-2">
-                          <span className="text-amber-500 mt-0.5">•</span>
-                          <span>
-                            Entre em contato com o <strong>RH</strong> para
-                            organizar as pessoas em times
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-amber-500 mt-0.5">•</span>
-                          <span>
-                            Peça ao <strong>administrador</strong> para
-                            configurar a estrutura organizacional
-                          </span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-amber-500 mt-0.5">•</span>
-                          <span>
-                            Assim que organizadas, as pessoas aparecerão aqui
-                            por time
-                          </span>
-                        </li>
-                      </ul>
                     </div>
+                  </div>
+
+                  <div className="grid gap-3">
+                    {myDirectReports.map((person) => (
+                      <div
+                        key={person.userId}
+                        className="bg-white rounded-xl p-4 border border-indigo-100/60 hover:border-indigo-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                        onClick={() => handleSelectUser(person.userId)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                              {person.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-surface-900 group-hover:text-indigo-700 transition-colors">
+                                {person.name}
+                              </div>
+                              <div className="text-sm text-surface-600">
+                                {person.email}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            {/* PRs Stats */}
+                            <div className="flex items-center gap-2">
+                              <div className="text-xs text-surface-500">
+                                PRs:
+                              </div>
+                              <div className="flex gap-1">
+                                <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+                                  {person.prs.merged}
+                                </span>
+                                <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                                  {person.prs.open}
+                                </span>
+                                <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">
+                                  {person.prs.closed}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* PDI Status */}
+                            <div className="flex items-center gap-2">
+                              <div className="text-xs text-surface-500">
+                                PDI:
+                              </div>
+                              <div
+                                className={`w-3 h-3 rounded-full ${
+                                  person.pdi.exists
+                                    ? "bg-green-500"
+                                    : "bg-gray-300"
+                                }`}
+                              ></div>
+                              {person.pdi.exists && (
+                                <span className="text-xs text-surface-600">
+                                  {Math.round(person.pdi.progress * 100)}%
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Arrow */}
+                            <svg
+                              className="w-5 h-5 text-surface-400 group-hover:text-indigo-500 transition-colors"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -397,7 +451,7 @@ export function ManagerDashboardPage() {
                             {t.memberships.filter(
                               (m) =>
                                 !myDirectReports.some(
-                                  (r) => r.userId === m.user.id
+                                  (r) => Number(r.userId) === Number(m.user.id)
                                 )
                             ).length > 0 && (
                               <div>
@@ -410,7 +464,9 @@ export function ManagerDashboardPage() {
                                     .filter(
                                       (m) =>
                                         !myDirectReports.some(
-                                          (r) => r.userId === m.user.id
+                                          (r) =>
+                                            Number(r.userId) ===
+                                            Number(m.user.id)
                                         )
                                     )
                                     .map((m) => {

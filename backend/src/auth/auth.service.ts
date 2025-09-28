@@ -70,10 +70,17 @@ export class AuthService {
       logger.debug({ userId }, "auth.profile.not_found");
       return null;
     }
+
+    // Check if user is a manager by looking at management rules
+    const managementRules = await this.prisma.managementRule.findMany({
+      where: { managerId: userId },
+    });
+    const isManager = managementRules.length > 0;
+
     const { password, ...rest } = u as any;
     return {
       ...rest,
-      isManager: false, // Temporarily disabled until relations are fixed
+      isManager,
       isAdmin: !!(u as any).isAdmin,
     };
   }

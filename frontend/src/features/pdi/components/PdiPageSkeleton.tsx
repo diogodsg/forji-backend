@@ -1,4 +1,4 @@
-import { Skeleton } from "@/shared";
+import { Skeleton } from "../../../shared";
 
 export function PdiPageSkeleton() {
   return (
@@ -22,11 +22,7 @@ export function PdiPageSkeleton() {
 
       {/* Section Cards */}
       <div className="space-y-8">
-        {[
-          "Competências técnicas a desenvolver",
-          "Key Results",
-          "Resultado",
-        ].map((title) => (
+        {["Key Results", "Competências e Resultados"].map((title) => (
           <div
             key={title}
             className="rounded-2xl border border-surface-300 bg-white shadow-sm p-6 space-y-6"

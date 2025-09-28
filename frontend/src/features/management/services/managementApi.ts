@@ -48,4 +48,43 @@ export const managementApi = {
       auth: true,
     });
   },
+
+  // ============ ADMIN FUNCTIONS ============
+
+  // Admin: Criar regra para qualquer usuário
+  async adminCreateRule(
+    managerId: number,
+    rule: CreateManagementRuleDto
+  ): Promise<ManagementRule> {
+    return api<ManagementRule>("/management/admin/rules", {
+      method: "POST",
+      body: JSON.stringify({ ...rule, managerId }),
+      headers: { "Content-Type": "application/json" },
+      auth: true,
+    });
+  },
+
+  // Admin: Listar regras de qualquer usuário ou todas as regras
+  async adminGetRules(managerId?: number): Promise<ManagementRule[]> {
+    const params = managerId ? `?managerId=${managerId}` : "";
+    return api<ManagementRule[]>(`/management/admin/rules${params}`, {
+      auth: true,
+    });
+  },
+
+  // Admin: Remover qualquer regra
+  async adminRemoveRule(ruleId: number): Promise<void> {
+    await api(`/management/admin/rules/${ruleId}`, {
+      method: "DELETE",
+      auth: true,
+    });
+  },
+
+  // Admin: Listar subordinados de qualquer usuário
+  async adminGetSubordinates(managerId: number): Promise<SubordinateInfo[]> {
+    return api<SubordinateInfo[]>(
+      `/management/admin/subordinates?managerId=${managerId}`,
+      { auth: true }
+    );
+  },
 };
