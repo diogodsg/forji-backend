@@ -63,12 +63,6 @@ export const EditablePdiView: React.FC<Props> = ({
     editingSections.results ||
     editingMilestones.size > 0;
 
-  useEffect(() => {
-    if (working.userId !== String(initialPlan.userId)) {
-      dispatch({ type: "INIT", plan: initialPlan });
-    }
-  }, [initialPlan.userId]);
-
   // Sincronizar mudanças do PDI com o ciclo selecionado
   useEffect(() => {
     if (selectedCycle) {
@@ -80,22 +74,6 @@ export const EditablePdiView: React.FC<Props> = ({
       });
     }
   }, [working.competencies, working.milestones, working.krs, working.records, updateSelectedCyclePdi, selectedCycle]);
-
-  // Inicializar PDI com dados do ciclo selecionado
-  useEffect(() => {
-    if (selectedCycle?.pdi) {
-      const cyclePlan: PdiPlan = {
-        ...initialPlan,
-        competencies: selectedCycle.pdi.competencies,
-        milestones: selectedCycle.pdi.milestones,
-        krs: selectedCycle.pdi.krs || [],
-        records: selectedCycle.pdi.records,
-      };
-      dispatch({ type: "INIT", plan: cyclePlan });
-    } else if (!selectedCycle) {
-      dispatch({ type: "INIT", plan: initialPlan });
-    }
-  }, [selectedCycle, initialPlan]);
   const pendingSave = state.meta.pendingSave;
   const saving = state.meta.saving;
 
