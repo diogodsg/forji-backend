@@ -1,5 +1,5 @@
 // MOVED from src/hooks/usePdiEditing.ts
-import { useReducer, useCallback, useEffect } from "react";
+import { useReducer, useCallback, useEffect, useRef } from "react";
 import type {
   PdiPlan,
   PdiMilestone,
@@ -261,13 +261,23 @@ export function usePdiEditing(initial: PdiPlan) {
     })
   );
   
+  // Usar ref para evitar loops infinitos
+  const lastInitialRef = useRef<{ userId: string | number; updatedAt: string }>({
+    userId: initial.userId,
+    updatedAt: initial.updatedAt
+  });
+
   // Reagir às mudanças do plano inicial
   useEffect(() => {
-    if (state.working.userId !== String(initial.userId) ||
-        state.working.updatedAt !== initial.updatedAt) {
+    const currentInitial = { userId: initial.userId, updatedAt: initial.updatedAt };
+    const lastInitial = lastInitialRef.current;
+    
+    if (currentInitial.userId !== lastInitial.userId ||
+        currentInitial.updatedAt !== lastInitial.updatedAt) {
+      lastInitialRef.current = currentInitial;
       dispatch({ type: "INIT", plan: initial });
     }
-  }, [initial.userId, initial.updatedAt, initial]);
+  }, [initial.userId, initial.updatedAt]);
   const toggleSection = useCallback(
     (section: keyof PdiEditingState["editing"]["sections"]) =>
       dispatch({ type: "TOGGLE_SECTION", section }),
