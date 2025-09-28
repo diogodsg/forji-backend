@@ -235,15 +235,19 @@ export const EditablePdiView: React.FC<Props> = ({
           action={
             <button
               onClick={() => toggleSection("krs")}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all ${
+                editingSections.krs 
+                  ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100" 
+                  : "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+              }`}
             >
               {editingSections.krs ? (
                 <>
-                  <FiCheckSquare className="w-3.5 h-3.5" /> Concluir
+                  <FiCheckSquare className="w-3.5 h-3.5" /> Concluir Edição
                 </>
               ) : (
                 <>
-                  <FiEdit2 className="w-3.5 h-3.5" /> Editar
+                  <FiEdit2 className="w-3.5 h-3.5" /> Editar KRs
                 </>
               )}
             </button>
