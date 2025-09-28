@@ -26,6 +26,9 @@ export function ManagerDashboardPage() {
       userId: r.id,
       name: r.name,
       email: r.email,
+      position: null,
+      bio: null,
+      teams: [],
       pdi: { exists: false, progress: 0 },
     }));
 
@@ -455,6 +458,9 @@ export function ManagerDashboardPage() {
                                         userId: m.user.id,
                                         name: m.user.name,
                                         email: m.user.email,
+                                        position: null,
+                                        bio: null,
+                                        teams: [],
                                         pdi: { exists: false, progress: 0 },
                                       };
                                       return (

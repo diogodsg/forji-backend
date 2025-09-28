@@ -27,13 +27,37 @@ export function ReportCard({ report, onSelect, active }: ReportCardProps) {
     >
       <div className="flex items-center gap-3">
         <Avatar name={report.name} />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="font-medium text-sm truncate">{report.name}</div>
+          {report.position && (
+            <div className="text-[11px] text-indigo-600 truncate font-medium">
+              {report.position}
+            </div>
+          )}
           <div className="text-[11px] text-surface-500 truncate">
             {report.email}
           </div>
         </div>
       </div>
+      {/* Teams */}
+      {report.teams && report.teams.length > 0 && (
+        <div className="flex items-center gap-1 flex-wrap">
+          {report.teams.slice(0, 2).map((team) => (
+            <span
+              key={team.id}
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700"
+            >
+              {team.name}
+            </span>
+          ))}
+          {report.teams.length > 2 && (
+            <span className="text-[10px] text-surface-500 font-medium">
+              +{report.teams.length - 2} mais
+            </span>
+          )}
+        </div>
+      )}
+      
       <div className="flex items-center gap-2 text-[10px] font-medium flex-wrap">
         <Badge color="amber">PDI {pdi.exists ? `${progressPct}%` : "—"}</Badge>
       </div>

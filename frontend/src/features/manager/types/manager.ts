@@ -3,6 +3,9 @@ export interface ReportSummary {
   name: string;
   email: string;
   githubId?: string;
+  position?: string | null;
+  bio?: string | null;
+  teams?: Array<{ id: number; name: string }>;
   pdi: {
     exists: boolean;
     progress: number; // 0..1

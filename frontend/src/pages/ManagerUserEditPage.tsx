@@ -28,6 +28,9 @@ export function ManagerUserEditPage() {
       userId: found.id,
       name: found.name,
       email: found.email,
+      position: null,
+      bio: null,
+      teams: [],
       pdi: { exists: false, progress: 0 },
     } as ReportSummary;
   }, [myReports, userId]);
@@ -67,6 +70,9 @@ export function ManagerUserEditPage() {
               userId: hit.user.id,
               name: hit.user.name,
               email: hit.user.email,
+              position: null,
+              bio: null,
+              teams: [],
               pdi: { exists: false, progress: 0 },
             });
             break;

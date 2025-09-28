@@ -187,34 +187,30 @@ export class ManagementService {
   async getManagerDashboard(managerId: number) {
     const subordinates = await this.getEffectiveSubordinates(managerId);
 
-    // Buscar dados de PRs e PDI para cada subordinado
+    // Buscar dados completos para cada subordinado incluindo cargo e times
     const reports = await Promise.all(
       subordinates.map(async (sub) => {
-        // Buscar PRs do subordinado
-        const prs = await this.prisma.pullRequest.findMany({
-          where: { ownerUserId: BigInt(sub.id) },
-          select: { state: true, updatedAt: true },
+        // Buscar dados completos do usuário incluindo cargo
+        const user = await this.prisma.user.findUnique({
+          where: { id: BigInt(sub.id) },
+          select: {
+            position: true,
+            bio: true,
+          },
         });
 
-        const prsStats = {
-          open: prs.filter((pr) => pr.state === "open").length,
-          merged: prs.filter((pr) => pr.state === "merged").length,
-          closed: prs.filter((pr) => pr.state === "closed").length,
-          lastActivity:
-            prs.length > 0
-              ? prs
-                  .sort((a, b) => {
-                    const dateA = a.updatedAt
-                      ? new Date(a.updatedAt).getTime()
-                      : 0;
-                    const dateB = b.updatedAt
-                      ? new Date(b.updatedAt).getTime()
-                      : 0;
-                    return dateB - dateA;
-                  })[0]
-                  .updatedAt?.toISOString()
-              : undefined,
-        };
+        // Buscar times do usuário
+        const teamMemberships = await this.prisma.teamMembership.findMany({
+          where: { userId: BigInt(sub.id) },
+          include: {
+            team: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        });
 
         // Buscar PDI do subordinado
         const pdi = await this.prisma.pdiPlan.findUnique({
@@ -231,19 +227,19 @@ export class ManagementService {
           userId: sub.id,
           name: sub.name,
           email: sub.email,
+          position: user?.position || null,
+          bio: user?.bio || null,
+          teams: teamMemberships.map((tm) => ({
+            id: Number(tm.team.id),
+            name: tm.team.name,
+          })),
           pdi: pdiInfo,
-          prs: prsStats,
         };
       })
     );
 
     // Calcular métricas agregadas
     const totalReports = reports.length;
-    const totalPrs = {
-      open: reports.reduce((sum, r) => sum + r.prs.open, 0),
-      merged: reports.reduce((sum, r) => sum + r.prs.merged, 0),
-      closed: reports.reduce((sum, r) => sum + r.prs.closed, 0),
-    };
     const pdiActive = reports.filter((r) => r.pdi.exists).length;
     const avgPdiProgress =
       totalReports > 0
@@ -254,7 +250,6 @@ export class ManagementService {
       reports,
       metrics: {
         totalReports,
-        prs: totalPrs,
         pdiActive,
         avgPdiProgress,
       },
