@@ -57,7 +57,7 @@ export function ReportCard({ report, onSelect, active }: ReportCardProps) {
           )}
         </div>
       )}
-      
+
       <div className="flex items-center gap-2 text-[10px] font-medium flex-wrap">
         <Badge color="amber">PDI {pdi.exists ? `${progressPct}%` : "—"}</Badge>
       </div>
@@ -146,5 +146,3 @@ function ProgressBar({ value, exists }: { value: number; exists: boolean }) {
     </div>
   );
 }
-
-

@@ -20,5 +20,3 @@ export function getPdiStats(plan?: PdiPlan): PdiDerivedStats {
   const avgProgressPct = krs.length ? (completed / krs.length) * 100 : 0;
   return { competenciesCount, openKrs, meetings, avgProgressPct };
 }
-
-

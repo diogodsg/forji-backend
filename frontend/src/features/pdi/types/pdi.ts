@@ -34,7 +34,7 @@ export interface PdiCycle {
   description?: string;
   startDate: string;
   endDate: string;
-  status: 'planned' | 'active' | 'completed' | 'paused';
+  status: "planned" | "active" | "completed" | "paused";
   pdi: {
     competencies: string[];
     milestones: PdiMilestone[];

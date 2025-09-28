@@ -7,15 +7,17 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
     if (initialPlan.cycles && initialPlan.cycles.length > 0) {
       return initialPlan.cycles;
     }
-    
+
     // Migrar PDI atual para um ciclo padrão
     const defaultCycle: PdiCycle = {
       id: `cycle-${Date.now()}`,
       title: "Ciclo Principal",
       description: "Ciclo principal de desenvolvimento",
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 90 dias
-      status: 'active',
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0], // 90 dias
+      status: "active",
       pdi: {
         competencies: initialPlan.competencies || [],
         milestones: initialPlan.milestones || [],
@@ -25,62 +27,76 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     return [defaultCycle];
   });
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => {
     // Selecionar o ciclo ativo ou o primeiro ciclo
-    const activeCycle = cycles.find(c => c.status === 'active');
-    return activeCycle?.id || cycles[0]?.id || '';
+    const activeCycle = cycles.find((c) => c.status === "active");
+    return activeCycle?.id || cycles[0]?.id || "";
   });
 
-  const selectedCycle = cycles.find(c => c.id === selectedCycleId);
+  const selectedCycle = cycles.find((c) => c.id === selectedCycleId);
 
-  const createCycle = useCallback((cycleData: Omit<PdiCycle, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newCycle: PdiCycle = {
-      ...cycleData,
-      id: `cycle-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  const createCycle = useCallback(
+    (cycleData: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">) => {
+      const newCycle: PdiCycle = {
+        ...cycleData,
+        id: `cycle-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    setCycles(prev => [...prev, newCycle]);
-    setSelectedCycleId(newCycle.id);
-  }, []);
+      setCycles((prev) => [...prev, newCycle]);
+      setSelectedCycleId(newCycle.id);
+    },
+    []
+  );
 
-  const updateCycle = useCallback((cycleId: string, updates: Partial<PdiCycle>) => {
-    setCycles(prev => prev.map(cycle => 
-      cycle.id === cycleId 
-        ? { ...cycle, ...updates, updatedAt: new Date().toISOString() }
-        : cycle
-    ));
-  }, []);
+  const updateCycle = useCallback(
+    (cycleId: string, updates: Partial<PdiCycle>) => {
+      setCycles((prev) =>
+        prev.map((cycle) =>
+          cycle.id === cycleId
+            ? { ...cycle, ...updates, updatedAt: new Date().toISOString() }
+            : cycle
+        )
+      );
+    },
+    []
+  );
 
-  const deleteCycle = useCallback((cycleId: string) => {
-    setCycles(prev => {
-      const filtered = prev.filter(c => c.id !== cycleId);
-      
-      // Se o ciclo selecionado foi deletado, selecionar outro
-      if (cycleId === selectedCycleId && filtered.length > 0) {
-        const activeCycle = filtered.find(c => c.status === 'active');
-        setSelectedCycleId(activeCycle?.id || filtered[0].id);
-      }
-      
-      return filtered;
-    });
-  }, [selectedCycleId]);
+  const deleteCycle = useCallback(
+    (cycleId: string) => {
+      setCycles((prev) => {
+        const filtered = prev.filter((c) => c.id !== cycleId);
 
-  const updateSelectedCyclePdi = useCallback((pdiUpdates: Partial<PdiCycle['pdi']>) => {
-    if (!selectedCycleId) return;
-    
-    updateCycle(selectedCycleId, {
-      pdi: {
-        ...selectedCycle?.pdi,
-        ...pdiUpdates,
-      } as PdiCycle['pdi'],
-    });
-  }, [selectedCycleId, selectedCycle, updateCycle]);
+        // Se o ciclo selecionado foi deletado, selecionar outro
+        if (cycleId === selectedCycleId && filtered.length > 0) {
+          const activeCycle = filtered.find((c) => c.status === "active");
+          setSelectedCycleId(activeCycle?.id || filtered[0].id);
+        }
+
+        return filtered;
+      });
+    },
+    [selectedCycleId]
+  );
+
+  const updateSelectedCyclePdi = useCallback(
+    (pdiUpdates: Partial<PdiCycle["pdi"]>) => {
+      if (!selectedCycleId) return;
+
+      updateCycle(selectedCycleId, {
+        pdi: {
+          ...selectedCycle?.pdi,
+          ...pdiUpdates,
+        } as PdiCycle["pdi"],
+      });
+    },
+    [selectedCycleId, selectedCycle, updateCycle]
+  );
 
   // Gerar PdiPlan compatível para o ciclo selecionado
   const getCurrentPdiPlan = useCallback((): PdiPlan => {

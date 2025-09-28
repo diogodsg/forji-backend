@@ -5,7 +5,7 @@ import type { PdiCycle } from "../../types/pdi";
 
 interface CreateCycleModalProps {
   onClose: () => void;
-  onCreate: (cycle: Omit<PdiCycle, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onCreate: (cycle: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">) => void;
 }
 
 export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
@@ -15,27 +15,27 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
     description: "",
     startDate: format(startOfMonth(today), "yyyy-MM-dd"),
     endDate: format(endOfMonth(addMonths(today, 2)), "yyyy-MM-dd"), // 3 meses por padrão
-    status: 'planned' as PdiCycle['status'],
+    status: "planned" as PdiCycle["status"],
   });
 
   // Atalhos de teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
-      } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         handleSubmit(e as any);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
       alert("Por favor, insira um título para o ciclo.");
       return;
@@ -46,7 +46,7 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
       return;
     }
 
-    const cycleData: Omit<PdiCycle, 'id' | 'createdAt' | 'updatedAt'> = {
+    const cycleData: Omit<PdiCycle, "id" | "createdAt" | "updatedAt"> = {
       title: formData.title.trim(),
       description: formData.description.trim() || undefined,
       startDate: formData.startDate,
@@ -66,7 +66,7 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
   const handleQuickPreset = (months: number) => {
     const start = startOfMonth(today);
     const end = endOfMonth(addMonths(start, months - 1));
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       startDate: format(start, "yyyy-MM-dd"),
       endDate: format(end, "yyyy-MM-dd"),
@@ -78,19 +78,26 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
       name: "Trimestre Atual",
       description: "Ciclo de 3 meses focado em objetivos de curto prazo",
       duration: 3,
-      titleSuggestion: `Q${Math.ceil((today.getMonth() + 1) / 3)} ${today.getFullYear()}`,
+      titleSuggestion: `Q${Math.ceil(
+        (today.getMonth() + 1) / 3
+      )} ${today.getFullYear()}`,
     },
     {
       name: "Semestre",
       description: "Ciclo de 6 meses para projetos de médio prazo",
       duration: 6,
-      titleSuggestion: `${today.getMonth() < 6 ? '1º' : '2º'} Semestre ${today.getFullYear()}`,
+      titleSuggestion: `${
+        today.getMonth() < 6 ? "1º" : "2º"
+      } Semestre ${today.getFullYear()}`,
     },
     {
       name: "Sprint Mensal",
       description: "Ciclo de 1 mês para foco intensivo",
       duration: 1,
-      titleSuggestion: `${today.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+      titleSuggestion: `${today.toLocaleDateString("pt-BR", {
+        month: "long",
+        year: "numeric",
+      })}`,
     },
   ];
 
@@ -99,10 +106,22 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Criar Novo Ciclo</h2>
+            <h2 className="text-base font-semibold text-gray-900">
+              Criar Novo Ciclo
+            </h2>
             <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-400">
-              <span><kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Esc</kbd> fechar</span>
-              <span><kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Ctrl+Enter</kbd> criar</span>
+              <span>
+                <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">
+                  Esc
+                </kbd>{" "}
+                fechar
+              </span>
+              <span>
+                <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">
+                  Ctrl+Enter
+                </kbd>{" "}
+                criar
+              </span>
             </div>
           </div>
           <button
@@ -122,7 +141,9 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, title: e.target.value }))
+              }
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Ex: Q4 2025 - Desenvolvimento Backend"
               required
@@ -136,7 +157,12 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               rows={2}
               placeholder="Descreva os objetivos ou foco deste ciclo..."
@@ -155,7 +181,7 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
                   type="button"
                   onClick={() => {
                     handleQuickPreset(template.duration);
-                    setFormData(prev => ({
+                    setFormData((prev) => ({
                       ...prev,
                       title: template.titleSuggestion,
                       description: template.description,
@@ -163,9 +189,12 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
                   }}
                   className="p-2 text-center border border-gray-200 rounded-md hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
                 >
-                  <div className="font-medium text-gray-900 text-xs">{template.name}</div>
+                  <div className="font-medium text-gray-900 text-xs">
+                    {template.name}
+                  </div>
                   <div className="text-xs text-gray-400 group-hover:text-indigo-600 mt-0.5">
-                    {template.duration}{template.duration === 1 ? 'm' : 'ms'}
+                    {template.duration}
+                    {template.duration === 1 ? "m" : "ms"}
                   </div>
                 </button>
               ))}
@@ -178,7 +207,9 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-2 bg-white text-gray-500">ou configure manualmente</span>
+              <span className="px-2 bg-white text-gray-500">
+                ou configure manualmente
+              </span>
             </div>
           </div>
 
@@ -191,7 +222,12 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
               <input
                 type="date"
                 value={formData.startDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    startDate: e.target.value,
+                  }))
+                }
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 required
               />
@@ -203,7 +239,9 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
               <input
                 type="date"
                 value={formData.endDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, endDate: e.target.value }))
+                }
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 required
               />
@@ -217,7 +255,12 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
             </label>
             <select
               value={formData.status}
-              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as PdiCycle['status'] }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  status: e.target.value as PdiCycle["status"],
+                }))
+              }
               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="planned">Planejado</option>

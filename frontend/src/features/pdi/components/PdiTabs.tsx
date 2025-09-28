@@ -7,11 +7,13 @@ interface PdiTabsProps {
   // Ciclos
   cycles: PdiCycle[];
   selectedCycleId: string;
-  onCreateCycle: (cycle: Omit<PdiCycle, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onCreateCycle: (
+    cycle: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">
+  ) => void;
   onUpdateCycle: (cycleId: string, updates: Partial<PdiCycle>) => void;
   onDeleteCycle: (cycleId: string) => void;
   onSelectCycle: (cycleId: string) => void;
-  
+
   // Conteúdo das abas
   pdiContent: React.ReactNode;
   statisticsContent?: React.ReactNode;
@@ -27,19 +29,19 @@ export function PdiTabs({
   pdiContent,
   statisticsContent,
 }: PdiTabsProps) {
-  const [activeTab, setActiveTab] = useState<'cycles' | 'pdi' | 'stats'>('pdi');
+  const [activeTab, setActiveTab] = useState<"cycles" | "pdi" | "stats">("pdi");
 
   const baseTabs = [
     {
-      id: 'pdi' as const,
-      label: 'PDI',
+      id: "pdi" as const,
+      label: "PDI",
       icon: FiTarget,
       content: pdiContent,
-      description: 'Competências, objetivos e marcos'
+      description: "Competências, objetivos e marcos",
     },
     {
-      id: 'cycles' as const,
-      label: 'Ciclos',
+      id: "cycles" as const,
+      label: "Ciclos",
       icon: FiCalendar,
       content: (
         <CyclesManager
@@ -52,22 +54,24 @@ export function PdiTabs({
           editing={true}
         />
       ),
-      description: 'Gerencie ciclos de desenvolvimento'
+      description: "Gerencie ciclos de desenvolvimento",
     },
   ];
 
-  const tabs = statisticsContent ? [
-    ...baseTabs,
-    {
-      id: 'stats' as const,
-      label: 'Estatísticas',
-      icon: FiBarChart,
-      content: statisticsContent,
-      description: 'Progresso e métricas'
-    }
-  ] : baseTabs;
+  const tabs = statisticsContent
+    ? [
+        ...baseTabs,
+        {
+          id: "stats" as const,
+          label: "Estatísticas",
+          icon: FiBarChart,
+          content: statisticsContent,
+          description: "Progresso e métricas",
+        },
+      ]
+    : baseTabs;
 
-  const currentTab = tabs.find(tab => tab.id === activeTab);
+  const currentTab = tabs.find((tab) => tab.id === activeTab);
 
   return (
     <div className="space-y-4">
@@ -77,20 +81,22 @@ export function PdiTabs({
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-            
+
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`group inline-flex items-center py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                   isActive
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
-                <Icon 
+                <Icon
                   className={`w-4 h-4 mr-2 ${
-                    isActive ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
+                    isActive
+                      ? "text-indigo-500"
+                      : "text-gray-400 group-hover:text-gray-500"
                   }`}
                 />
                 {tab.label}
@@ -112,9 +118,7 @@ export function PdiTabs({
       )}
 
       {/* Conteúdo da aba ativa */}
-      <div className="min-h-[400px]">
-        {currentTab?.content}
-      </div>
+      <div className="min-h-[400px]">{currentTab?.content}</div>
     </div>
   );
 }

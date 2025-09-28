@@ -112,5 +112,3 @@ function Badge({
     </span>
   );
 }
-
-

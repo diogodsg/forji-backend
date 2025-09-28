@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { FiCalendar, FiEdit3, FiTrash2, FiClock, FiTarget, FiUsers } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiEdit3,
+  FiTrash2,
+  FiClock,
+  FiTarget,
+  FiUsers,
+} from "react-icons/fi";
 import { format, differenceInDays, isAfter, isBefore } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { PdiCycle } from "../../types/pdi";
@@ -33,10 +40,11 @@ export function CycleCard({
   const totalDays = differenceInDays(endDate, startDate);
   const daysElapsed = Math.max(0, differenceInDays(today, startDate));
   const daysRemaining = Math.max(0, differenceInDays(endDate, today));
-  const progress = totalDays > 0 ? Math.min(100, (daysElapsed / totalDays) * 100) : 0;
+  const progress =
+    totalDays > 0 ? Math.min(100, (daysElapsed / totalDays) * 100) : 0;
 
-  const isActive = cycle.status === 'active';
-  const isCompleted = cycle.status === 'completed';
+  const isActive = cycle.status === "active";
+  const isCompleted = cycle.status === "completed";
   const isOverdue = isAfter(today, endDate) && !isCompleted;
 
   const getStatusColor = () => {
@@ -69,7 +77,7 @@ export function CycleCard({
     setShowDeleteModal(false);
   };
 
-  const handleStatusChange = (newStatus: PdiCycle['status']) => {
+  const handleStatusChange = (newStatus: PdiCycle["status"]) => {
     onUpdate(cycle.id, { status: newStatus });
   };
 
@@ -84,135 +92,144 @@ export function CycleCard({
     <>
       <div
         className={`cursor-pointer rounded-xl border p-4 transition-all hover:shadow-md ${
-          isSelected 
-            ? "bg-indigo-50 border-indigo-300 shadow-sm" 
+          isSelected
+            ? "bg-indigo-50 border-indigo-300 shadow-sm"
             : "bg-white border-gray-200 hover:border-gray-300"
         }`}
         onClick={onSelect}
         onMouseEnter={() => setShowActions(true)}
         onMouseLeave={() => setShowActions(false)}
       >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-semibold text-gray-900 truncate">{cycle.title}</h3>
-            <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor()}`}>
-              {getStatusText()}
-            </span>
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="font-semibold text-gray-900 truncate">
+                {cycle.title}
+              </h3>
+              <span
+                className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor()}`}
+              >
+                {getStatusText()}
+              </span>
+            </div>
+            {cycle.description && (
+              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                {cycle.description}
+              </p>
+            )}
           </div>
-          {cycle.description && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{cycle.description}</p>
+
+          {editing && (
+            <div
+              className={`flex items-center gap-1 ml-2 transition-opacity ${
+                showActions ? "opacity-100" : "opacity-60 hover:opacity-100"
+              }`}
+            >
+              <button
+                onClick={handleEditClick}
+                className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                title="Editar ciclo"
+              >
+                <FiEdit3 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                title="Excluir ciclo"
+              >
+                <FiTrash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           )}
         </div>
-        
-        {editing && (
-          <div className={`flex items-center gap-1 ml-2 transition-opacity ${
-            showActions ? 'opacity-100' : 'opacity-60 hover:opacity-100'
-          }`}>
-            <button
-              onClick={handleEditClick}
-              className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-              title="Editar ciclo"
-            >
-              <FiEdit3 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={handleDeleteClick}
-              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-              title="Excluir ciclo"
-            >
-              <FiTrash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-      </div>
 
-      {/* Datas e Progresso */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-gray-600">
-            <FiCalendar className="w-4 h-4" />
-            <span>
-              {format(startDate, "dd/MM/yyyy", { locale: ptBR })} - {format(endDate, "dd/MM/yyyy", { locale: ptBR })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-600">
-            <FiClock className="w-4 h-4" />
-            <span>
-              {isCompleted ? "Concluído" : `${daysRemaining}d restantes`}
-            </span>
-          </div>
-        </div>
-
-        {/* Barra de Progresso Temporal */}
-        {!isCompleted && (
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>Progresso temporal</span>
-              <span>{Math.round(progress)}%</span>
+        {/* Datas e Progresso */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2 text-gray-600">
+              <FiCalendar className="w-4 h-4" />
+              <span>
+                {format(startDate, "dd/MM/yyyy", { locale: ptBR })} -{" "}
+                {format(endDate, "dd/MM/yyyy", { locale: ptBR })}
+              </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full transition-all ${
-                  isOverdue ? "bg-red-500" : "bg-blue-500"
-                }`}
-                style={{ width: `${Math.min(progress, 100)}%` }}
-              />
+            <div className="flex items-center gap-2 text-gray-600">
+              <FiClock className="w-4 h-4" />
+              <span>
+                {isCompleted ? "Concluído" : `${daysRemaining}d restantes`}
+              </span>
             </div>
           </div>
-        )}
 
-        {/* Estatísticas do PDI */}
-        <div className="flex items-center gap-4 text-xs text-gray-600">
-          <div className="flex items-center gap-1">
-            <FiUsers className="w-3 h-3" />
-            <span>{pdiStats.competencies} competências</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <FiTarget className="w-3 h-3" />
-            <span>{pdiStats.krs} KRs</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <FiCalendar className="w-3 h-3" />
-            <span>{pdiStats.milestones} marcos</span>
-          </div>
-        </div>
+          {/* Barra de Progresso Temporal */}
+          {!isCompleted && (
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>Progresso temporal</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all ${
+                    isOverdue ? "bg-red-500" : "bg-blue-500"
+                  }`}
+                  style={{ width: `${Math.min(progress, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
 
-        {/* Ações de Status (apenas para edição) */}
-        {editing && isActive && (
-          <div className="flex gap-2 pt-2">
+          {/* Estatísticas do PDI */}
+          <div className="flex items-center gap-4 text-xs text-gray-600">
+            <div className="flex items-center gap-1">
+              <FiUsers className="w-3 h-3" />
+              <span>{pdiStats.competencies} competências</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <FiTarget className="w-3 h-3" />
+              <span>{pdiStats.krs} KRs</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <FiCalendar className="w-3 h-3" />
+              <span>{pdiStats.milestones} marcos</span>
+            </div>
+          </div>
+
+          {/* Ações de Status (apenas para edição) */}
+          {editing && isActive && (
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStatusChange("completed");
+                }}
+                className="px-3 py-1 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
+              >
+                Marcar como Concluído
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStatusChange("paused");
+                }}
+                className="px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors"
+              >
+                Pausar
+              </button>
+            </div>
+          )}
+
+          {editing && cycle.status === "planned" && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleStatusChange('completed');
+                handleStatusChange("active");
               }}
-              className="px-3 py-1 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
+              className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
             >
-              Marcar como Concluído
+              Iniciar Ciclo
             </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleStatusChange('paused');
-              }}
-              className="px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-md transition-colors"
-            >
-              Pausar
-            </button>
-          </div>
-        )}
-
-        {editing && cycle.status === 'planned' && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusChange('active');
-            }}
-            className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors"
-          >
-            Iniciar Ciclo
-          </button>
-        )}
+          )}
         </div>
       </div>
 

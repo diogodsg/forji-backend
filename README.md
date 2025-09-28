@@ -24,6 +24,17 @@ Arquitetura frontend migrou recentemente de um modelo "global components + globa
 
 ## 🚀 Atualizações Mais Recentes (2025-09-28)
 
+### 🎯 NOVA FUNCIONALIDADE PRINCIPAL: Sistema de Ciclos de PDI
+
+**Interface Revolucionária com Abas Organizadas:**
+- ✨ **Sistema de Ciclos Temporais** - Organize PDIs em períodos específicos com progresso automático
+- 🔖 **Interface por Abas** - Navegação limpa separando Ciclos e PDI para reduzir sobrecarga visual  
+- ⚡ **Templates Rápidos** - Criação instantânea de ciclos (trimestres, semestres, sprints)
+- 🎨 **Design Compacto** - Modais otimizados e interface mais eficiente
+- 🚫 **Remoção de Duplicações** - Interface limpa sem botões redundantes
+
+---
+
 ### �️ Sistema Administrativo Revolucionário
 
 **Interface Admin Completamente Redesenhada:**
@@ -226,6 +237,88 @@ GET /management/admin/dashboard?managerId=X    // Dashboard de qualquer manager
 - **Feedback visual**: Estados claros de carregamento e expansão
 - **Responsividade**: Layout adapta-se a diferentes tamanhos de tela
 
+### 📅 Sistema de Ciclos de PDI (2025-09-28)
+
+**Gestão Temporal de Desenvolvimento:**
+
+**Funcionalidades dos Ciclos:**
+
+- **🗓️ Ciclos Temporais**: Organize PDIs em períodos específicos (trimestres, semestres, sprints mensais)
+- **📊 Progresso Temporal**: Visualização automática de progresso baseada em datas
+- **🎯 Foco Direcionado**: Cada ciclo mantém suas próprias competências, KRs e marcos
+- **🔄 Transições Inteligentes**: Estados de ciclo (Planejado → Ativo → Pausado → Concluído)
+- **📈 Continuidade**: Migração automática de PDI existente para ciclo padrão
+
+**Interface de Gerenciamento:**
+
+- **✨ Criação Rápida**: Templates predefinidos (Trimestre, Semestre, Sprint Mensal)
+- **⚡ Atalhos de Teclado**: Ctrl+N (novo ciclo), Esc (fechar), Ctrl+Enter (salvar)
+- **🎨 Modal Compacto**: Interface otimizada ocupando menos espaço vertical
+- **🔧 Edição Completa**: Modificação de título, descrição, datas e status
+- **⚠️ Confirmação de Exclusão**: Modal de confirmação com aviso de perda de dados
+- **📋 Estatísticas em Tempo Real**: Visualização de competências, KRs, marcos e registros por ciclo
+
+**Estados e Transições de Ciclo:**
+
+```
+Planejado → Ativo → Pausado ↔ Concluído
+     ↓         ↓       ↓
+   Ativo → Concluído  Ativo
+```
+
+**Layout Visual:**
+
+- **📋 Cards de Ciclo**: Design moderno com badges de status coloridos
+- **⏰ Progresso Temporal**: Barra de progresso baseada em tempo decorrido
+- **📊 Estatísticas PDI**: Contadores visuais de elementos em cada ciclo
+- **🎨 Indicadores de Status**: 
+  - 🟢 Ativo (Em Andamento)
+  - 🔵 Planejado (Agendado)  
+  - 🟡 Pausado
+  - ✅ Concluído
+  - 🔴 Atrasado
+
+### 🔖 Interface por Abas - Organização Limpa (2025-09-28)
+
+**Solução para Sobrecarga de Interface:**
+
+**Problemas Resolvidos:**
+
+- ❌ **Dois botões "Voltar"**: Duplicação removida para navegação limpa
+- ❌ **Informações misturadas**: Ciclos e PDI competindo por atenção
+- ❌ **Interface sobrecarregada**: Muitos elementos na tela simultaneamente
+
+**Nova Arquitetura com Abas:**
+
+- **🎯 Aba PDI**: Competências, Key Results, Marcos e Registros organizados
+- **📅 Aba Ciclos**: Gerenciamento completo de ciclos de desenvolvimento
+- **📊 Aba Estatísticas** (extensível): Para futuras métricas e relatórios
+
+**Benefícios da Reorganização:**
+
+- **🧠 Foco Cognitivo**: Uma funcionalidade principal por vez
+- **🎨 Visual Clean**: Menos saturação, mais clareza
+- **🧭 Navegação Intuitiva**: Ícones e descrições contextuais
+- **⚡ Performance**: Renderização otimizada por contexto
+- **🔄 Estado Preservado**: Alterações mantidas entre abas
+
+**Design de Abas:**
+
+```typescript
+// Estrutura das Abas
+📋 PDI          → Competências, objetivos e marcos
+📅 Ciclos       → Gerencie ciclos de desenvolvimento  
+📊 Estatísticas → Progresso e métricas (futuro)
+```
+
+**Funcionalidades Mantidas:**
+
+- ✅ Todas as funcionalidades de PDI preservadas
+- ✅ Sistema de ciclos completamente funcional
+- ✅ Auto-save e sincronização entre abas
+- ✅ Estados de edição mantidos
+- ✅ Atalhos de teclado funcionais
+
 ## 🚀 Melhorias Anteriores (2025-09-26)
 
 ### Refatoração Completa da Interface de Administração
@@ -252,12 +345,16 @@ GET /management/admin/dashboard?managerId=X    // Dashboard de qualquer manager
 
 **Para Usuários PDI:**
 
+- **Interface por Abas**: Navigate entre PDI e Ciclos usando a nova interface organizada
+- **Gestão de Ciclos**: Organize desenvolvimento em períodos (trimestres, semestres, sprints)
+- **Templates Rápidos**: Use templates predefinidos para criar ciclos rapidamente
 - **Interface Colapsável**: Navigate entre seções colapsáveis para focar no que importa
 - **KRs Modernos**: Use os novos Key Results com design aprimorado e badges numerados
 - **Acompanhamentos Inteligentes**: Milestones com subseções colapsáveis para melhor organização
 - **Estados Inteligentes**: Seções abrem automaticamente se contêm dados, permanecem fechadas se vazias
 - **Edição Eficiente**: Modo edição mantém todas as seções abertas para acesso completo
 - **Navegação Visual**: Use os ícones React Icons profissionais para identificação rápida
+- **Atalhos de Ciclos**: Ctrl+N (novo ciclo), Ctrl+Enter (salvar), Esc (fechar modal)
 
 **Para Desenvolvedores:**
 
@@ -271,26 +368,48 @@ GET /management/admin/dashboard?managerId=X    // Dashboard de qualquer manager
 
 - **Admin Interface**: Login como admin → `/admin` → Use Alt+1/2/3 para navegar entre abas
 - **Subordinados Admin**: Aba "Subordinados" → Selecione usuário → Gerencie suas relações hierárquicas
-- **PDI Colapsável**: Acesse `/me/pdi` → Teste colapso/expansão das seções → Edite e veja comportamento
+- **PDI com Abas**: Acesse `/me/pdi` → Navigate entre abas "PDI" e "Ciclos" → Interface organizada
+- **Sistema de Ciclos**: Aba "Ciclos" → Crie ciclo (Ctrl+N) → Teste templates → Edite ciclos existentes
+- **PDI Colapsável**: Aba "PDI" → Teste colapso/expansão das seções → Edite e veja comportamento
 - **Milestones Organizados**: Crie acompanhamentos → Teste subseções colapsáveis (Notas, Tarefas, etc.)
 - **KRs Modernizados**: Adicione Key Results → Veja badges numerados e previews informativos
+- **Progresso Temporal**: Crie ciclos com datas → Veja barras de progresso automáticas
+- **Estados de Ciclo**: Teste transições (Planejado → Ativo → Concluído)
 - **Manager Dashboard**: `/manager` mostra pessoas gerenciadas mesmo sem organização em times
 - **PDI Access**: Teste acesso a PDIs de subordinados (bug 403 Forbidden resolvido)
 - **Criação de Regras**: Modal com seleção múltipla e prevenção de duplicatas
-- **Keyboard Navigation**: Teste atalhos Alt+1/2/3 na interface administrativa
+- **Keyboard Navigation**: Teste atalhos Alt+1/2/3 (admin) e Ctrl+N/Enter/Esc (ciclos)
 
 ### 🔮 Próximas Funcionalidades Planejadas
+
+**Melhorias do Sistema de Ciclos:**
+
+- **📊 Analytics de Ciclos**: Métricas de produtividade e conclusão por período
+- **🔄 Ciclos Recorrentes**: Templates automáticos para ciclos repetitivos
+- **📈 Comparação de Ciclos**: Visualizar evolução entre diferentes períodos
+- **🎯 Metas por Ciclo**: Objetivos quantificáveis e tracking de alcance
+- **📋 Relatórios de Ciclo**: Exportação de progresso e resultados em PDF/Excel
+
+**Melhorias de Interface e UX:**
+
+- **📊 Aba Estatísticas**: Dashboard completo com métricas visuais de desenvolvimento
+- **🔍 Busca Global**: Pesquisa unificada entre ciclos, competências e marcos  
+- **🏷️ Tags e Categorias**: Sistema de classificação para organização avançada
+- **📱 Interface Mobile**: Otimização completa para dispositivos móveis
+- **🌙 Modo Escuro**: Tema alternativo para uso prolongado
 
 **Melhorias de Performance e Escalabilidade:**
 
 - Implementar lazy loading na interface administrativa para grandes bases de usuários
 - Cache inteligente para queries de subordinados e hierarquias
 - Paginação automática nas listagens de usuários e times
+- Otimização de queries de ciclos com índices temporais
 
 **Sistema de Notificações:**
 
 - Notificações em tempo real para mudanças de PDI e aprovações
 - Dashboard de notificações para managers e administradores
+- Alertas automáticos de proximidade de fim de ciclo
 - Integração com webhooks para sistemas externos
 
 **Relatórios e Analytics:**
@@ -298,6 +417,7 @@ GET /management/admin/dashboard?managerId=X    // Dashboard de qualquer manager
 - Dashboard executivo com métricas de desenvolvimento de equipes
 - Relatórios de progresso de PDI exportáveis (PDF/Excel)
 - Análise de tendências de Pull Requests por equipe/pessoa
+- Comparativo de performance entre ciclos e equipes
 
 **Integração e Automação:**
 

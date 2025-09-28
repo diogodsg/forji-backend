@@ -25,7 +25,7 @@ export function AppLayout({
         showManager={showManager}
         showAdmin={showAdmin}
       />
-      
+
       {/* Main Content */}
       <main className="relative flex min-h-0 overflow-y-auto">
         <div
@@ -39,7 +39,7 @@ export function AppLayout({
           {children}
         </div>
       </main>
-      
+
       {/* Footer */}
       <footer className="border-t border-surface-300/70 text-xs text-gray-500 bg-white/70 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between">

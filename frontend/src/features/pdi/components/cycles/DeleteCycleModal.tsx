@@ -7,13 +7,17 @@ interface DeleteCycleModalProps {
   onConfirm: () => void;
 }
 
-export function DeleteCycleModal({ cycle, onClose, onConfirm }: DeleteCycleModalProps) {
+export function DeleteCycleModal({
+  cycle,
+  onClose,
+  onConfirm,
+}: DeleteCycleModalProps) {
   const handleConfirm = () => {
     onConfirm();
     onClose();
   };
 
-  const hasPdiData = 
+  const hasPdiData =
     cycle.pdi.competencies.length > 0 ||
     cycle.pdi.milestones.length > 0 ||
     (cycle.pdi.krs && cycle.pdi.krs.length > 0) ||
@@ -28,7 +32,9 @@ export function DeleteCycleModal({ cycle, onClose, onConfirm }: DeleteCycleModal
             <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
               <FiAlertTriangle className="w-5 h-5 text-red-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900">Excluir Ciclo</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Excluir Ciclo
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -62,16 +68,28 @@ export function DeleteCycleModal({ cycle, onClose, onConfirm }: DeleteCycleModal
                     <p>Os seguintes dados serão permanentemente perdidos:</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-2">
                       {cycle.pdi.competencies.length > 0 && (
-                        <li>{cycle.pdi.competencies.length} competência{cycle.pdi.competencies.length !== 1 ? 's' : ''}</li>
+                        <li>
+                          {cycle.pdi.competencies.length} competência
+                          {cycle.pdi.competencies.length !== 1 ? "s" : ""}
+                        </li>
                       )}
                       {cycle.pdi.milestones.length > 0 && (
-                        <li>{cycle.pdi.milestones.length} marco{cycle.pdi.milestones.length !== 1 ? 's' : ''}</li>
+                        <li>
+                          {cycle.pdi.milestones.length} marco
+                          {cycle.pdi.milestones.length !== 1 ? "s" : ""}
+                        </li>
                       )}
                       {cycle.pdi.krs && cycle.pdi.krs.length > 0 && (
-                        <li>{cycle.pdi.krs.length} Key Result{cycle.pdi.krs.length !== 1 ? 's' : ''}</li>
+                        <li>
+                          {cycle.pdi.krs.length} Key Result
+                          {cycle.pdi.krs.length !== 1 ? "s" : ""}
+                        </li>
                       )}
                       {cycle.pdi.records.length > 0 && (
-                        <li>{cycle.pdi.records.length} evidência{cycle.pdi.records.length !== 1 ? 's' : ''}</li>
+                        <li>
+                          {cycle.pdi.records.length} evidência
+                          {cycle.pdi.records.length !== 1 ? "s" : ""}
+                        </li>
                       )}
                     </ul>
                   </div>
@@ -85,7 +103,8 @@ export function DeleteCycleModal({ cycle, onClose, onConfirm }: DeleteCycleModal
             <div className="text-sm">
               <span className="font-medium text-gray-700">Período:</span>
               <span className="ml-2 text-gray-600">
-                {new Date(cycle.startDate).toLocaleDateString('pt-BR')} - {new Date(cycle.endDate).toLocaleDateString('pt-BR')}
+                {new Date(cycle.startDate).toLocaleDateString("pt-BR")} -{" "}
+                {new Date(cycle.endDate).toLocaleDateString("pt-BR")}
               </span>
             </div>
             {cycle.description && (

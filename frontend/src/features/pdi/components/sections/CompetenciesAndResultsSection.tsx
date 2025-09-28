@@ -45,8 +45,8 @@ export const CompetenciesAndResultsSection: React.FC<
         <button
           onClick={onToggleEdit}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all ${
-            editing 
-              ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100" 
+            editing
+              ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
               : "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
           }`}
         >

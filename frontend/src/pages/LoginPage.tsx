@@ -42,8 +42,8 @@ export default function LoginPage() {
               </div>
             </div>
             <p className="text-gray-600 max-w-md text-sm leading-relaxed">
-              Estruture seu PDI, defina milestones e Key Results, registre 
-              evolução por competência e visualize o progresso da sua equipe — 
+              Estruture seu PDI, defina milestones e Key Results, registre
+              evolução por competência e visualize o progresso da sua equipe —
               tudo em um só lugar.
             </p>
             <ul className="text-xs text-gray-600 space-y-1 font-medium">

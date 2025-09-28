@@ -260,20 +260,27 @@ export function usePdiEditing(initial: PdiPlan) {
       },
     })
   );
-  
+
   // Usar ref para evitar loops infinitos
-  const lastInitialRef = useRef<{ userId: string | number; updatedAt: string }>({
-    userId: initial.userId,
-    updatedAt: initial.updatedAt
-  });
+  const lastInitialRef = useRef<{ userId: string | number; updatedAt: string }>(
+    {
+      userId: initial.userId,
+      updatedAt: initial.updatedAt,
+    }
+  );
 
   // Reagir às mudanças do plano inicial
   useEffect(() => {
-    const currentInitial = { userId: initial.userId, updatedAt: initial.updatedAt };
+    const currentInitial = {
+      userId: initial.userId,
+      updatedAt: initial.updatedAt,
+    };
     const lastInitial = lastInitialRef.current;
-    
-    if (currentInitial.userId !== lastInitial.userId ||
-        currentInitial.updatedAt !== lastInitial.updatedAt) {
+
+    if (
+      currentInitial.userId !== lastInitial.userId ||
+      currentInitial.updatedAt !== lastInitial.updatedAt
+    ) {
       lastInitialRef.current = currentInitial;
       dispatch({ type: "INIT", plan: initial });
     }

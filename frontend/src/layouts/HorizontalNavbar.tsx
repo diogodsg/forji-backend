@@ -69,7 +69,9 @@ export function HorizontalNavbar({
             {/* Logo */}
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-sky-500 rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-white font-bold text-sm select-none">F</span>
+                <span className="text-white font-bold text-sm select-none">
+                  F
+                </span>
               </div>
               <span className="font-semibold tracking-tight text-gray-800 text-lg select-none">
                 forge<span className="text-indigo-500">·</span>
@@ -84,7 +86,7 @@ export function HorizontalNavbar({
                 label="PDI"
                 isActive={location.pathname.startsWith("/me")}
               />
-              
+
               {showManager && (
                 <NavItem
                   to="/manager"
@@ -93,7 +95,7 @@ export function HorizontalNavbar({
                   isActive={location.pathname.startsWith("/manager")}
                 />
               )}
-              
+
               {showAdmin && (
                 <NavItem
                   to="/admin"
@@ -142,7 +144,7 @@ export function HorizontalNavbar({
                     </div>
                     <div className="text-xs text-gray-500">Usuário</div>
                   </div>
-                  
+
                   <button
                     onClick={() => {
                       navigate("/settings");
@@ -153,9 +155,9 @@ export function HorizontalNavbar({
                     <FiSettings className="w-4 h-4 mr-3" />
                     Configurações
                   </button>
-                  
+
                   <hr className="my-1 border-gray-100" />
-                  
+
                   <button
                     onClick={() => {
                       onLogout();
@@ -182,7 +184,7 @@ export function HorizontalNavbar({
             label="PDI"
             isActive={location.pathname.startsWith("/me")}
           />
-          
+
           {showManager && (
             <MobileNavItem
               to="/manager"
@@ -191,7 +193,7 @@ export function HorizontalNavbar({
               isActive={location.pathname.startsWith("/manager")}
             />
           )}
-          
+
           {showAdmin && (
             <MobileNavItem
               to="/admin"
