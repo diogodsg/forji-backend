@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { FiX } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { FiX, FiZap } from "react-icons/fi";
 import { format, addMonths, startOfMonth, endOfMonth } from "date-fns";
 import type { PdiCycle } from "../../types/pdi";
 
@@ -17,6 +17,21 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
     endDate: format(endOfMonth(addMonths(today, 2)), "yyyy-MM-dd"), // 3 meses por padrão
     status: 'planned' as PdiCycle['status'],
   });
+
+  // Atalhos de teclado
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        handleSubmit(e as any);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,11 +73,43 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
     }));
   };
 
+  const cycleTemplates = [
+    {
+      name: "Trimestre Atual",
+      description: "Ciclo de 3 meses focado em objetivos de curto prazo",
+      duration: 3,
+      titleSuggestion: `Q${Math.ceil((today.getMonth() + 1) / 3)} ${today.getFullYear()}`,
+    },
+    {
+      name: "Semestre",
+      description: "Ciclo de 6 meses para projetos de médio prazo",
+      duration: 6,
+      titleSuggestion: `${today.getMonth() < 6 ? '1º' : '2º'} Semestre ${today.getFullYear()}`,
+    },
+    {
+      name: "Sprint Mensal",
+      description: "Ciclo de 1 mês para foco intensivo",
+      duration: 1,
+      titleSuggestion: `${today.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+    },
+  ];
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Criar Novo Ciclo</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Criar Novo Ciclo</h2>
+            <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <FiZap className="w-3 h-3" />
+                <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Esc</kbd> para fechar
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Ctrl+Enter</kbd> para criar
+              </span>
+            </div>
+          </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -101,33 +148,47 @@ export function CreateCycleModal({ onClose, onCreate }: CreateCycleModalProps) {
             />
           </div>
 
-          {/* Presets de Duração */}
+          {/* Templates de Ciclo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Duração Rápida
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Templates Rápidos
             </label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickPreset(1)}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                1 mês
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickPreset(3)}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                3 meses
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickPreset(6)}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                6 meses
-              </button>
+            <div className="space-y-2">
+              {cycleTemplates.map((template) => (
+                <button
+                  key={template.name}
+                  type="button"
+                  onClick={() => {
+                    handleQuickPreset(template.duration);
+                    setFormData(prev => ({
+                      ...prev,
+                      title: template.titleSuggestion,
+                      description: template.description,
+                    }));
+                  }}
+                  className="w-full p-3 text-left border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900 text-sm">{template.name}</div>
+                      <div className="text-xs text-gray-500 mt-1">{template.description}</div>
+                    </div>
+                    <div className="text-xs text-gray-400 group-hover:text-indigo-600">
+                      {template.duration} {template.duration === 1 ? 'mês' : 'meses'}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Separador */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">ou configure manualmente</span>
             </div>
           </div>
 
