@@ -4,6 +4,7 @@ import { format, differenceInDays, isAfter, isBefore } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { PdiCycle } from "../../types/pdi";
 import { DeleteCycleModal } from "./DeleteCycleModal";
+import { EditCycleModal } from "./EditCycleModal";
 
 interface CycleCardProps {
   cycle: PdiCycle;
@@ -24,6 +25,7 @@ export function CycleCard({
 }: CycleCardProps) {
   const [showActions, setShowActions] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const startDate = new Date(cycle.startDate);
   const endDate = new Date(cycle.endDate);
@@ -50,6 +52,11 @@ export function CycleCard({
     if (isActive) return "Em Andamento";
     if (isBefore(today, startDate)) return "Agendado";
     return "Planejado";
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowEditModal(true);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -103,10 +110,7 @@ export function CycleCard({
             showActions ? 'opacity-100' : 'opacity-60 hover:opacity-100'
           }`}>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // TODO: Implementar edição
-              }}
+              onClick={handleEditClick}
               className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
               title="Editar ciclo"
             >
@@ -218,6 +222,15 @@ export function CycleCard({
           cycle={cycle}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDeleteConfirm}
+        />
+      )}
+
+      {/* Modal de edição */}
+      {showEditModal && (
+        <EditCycleModal
+          cycle={cycle}
+          onClose={() => setShowEditModal(false)}
+          onUpdate={onUpdate}
         />
       )}
     </>
