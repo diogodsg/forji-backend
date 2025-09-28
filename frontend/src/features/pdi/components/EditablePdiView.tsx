@@ -23,6 +23,8 @@ import { CollapsibleSectionCard } from "../../../shared";
 import { KeyResultsView } from "./structure/views";
 import { usePdiEditing } from "../hooks/usePdiEditing";
 import { useAutoSave } from "../hooks/useAutoSave";
+import { useCyclesManagement } from "../hooks/useCyclesManagement";
+import { CyclesManager } from "./cycles/CyclesManager";
 
 interface Props {
   initialPlan: PdiPlan;
@@ -34,8 +36,24 @@ export const EditablePdiView: React.FC<Props> = ({
   saveForUserId,
 }) => {
   const hasTarget = saveForUserId != null;
+  
+  // Gestão de ciclos
+  const {
+    cycles,
+    selectedCycleId,
+    selectedCycle,
+    setSelectedCycleId,
+    createCycle,
+    updateCycle,
+    deleteCycle,
+    updateSelectedCyclePdi,
+    getCurrentPdiPlan,
+  } = useCyclesManagement(initialPlan);
+
+  // Use o PDI do ciclo selecionado
+  const currentPlan = getCurrentPdiPlan();
   const { state, dispatch, toggleSection, toggleMilestone } =
-    usePdiEditing(initialPlan);
+    usePdiEditing(currentPlan);
   const working = state.working;
   const editingSections = state.editing.sections;
   const editingMilestones = state.editing.milestones;
@@ -50,6 +68,34 @@ export const EditablePdiView: React.FC<Props> = ({
       dispatch({ type: "INIT", plan: initialPlan });
     }
   }, [initialPlan.userId]);
+
+  // Sincronizar mudanças do PDI com o ciclo selecionado
+  useEffect(() => {
+    if (selectedCycle) {
+      updateSelectedCyclePdi({
+        competencies: working.competencies,
+        milestones: working.milestones,
+        krs: working.krs,
+        records: working.records,
+      });
+    }
+  }, [working.competencies, working.milestones, working.krs, working.records, updateSelectedCyclePdi, selectedCycle]);
+
+  // Inicializar PDI com dados do ciclo selecionado
+  useEffect(() => {
+    if (selectedCycle?.pdi) {
+      const cyclePlan: PdiPlan = {
+        ...initialPlan,
+        competencies: selectedCycle.pdi.competencies,
+        milestones: selectedCycle.pdi.milestones,
+        krs: selectedCycle.pdi.krs || [],
+        records: selectedCycle.pdi.records,
+      };
+      dispatch({ type: "INIT", plan: cyclePlan });
+    } else if (!selectedCycle) {
+      dispatch({ type: "INIT", plan: initialPlan });
+    }
+  }, [selectedCycle, initialPlan]);
   const pendingSave = state.meta.pendingSave;
   const saving = state.meta.saving;
 
@@ -99,6 +145,18 @@ export const EditablePdiView: React.FC<Props> = ({
         pending={pendingSave}
         activeEditing={isAnythingEditing}
       />
+      
+      {/* Seção de Ciclos */}
+      <CyclesManager
+        cycles={cycles}
+        selectedCycleId={selectedCycleId}
+        onCreateCycle={createCycle}
+        onUpdateCycle={updateCycle}
+        onDeleteCycle={deleteCycle}
+        onSelectCycle={setSelectedCycleId}
+        editing={isAnythingEditing}
+      />
+
       <div className="space-y-10">
         <CollapsibleSectionCard
           icon={() => (

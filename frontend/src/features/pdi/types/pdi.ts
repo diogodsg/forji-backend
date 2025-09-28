@@ -28,8 +28,27 @@ export interface PdiKeyResult {
   currentStatus?: string;
   improvementActions?: string[];
 }
+export interface PdiCycle {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  status: 'planned' | 'active' | 'completed' | 'paused';
+  pdi: {
+    competencies: string[];
+    milestones: PdiMilestone[];
+    krs?: PdiKeyResult[];
+    records: PdiCompetencyRecord[];
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PdiPlan {
   userId: string;
+  cycles: PdiCycle[];
+  // Mantendo compatibilidade com estrutura antiga
   competencies: string[];
   milestones: PdiMilestone[];
   krs?: PdiKeyResult[];
