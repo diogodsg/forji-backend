@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiPlus, FiClock, FiTarget, FiSearch, FiGrid, FiList } from "react-icons/fi";
 import type { PdiCycle } from "../../types/pdi";
 import { CreateCycleModal } from "./CreateCycleModal";
@@ -47,6 +47,30 @@ export function CyclesManager({
     setShowCreateModal(false);
   };
 
+  // Atalhos de teclado para facilitar o gerenciamento
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + N para criar novo ciclo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n' && editing) {
+        e.preventDefault();
+        setShowCreateModal(true);
+      }
+      
+      // Ctrl/Cmd + F para focar na busca
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f' && cycles.length > 0) {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder="Buscar ciclos..."]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [editing, cycles.length]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -57,21 +81,30 @@ export function CyclesManager({
           <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
             {cycles.length} {cycles.length === 1 ? 'ciclo' : 'ciclos'}
           </span>
+          {editing && (
+            <div className="hidden lg:flex items-center gap-2 text-xs text-gray-400">
+              <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs">Ctrl+N</kbd>
+              <span>novo ciclo</span>
+            </div>
+          )}
         </div>
         
         <div className="flex items-center gap-3">
           {cycles.length > 0 && (
             <>
               {/* Busca */}
-              <div className="relative">
+              <div className="relative group">
                 <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Buscar ciclos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="pl-9 pr-16 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-50 group-focus-within:opacity-100">
+                  <kbd className="px-1 py-0.5 text-xs bg-gray-100 border border-gray-200 rounded">Ctrl+F</kbd>
+                </div>
               </div>
 
               {/* Filtro de Status */}
@@ -115,7 +148,7 @@ export function CyclesManager({
           {editing && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
             >
               <FiPlus className="w-4 h-4" />
               Novo Ciclo
@@ -281,6 +314,19 @@ export function CyclesManager({
               Mostrar todos
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Botão de ação rápida flutuante - aparece quando há poucos ciclos */}
+      {editing && cycles.length > 0 && cycles.length < 3 && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-2 border-dashed border-indigo-300 hover:border-indigo-400 rounded-xl transition-all"
+          >
+            <FiPlus className="w-4 h-4" />
+            Adicionar Outro Ciclo
+          </button>
         </div>
       )}
 

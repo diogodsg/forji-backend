@@ -3,6 +3,7 @@ import { FiCalendar, FiEdit3, FiTrash2, FiClock, FiTarget, FiUsers } from "react
 import { format, differenceInDays, isAfter, isBefore } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { PdiCycle } from "../../types/pdi";
+import { DeleteCycleModal } from "./DeleteCycleModal";
 
 interface CycleCardProps {
   cycle: PdiCycle;
@@ -22,6 +23,7 @@ export function CycleCard({
   editing,
 }: CycleCardProps) {
   const [showActions, setShowActions] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const startDate = new Date(cycle.startDate);
   const endDate = new Date(cycle.endDate);
@@ -50,11 +52,14 @@ export function CycleCard({
     return "Planejado";
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm(`Tem certeza que deseja excluir o ciclo "${cycle.title}"?`)) {
-      onDelete(cycle.id);
-    }
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    onDelete(cycle.id);
+    setShowDeleteModal(false);
   };
 
   const handleStatusChange = (newStatus: PdiCycle['status']) => {
@@ -69,16 +74,17 @@ export function CycleCard({
   };
 
   return (
-    <div
-      className={`cursor-pointer rounded-xl border p-4 transition-all hover:shadow-md ${
-        isSelected 
-          ? "bg-indigo-50 border-indigo-300 shadow-sm" 
-          : "bg-white border-gray-200 hover:border-gray-300"
-      }`}
-      onClick={onSelect}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
+    <>
+      <div
+        className={`cursor-pointer rounded-xl border p-4 transition-all hover:shadow-md ${
+          isSelected 
+            ? "bg-indigo-50 border-indigo-300 shadow-sm" 
+            : "bg-white border-gray-200 hover:border-gray-300"
+        }`}
+        onClick={onSelect}
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
+      >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -105,7 +111,7 @@ export function CycleCard({
               <FiEdit3 className="w-4 h-4" />
             </button>
             <button
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
               className="p-1 text-gray-400 hover:text-red-600 transition-colors"
               title="Excluir ciclo"
             >
@@ -201,7 +207,17 @@ export function CycleCard({
             Iniciar Ciclo
           </button>
         )}
+        </div>
       </div>
-    </div>
+
+      {/* Modal de confirmação de exclusão */}
+      {showDeleteModal && (
+        <DeleteCycleModal
+          cycle={cycle}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
+    </>
   );
 }

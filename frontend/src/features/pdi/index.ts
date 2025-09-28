@@ -11,3 +11,4 @@ export { CompetenciesAndResultsSection } from "./components/sections/Competencie
 export { CyclesManager } from "./components/cycles/CyclesManager";
 export { CycleCard } from "./components/cycles/CycleCard";
 export { CreateCycleModal } from "./components/cycles/CreateCycleModal";
+export { DeleteCycleModal } from "./components/cycles/DeleteCycleModal";
