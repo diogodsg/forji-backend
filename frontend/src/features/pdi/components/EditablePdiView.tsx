@@ -154,7 +154,7 @@ export const EditablePdiView: React.FC<Props> = ({
         onUpdateCycle={updateCycle}
         onDeleteCycle={deleteCycle}
         onSelectCycle={setSelectedCycleId}
-        editing={isAnythingEditing}
+        editing={true}
       />
 
       <div className="space-y-10">

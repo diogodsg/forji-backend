@@ -98,24 +98,26 @@ export function CycleCard({
           )}
         </div>
         
-        {editing && showActions && (
-          <div className="flex items-center gap-1 ml-2">
+        {editing && (
+          <div className={`flex items-center gap-1 ml-2 transition-opacity ${
+            showActions ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+          }`}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 // TODO: Implementar edição
               }}
-              className="p-1 text-gray-400 hover:text-indigo-600 transition-colors"
+              className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
               title="Editar ciclo"
             >
-              <FiEdit3 className="w-4 h-4" />
+              <FiEdit3 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleDeleteClick}
-              className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
               title="Excluir ciclo"
             >
-              <FiTrash2 className="w-4 h-4" />
+              <FiTrash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         )}

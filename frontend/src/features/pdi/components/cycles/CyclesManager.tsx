@@ -90,6 +90,15 @@ export function CyclesManager({
         </div>
         
         <div className="flex items-center gap-3">
+          {/* Botão principal sempre visível */}
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
+          >
+            <FiPlus className="w-4 h-4" />
+            Novo Ciclo
+          </button>
+          
           {cycles.length > 0 && (
             <>
               {/* Busca */}
@@ -143,16 +152,6 @@ export function CyclesManager({
                 </button>
               </div>
             </>
-          )}
-
-          {editing && (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
-            >
-              <FiPlus className="w-4 h-4" />
-              Novo Ciclo
-            </button>
           )}
         </div>
       </div>
@@ -243,6 +242,24 @@ export function CyclesManager({
         )}
       </div>
 
+      {/* Dica para usuários com ciclos */}
+      {cycles.length === 1 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+              <FiTarget className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="text-sm">
+              <p className="text-blue-800 font-medium mb-1">💡 Dica: Gerenciar Ciclos</p>
+              <p className="text-blue-700">
+                Passe o mouse sobre um ciclo para ver os botões de <strong>editar</strong> e <strong>excluir</strong>. 
+                Ou clique em "Novo Ciclo" para criar mais ciclos de desenvolvimento.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Estados vazios */}
       {cycles.length === 0 && (
         <div className="text-center py-12 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border-2 border-dashed border-indigo-200">
@@ -280,15 +297,22 @@ export function CyclesManager({
             </div>
           </div>
           
-          {editing && (
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 rounded-lg transition-all transform hover:scale-105 shadow-lg"
+              className="inline-flex items-center gap-2 px-8 py-4 text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 rounded-xl transition-all transform hover:scale-105 shadow-lg"
             >
-              <FiPlus className="w-4 h-4" />
+              <FiPlus className="w-5 h-5" />
               Criar Primeiro Ciclo
             </button>
-          )}
+            
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 px-6 py-4 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 rounded-xl transition-all"
+            >
+              Ver Templates
+            </button>
+          </div>
         </div>
       )}
 
@@ -318,14 +342,15 @@ export function CyclesManager({
       )}
 
       {/* Botão de ação rápida flutuante - aparece quando há poucos ciclos */}
-      {editing && cycles.length > 0 && cycles.length < 3 && (
+      {cycles.length > 0 && cycles.length < 5 && (
         <div className="mt-6 text-center">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-2 border-dashed border-indigo-300 hover:border-indigo-400 rounded-xl transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-2 border-dashed border-indigo-300 hover:border-indigo-400 rounded-xl transition-all hover:scale-105"
           >
             <FiPlus className="w-4 h-4" />
-            Adicionar Outro Ciclo
+            <span className="hidden sm:inline">Adicionar Outro Ciclo</span>
+            <span className="sm:hidden">Novo Ciclo</span>
           </button>
         </div>
       )}
