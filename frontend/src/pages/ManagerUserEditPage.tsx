@@ -10,7 +10,7 @@ import { useAllTeamsWithDetails } from "@/features/manager";
  * Página dedicada de edição/gestão do colaborador selecionado.
  * - Abre via rota: /manager/users/:userId
  * - Possui botão de Voltar
- * - Reaproveita o painel de detalhes (PDI/PRs)
+ * - Reaproveita o painel de detalhes (PDI)
  */
 export function ManagerUserEditPage() {
   const { userId: userIdParam } = useParams();
@@ -29,11 +29,9 @@ export function ManagerUserEditPage() {
       name: found.name,
       email: found.email,
       pdi: { exists: false, progress: 0 },
-      prs: { open: 0, merged: 0, closed: 0 },
     } as ReportSummary;
   }, [myReports, userId]);
 
-  const [tab, setTab] = useState("pdi"); // default para PDI
   const [foundViaTeams, setFoundViaTeams] = useState<ReportSummary | null>(
     null
   );
@@ -70,7 +68,6 @@ export function ManagerUserEditPage() {
               name: hit.user.name,
               email: hit.user.email,
               pdi: { exists: false, progress: 0 },
-              prs: { open: 0, merged: 0, closed: 0 },
             });
             break;
           }
@@ -98,8 +95,6 @@ export function ManagerUserEditPage() {
           <ReportDetailsPanel
             report={report}
             onClose={() => navigate(-1)}
-            tab={tab}
-            onTabChange={setTab}
             closeLabel="Voltar"
           />
           {!report && (loadingReports || searchingTeams) && (

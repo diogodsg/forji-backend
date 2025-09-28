@@ -45,7 +45,6 @@ export function TopBar({
         }, 800);
       } else if ((document as any)._navGPressed) {
         const k = e.key.toLowerCase();
-        if (k === "p") navigate("/me/prs");
         if (k === "d") navigate("/me/pdi");
         if (k === "m" && showManager) navigate("/manager");
         if (k === "a" && showAdmin) navigate("/admin");
@@ -65,14 +64,14 @@ export function TopBar({
           className="text-[11px] text-gray-500 border border-surface-300 rounded px-2 py-1 hover:bg-surface-200"
           title={
             showManager || showAdmin
-              ? `Atalho: g p / g d${showManager ? " / g m" : ""}${
+              ? `Atalho: g d${showManager ? " / g m" : ""}${
                   showAdmin ? " / g a" : ""
                 }`
-              : "Atalho: g p / g d"
+              : "Atalho: g d"
           }
-          onClick={() => navigate("/me/prs")}
+          onClick={() => navigate("/me/pdi")}
         >
-          PRs
+          PDI
         </button>
         <div className="flex items-center gap-2 px-2 py-1 rounded-md border border-surface-300/70 bg-white/70">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-[12px] flex items-center justify-center font-semibold shadow-inner">

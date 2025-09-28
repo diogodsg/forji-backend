@@ -27,7 +27,6 @@ export function ManagerDashboardPage() {
       name: r.name,
       email: r.email,
       pdi: { exists: false, progress: 0 },
-      prs: { open: 0, merged: 0, closed: 0 },
     }));
 
   const handleSelectUser = (id: number) => {
@@ -278,24 +277,6 @@ export function ManagerDashboardPage() {
                           </div>
 
                           <div className="flex items-center gap-4">
-                            {/* PRs Stats */}
-                            <div className="flex items-center gap-2">
-                              <div className="text-xs text-surface-500">
-                                PRs:
-                              </div>
-                              <div className="flex gap-1">
-                                <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                                  {person.prs.merged}
-                                </span>
-                                <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
-                                  {person.prs.open}
-                                </span>
-                                <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">
-                                  {person.prs.closed}
-                                </span>
-                              </div>
-                            </div>
-
                             {/* PDI Status */}
                             <div className="flex items-center gap-2">
                               <div className="text-xs text-surface-500">
@@ -475,7 +456,6 @@ export function ManagerDashboardPage() {
                                         name: m.user.name,
                                         email: m.user.email,
                                         pdi: { exists: false, progress: 0 },
-                                        prs: { open: 0, merged: 0, closed: 0 },
                                       };
                                       return (
                                         <div

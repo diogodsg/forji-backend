@@ -7,8 +7,7 @@ interface ReportCardProps {
 }
 
 export function ReportCard({ report, onSelect, active }: ReportCardProps) {
-  const { prs, pdi } = report;
-  const totalPrs = prs.open + prs.merged + prs.closed;
+  const { pdi } = report;
   const progressPct = Math.round((pdi.progress || 0) * 100);
 
   const handleClick = () => {
@@ -36,21 +35,10 @@ export function ReportCard({ report, onSelect, active }: ReportCardProps) {
         </div>
       </div>
       <div className="flex items-center gap-2 text-[10px] font-medium flex-wrap">
-        <Badge color="emerald">Open {prs.open}</Badge>
-        <Badge color="violet">Merged {prs.merged}</Badge>
-        <Badge color="rose">Closed {prs.closed}</Badge>
         <Badge color="amber">PDI {pdi.exists ? `${progressPct}%` : "—"}</Badge>
       </div>
       <div className="space-y-1">
         <ProgressBar value={progressPct} exists={pdi.exists} />
-        <div className="text-[10px] text-surface-500 flex justify-between">
-          <span>{totalPrs} PRs</span>
-          {prs.lastActivity && (
-            <span className="truncate max-w-[80px]" title={prs.lastActivity}>
-              {timeAgo(prs.lastActivity)}
-            </span>
-          )}
-        </div>
       </div>
     </button>
   );
@@ -135,15 +123,4 @@ function ProgressBar({ value, exists }: { value: number; exists: boolean }) {
   );
 }
 
-function timeAgo(iso: string) {
-  const d = new Date(iso).getTime();
-  const diff = Date.now() - d;
-  const sec = Math.floor(diff / 1000);
-  if (sec < 60) return `${sec}s`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m`;
-  const h = Math.floor(min / 60);
-  if (h < 24) return `${h}h`;
-  const dd = Math.floor(h / 24);
-  return `${dd}d`;
-}
+

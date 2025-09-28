@@ -1,7 +1,6 @@
 import React from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  FiGitPullRequest,
   FiTarget,
   FiUsers,
   FiShield,
@@ -19,14 +18,9 @@ type NavItemDef = {
   activeIcon?: React.ReactNode; // ícone preenchido / ativo
 };
 
-// Ordem ajustada: PDI primeiro, depois PRs
+// Navegação principal focada no PDI
 const baseNavItems: Array<NavItemDef> = [
   { to: "/me/pdi", label: "PDI", icon: <FiTarget className="w-4 h-4" /> },
-  {
-    to: "/me/prs",
-    label: "PRs",
-    icon: <FiGitPullRequest className="w-4 h-4" />,
-  },
 ];
 
 export function Sidebar({

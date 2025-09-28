@@ -63,7 +63,6 @@ export function pdiEditingReducer(
             competencies: false,
             krs: false,
             results: false,
-            competenciesAndResults: false,
           },
           milestones: new Set(),
         },

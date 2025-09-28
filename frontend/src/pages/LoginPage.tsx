@@ -42,12 +42,11 @@ export default function LoginPage() {
               </div>
             </div>
             <p className="text-gray-600 max-w-md text-sm leading-relaxed">
-              Acompanhe Pull Requests, estruture seu PDI, defina milestones e
-              Key Results, registre evolução por competência e visualize o
-              progresso da sua equipe — tudo em um só lugar.
+              Estruture seu PDI, defina milestones e Key Results, registre 
+              evolução por competência e visualize o progresso da sua equipe — 
+              tudo em um só lugar.
             </p>
             <ul className="text-xs text-gray-600 space-y-1 font-medium">
-              <li>• Lista de PRs com detalhes e status</li>
               <li>• Plano de desenvolvimento com milestones e tarefas</li>
               <li>• Key Results e registros de evolução</li>
               <li>• Visão de manager para acompanhar subordinados</li>

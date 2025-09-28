@@ -1,7 +1,7 @@
 // MOVED from src/components/structure/views.tsx
 import React from "react";
 import { FiTarget } from "react-icons/fi";
-import type { PdiKeyResult, PdiCompetencyRecord, PdiPlan } from "../..";
+import type { PdiKeyResult, PdiPlan } from "../..";
 
 export const CompetenciesView: React.FC<{ items: string[] }> = ({ items }) => (
   <div className="flex flex-wrap gap-2">

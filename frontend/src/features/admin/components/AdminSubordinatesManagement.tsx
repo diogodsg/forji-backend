@@ -20,7 +20,6 @@ export function AdminSubordinatesManagement({
   onBack,
 }: AdminSubordinatesManagementProps) {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [showUserSelector, setShowUserSelector] = useState(true);
   const [userSearch, setUserSearch] = useState("");
 
   // Admin users hook para listar usuários

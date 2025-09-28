@@ -10,9 +10,6 @@ import { ErrorBoundary } from "./lib/ErrorBoundary";
  * Core pages are lazy-loaded to reduce the initial bundle size.
  * Only providers + the flow shell (InnerApp) are eagerly loaded.
  */
-const MyPrsPage = lazy(() =>
-  import("./pages/MyPrsPage").then((m) => ({ default: m.MyPrsPage }))
-);
 const ManagerDashboardPage = lazy(() =>
   import("./pages/ManagerDashboardPage").then((m) => ({
     default: m.ManagerDashboardPage,
@@ -85,7 +82,6 @@ function InnerApp() {
           <Routes>
             {/* Redirect root to PDI (prioridade solicitada) */}
             <Route index element={<Navigate to="/me/pdi" replace />} />
-            <Route path="/me/prs" element={<MyPrsPage />} />
             <Route path="/me/pdi" element={<MyPdiPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/manager" element={<ManagerDashboardPage />} />

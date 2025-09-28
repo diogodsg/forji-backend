@@ -1,27 +1,20 @@
 import type { ReportSummary } from "../types/manager";
-import { MyPrsPage } from "@/pages/MyPrsPage";
 import { ManagerPdiPanel } from "./ManagerPdiPanel";
 import { useRemotePdiForUser } from "@/features/pdi/hooks/useRemotePdiForUser";
-import { useRemotePrs, usePrCounts } from "@/features/prs";
-import { useEffect } from "react";
 
 interface ReportDetailsPanelProps {
   report: ReportSummary | null;
   onClose: () => void;
-  tab: string; // 'prs' | 'pdi'
-  onTabChange: (tab: string) => void;
   closeLabel?: string;
 }
 
 /**
  * Painel de detalhes inline para substituir drawer lateral.
- * Ocupa largura total abaixo da grade de cards e fornece abas PRs / PDI.
+ * Ocupa largura total abaixo da grade de cards focado no PDI.
  */
 export function ReportDetailsPanel({
   report,
   onClose,
-  tab,
-  onTabChange,
   closeLabel,
 }: ReportDetailsPanelProps) {
   const userId = report?.userId;
@@ -31,19 +24,6 @@ export function ReportDetailsPanel({
     error: pdiError,
     upsert: upsertPdi,
   } = useRemotePdiForUser(userId);
-  const { prs, loading: prsLoading } = useRemotePrs(
-    { ownerUserId: userId },
-    { skip: !userId }
-  );
-  const counts = usePrCounts(prs);
-
-  // Ajuste: ao trocar usuário, priorizar PDI como primeira aba.
-  // Mantemos a aba atual se o usuário apenas re-selecionar o mesmo card.
-  useEffect(() => {
-    if (!userId) return;
-    // Força para 'pdi' sempre que mudar de usuário.
-    onTabChange("pdi");
-  }, [userId]);
 
   if (!report) return null;
 
@@ -60,21 +40,12 @@ export function ReportDetailsPanel({
           </div>
         </div>
         <div className="flex items-center gap-2 text-[11px] font-medium flex-wrap">
-          <Badge color="emerald">Open {counts.open}</Badge>
-          <Badge color="violet">Merged {counts.merged}</Badge>
-          <Badge color="rose">Closed {counts.closed}</Badge>
           <Badge color="amber">
             PDI {Math.round(report.pdi.progress * 100)}%
           </Badge>
         </div>
         <div className="flex-1" />
         <div className="flex items-center gap-2 text-xs">
-          <TabButton active={tab === "prs"} onClick={() => onTabChange("prs")}>
-            PRs
-          </TabButton>
-          <TabButton active={tab === "pdi"} onClick={() => onTabChange("pdi")}>
-            PDI
-          </TabButton>
           <button
             onClick={onClose}
             className="ml-2 px-2 py-1 text-[11px] rounded bg-surface-100 hover:bg-surface-200 text-surface-600"
@@ -84,35 +55,22 @@ export function ReportDetailsPanel({
         </div>
       </div>
       <div className="p-5">
-        {tab === "prs" && (
-          <div className="space-y-5">
-            {prsLoading && (
-              <div className="text-xs text-surface-500">Carregando PRs...</div>
-            )}
-            {!prsLoading && (
-              <MyPrsPage initialFilters={{ ownerUserId: userId }} />
-            )}
-          </div>
-        )}
-        {tab === "pdi" && (
-          <ManagerPdiPanel
-            loading={pdiLoading}
-            error={pdiError}
-            plan={plan}
-            currentUserId={userId}
-            onCreate={() =>
-              userId &&
-              upsertPdi({
-                userId: String(userId),
-                competencies: [],
-                milestones: [],
-                krs: [],
-                records: [],
-              })
-            }
-          />
-        )}
-        {/* KPI aba removida para reduzir densidade visual */}
+        <ManagerPdiPanel
+          loading={pdiLoading}
+          error={pdiError}
+          plan={plan}
+          currentUserId={userId}
+          onCreate={() =>
+            userId &&
+            upsertPdi({
+              userId: String(userId),
+              competencies: [],
+              milestones: [],
+              krs: [],
+              records: [],
+            })
+          }
+        />
       </div>
     </div>
   );
@@ -155,25 +113,4 @@ function Badge({
   );
 }
 
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-2.5 py-1 rounded border text-[11px] font-medium transition ${
-        active
-          ? "bg-indigo-600 text-white border-indigo-600"
-          : "bg-white text-indigo-700 border-indigo-200 hover:bg-surface-100"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
+
