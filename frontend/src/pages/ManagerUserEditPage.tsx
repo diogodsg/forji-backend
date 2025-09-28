@@ -87,15 +87,7 @@ export function ManagerUserEditPage() {
 
   return (
     <div className="h-full flex flex-col min-h-0">
-      <div className="px-4 pt-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-xs px-2 py-1 rounded border border-surface-300 text-surface-700 bg-white hover:bg-surface-50"
-        >
-          Voltar
-        </button>
-      </div>
-      <div className="flex-1 overflow-auto px-4 pb-6">
+      <div className="flex-1 overflow-auto px-4 py-6">
         {/* Reutiliza o painel existente, com rótulo de botão customizado */}
         <div id="manager-report-details-panel">
           <ReportDetailsPanel

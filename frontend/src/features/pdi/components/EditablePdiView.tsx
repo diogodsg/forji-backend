@@ -24,7 +24,7 @@ import { KeyResultsView } from "./structure/views";
 import { usePdiEditing } from "../hooks/usePdiEditing";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { useCyclesManagement } from "../hooks/useCyclesManagement";
-import { CyclesManager } from "./cycles/CyclesManager";
+import { PdiTabs } from "./PdiTabs";
 
 interface Props {
   initialPlan: PdiPlan;
@@ -36,7 +36,7 @@ export const EditablePdiView: React.FC<Props> = ({
   saveForUserId,
 }) => {
   const hasTarget = saveForUserId != null;
-  
+
   // Gestão de ciclos
   const {
     cycles,
@@ -73,7 +73,14 @@ export const EditablePdiView: React.FC<Props> = ({
         records: working.records,
       });
     }
-  }, [working.competencies, working.milestones, working.krs, working.records, updateSelectedCyclePdi, selectedCycle]);
+  }, [
+    working.competencies,
+    working.milestones,
+    working.krs,
+    working.records,
+    updateSelectedCyclePdi,
+    selectedCycle,
+  ]);
   const pendingSave = state.meta.pendingSave;
   const saving = state.meta.saving;
 
@@ -115,28 +122,9 @@ export const EditablePdiView: React.FC<Props> = ({
     dispatch({ type: "UPDATE_KR", id, patch });
   const removeKr = (id: string) => dispatch({ type: "REMOVE_KR", id });
 
-  return (
-    <div className="space-y-4">
-      <SaveStatusBar
-        updatedAt={working.updatedAt}
-        saving={saving}
-        pending={pendingSave}
-        activeEditing={isAnythingEditing}
-      />
-      
-      {/* Seção de Ciclos */}
-      <CyclesManager
-        cycles={cycles}
-        selectedCycleId={selectedCycleId}
-        onCreateCycle={createCycle}
-        onUpdateCycle={updateCycle}
-        onDeleteCycle={deleteCycle}
-        onSelectCycle={setSelectedCycleId}
-        editing={true}
-      />
-
-      <div className="space-y-10">
-        <CollapsibleSectionCard
+  const pdiContent = (
+    <div className="space-y-10">
+      <CollapsibleSectionCard
           icon={() => (
             <span className="text-indigo-600 font-bold text-lg">KR</span>
           )}
@@ -214,8 +202,8 @@ export const EditablePdiView: React.FC<Props> = ({
             <button
               onClick={() => toggleSection("krs")}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all ${
-                editingSections.krs 
-                  ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100" 
+                editingSections.krs
+                  ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                   : "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
               }`}
             >
@@ -394,7 +382,27 @@ export const EditablePdiView: React.FC<Props> = ({
           enableSort={!saving && !pendingSave && editingMilestones.size === 0}
           editing={editingMilestones.size > 0}
         />
-      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <SaveStatusBar
+        updatedAt={working.updatedAt}
+        saving={saving}
+        pending={pendingSave}
+        activeEditing={isAnythingEditing}
+      />
+      
+      <PdiTabs
+        cycles={cycles}
+        selectedCycleId={selectedCycleId}
+        onCreateCycle={createCycle}
+        onUpdateCycle={updateCycle}
+        onDeleteCycle={deleteCycle}
+        onSelectCycle={setSelectedCycleId}
+        pdiContent={pdiContent}
+      />
     </div>
   );
 };
