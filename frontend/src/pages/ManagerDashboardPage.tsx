@@ -1,6 +1,6 @@
 // TODO(refactor): Extrair sidebar, header e painel de PDI para `features/manager/components`.
 // Manter esta página apenas como orquestradora de rota.
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMyReports } from "../features/admin";
 import {
@@ -74,18 +74,6 @@ export function ManagerDashboardPage() {
       (typeof allTeams.teams)[0] & { myReports: ReportSummary[] }
     >;
   }, [allTeams.teams, myDirectReports]);
-
-  // Expandir automaticamente o primeiro time com pessoas que gerencio
-  useEffect(() => {
-    if (
-      !allTeams.loading &&
-      expandedTeamId == null &&
-      myTeamsWithMyReports.length > 0
-    ) {
-      const firstId = myTeamsWithMyReports[0].id;
-      setExpandedTeamId(firstId);
-    }
-  }, [allTeams.loading, myTeamsWithMyReports, expandedTeamId]);
 
   return (
     <div className="flex flex-col h-full min-h-0">
