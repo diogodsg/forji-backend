@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { FiX, FiUser, FiUsers, FiSearch } from "react-icons/fi";
 import { useAdminManagementRules } from "../../management/hooks/useAdminManagementRules";
 import { useAdminUsers } from "../hooks/useAdminUsers";
@@ -97,7 +98,7 @@ export function AdminCreateRuleModal({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[9999] overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         <div
@@ -337,6 +338,7 @@ export function AdminCreateRuleModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
