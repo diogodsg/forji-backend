@@ -1,15 +1,24 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { FiArrowLeft, FiUser } from "react-icons/fi";
+import { FiArrowLeft, FiUser, FiKey } from "react-icons/fi";
 import { UserProfileEditor } from "@/features/settings/components/UserProfileEditor";
+import { AdminAccountSection } from "@/features/admin/components/AdminAccountSection";
 import { useAdminUsers } from "@/features/admin";
 import type { UserProfile } from "@/features/settings/types/settings";
+
+const tabs = [
+  { id: "profile", label: "Perfil", icon: FiUser },
+  { id: "account", label: "Conta", icon: FiKey },
+] as const;
+
+type TabId = typeof tabs[number]["id"];
 
 export function AdminUserEditPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { users, loading } = useAdminUsers();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("profile");
 
   useEffect(() => {
     if (!loading && users.length > 0 && userId) {
@@ -44,6 +53,30 @@ export function AdminUserEditPage() {
 
   const handleBack = () => {
     navigate("/admin");
+  };
+
+  const renderTabContent = () => {
+    if (!userProfile) return null;
+    
+    switch (activeTab) {
+      case "profile":
+        return (
+          <UserProfileEditor
+            user={userProfile}
+            isAdminMode={true}
+            onSuccess={handleSuccess}
+          />
+        );
+      case "account":
+        return (
+          <AdminAccountSection
+            userId={userProfile.id}
+            userName={userProfile.name}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   if (loading) {
@@ -101,14 +134,43 @@ export function AdminUserEditPage() {
         </div>
       </div>
 
-      {/* Card principal */}
+      {/* Card principal com tabs */}
       <div className="bg-white shadow rounded-lg">
+        {/* Tabs */}
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap
+                    ${
+                      isActive
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }
+                  `}
+                >
+                  <Icon
+                    className={`mr-2 h-4 w-4 ${
+                      isActive ? "text-blue-500" : "text-gray-400"
+                    }`}
+                  />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Tab Content */}
         <div className="p-6">
-          <UserProfileEditor
-            user={userProfile}
-            isAdminMode={true}
-            onSuccess={handleSuccess}
-          />
+          {renderTabContent()}
         </div>
       </div>
     </div>

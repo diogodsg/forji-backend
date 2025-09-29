@@ -18,6 +18,7 @@ export * from "./UserMetricsCards";
 export * from "./UserQuickView";
 export * from "./SimplifiedUsersTable";
 export * from "./EnhancedUsersToolbar";
+export * from "./AdminAccountSection";
 export * from "./Breadcrumb";
 export * from "./AdminSubordinatesManagement";
 export * from "./AdminCreateRuleModal";
