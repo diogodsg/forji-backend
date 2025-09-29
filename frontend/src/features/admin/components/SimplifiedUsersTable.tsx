@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { FiShield, FiGithub, FiTrash2 } from "react-icons/fi";
+import { FiShield, FiGithub, FiTrash2, FiUsers, FiMail } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import type { AdminUser } from "../types";
-import { UserQuickView } from "./UserQuickView";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 
 interface Props {
@@ -21,9 +21,13 @@ export function SimplifiedUsersTable({
   onRemove,
   onChangePassword,
 }: Props) {
-  const [quickViewUser, setQuickViewUser] = useState<AdminUser | null>(null);
+  const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [changePasswordUser, setChangePasswordUser] = useState<AdminUser | null>(null);
+
+  const handleCardClick = (userId: number) => {
+    navigate(`/admin/users/${userId}`);
+  };
 
   if (loading) {
     return (
@@ -90,129 +94,74 @@ export function SimplifiedUsersTable({
           return (
             <div
               key={user.id}
-              className="bg-white/90 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-4 hover:shadow-lg hover:border-surface-400/70 transition-all duration-200 group cursor-pointer"
-              onClick={() => setQuickViewUser(user)}
+              className="group relative bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer"
+              onClick={() => handleCardClick(user.id)}
             >
-              <div className="flex flex-col h-full relative">
-                {/* Botão deletar no top right */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setConfirmDelete(user.id);
-                  }}
-                  className="absolute top-0 right-0 p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors z-10"
-                  title="Remover usuário"
-                >
-                  <FiTrash2 className="w-4 h-4" />
-                </button>
+              {/* Botão deletar no top right */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmDelete(user.id);
+                }}
+                className="absolute top-3 right-3 p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                title="Remover usuário"
+              >
+                <FiTrash2 className="w-4 h-4" />
+              </button>
 
-                {/* Header com avatar e badges */}
-                <div className="flex items-start gap-3 mb-3 pr-8">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0 shadow-md">
+              {/* Avatar e nome */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="relative">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-lg font-semibold flex items-center justify-center shadow-sm">
                     {user.name?.[0]?.toUpperCase() || "U"}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">
-                      {user.name}
-                    </h3>
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {user.isAdmin && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                          <FiShield className="w-3 h-3" />
-                          Admin
-                        </span>
-                      )}
-                      {user.githubId && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                          <FiGithub className="w-3 h-3" />@{user.githubId}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Informações principais */}
-                <div className="flex-1 space-y-2 mb-3">
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                      Email
-                    </p>
-                    <p
-                      className="text-sm text-gray-700 truncate"
-                      title={user.email}
-                    >
-                      {user.email}
-                    </p>
-                  </div>
-
-                  {(user as any).position && (
-                    <div>
-                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                        Cargo
-                      </p>
-                      <p className="text-sm text-gray-700 font-medium">
-                        {(user as any).position}
-                      </p>
-                    </div>
-                  )}
-
-                  {(managersCount > 0 || subordinatesCount > 0) && (
-                    <div>
-                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">
-                        Hierarquia
-                      </p>
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        {managersCount > 0 && (
-                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                            {managersCount} gerente
-                            {managersCount > 1 ? "s" : ""}
-                          </span>
-                        )}
-                        {subordinatesCount > 0 && (
-                          <span className="bg-green-50 text-green-700 px-2 py-1 rounded-full">
-                            {subordinatesCount} subordinado
-                            {subordinatesCount > 1 ? "s" : ""}
-                          </span>
-                        )}
-                      </div>
+                  {user.isAdmin && (
+                    <div className="absolute -top-1 -right-1 h-5 w-5 bg-purple-500 rounded-full flex items-center justify-center">
+                      <FiShield className="w-3 h-3 text-white" />
                     </div>
                   )}
                 </div>
-
-                {/* Footer com ações */}
-                <div className="flex justify-end pt-2 border-t border-gray-100">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    {confirmDelete === user.id ? (
-                      <div
-                        className="flex items-center gap-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={() => {
-                            onRemove(user.id);
-                            setConfirmDelete(null);
-                          }}
-                          className="px-3 py-1.5 text-xs bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors font-medium"
-                        >
-                          Confirmar
-                        </button>
-                        <button
-                          onClick={() => setConfirmDelete(null)}
-                          className="px-3 py-1.5 text-xs bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors font-medium"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex justify-center">
-                        <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
-                          Clique para editar
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 text-sm truncate mb-0.5">
+                    {user.name}
+                  </h3>
+                  <p className="text-xs text-gray-500 truncate flex items-center gap-1">
+                    <FiMail className="w-3 h-3" />
+                    {user.email}
+                  </p>
                 </div>
               </div>
+
+              {/* Informações secundárias */}
+              <div className="space-y-2">
+                {(user as any).position && (
+                  <div className="text-xs">
+                    <span className="text-gray-500">Cargo:</span>
+                    <span className="ml-1 font-medium text-gray-700">{(user as any).position}</span>
+                  </div>
+                )}
+
+                {user.githubId && (
+                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                    <FiGithub className="w-3 h-3" />
+                    <span>@{user.githubId}</span>
+                  </div>
+                )}
+
+                {(managersCount > 0 || subordinatesCount > 0) && (
+                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                    <FiUsers className="w-3 h-3" />
+                    <span>
+                      {managersCount > 0 && `${managersCount} gerente${managersCount > 1 ? 's' : ''}`}
+                      {managersCount > 0 && subordinatesCount > 0 && ', '}
+                      {subordinatesCount > 0 && `${subordinatesCount} subordinado${subordinatesCount > 1 ? 's' : ''}`}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Indicador visual no hover */}
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-30 transition-opacity pointer-events-none" />
             </div>
           );
         })}
@@ -231,12 +180,36 @@ export function SimplifiedUsersTable({
         </div>
       )}
 
-      <UserQuickView
-        user={quickViewUser}
-        isOpen={!!quickViewUser}
-        onClose={() => setQuickViewUser(null)}
-        allUsers={users}
-      />
+      {/* Modal de confirmação de delete */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Confirmar exclusão
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Tem certeza que deseja remover este usuário? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  await onRemove(confirmDelete);
+                  setConfirmDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-md transition-colors"
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ChangePasswordModal
         user={changePasswordUser}
