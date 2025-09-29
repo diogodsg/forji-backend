@@ -20,6 +20,7 @@ export interface CreateAdminUserInput {
   password: string;
   isAdmin?: boolean;
   githubId?: string;
+  position?: string;
 }
 
 export interface AdminUsersState {

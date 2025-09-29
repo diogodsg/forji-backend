@@ -11,6 +11,7 @@ interface Props {
     password: string;
     isAdmin: boolean;
     githubId?: string;
+    position?: string;
   }) => Promise<void>;
   creating: boolean;
   error: string | null;
@@ -46,6 +47,9 @@ export function CreateUserModal({
       password: String(fd.get("password") || ""),
       isAdmin: !!fd.get("isAdmin"),
       githubId: (String(fd.get("githubId") || "").trim() || undefined) as
+        | string
+        | undefined,
+      position: (String(fd.get("position") || "").trim() || undefined) as
         | string
         | undefined,
     };
@@ -120,6 +124,13 @@ export function CreateUserModal({
             <input
               name="githubId"
               placeholder="ex.: octocat"
+              className="w-full rounded-md border border-surface-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 bg-white/80"
+            />
+          </FormField>
+          <FormField label="Cargo/Posição">
+            <input
+              name="position"
+              placeholder="ex.: Desenvolvedor Frontend"
               className="w-full rounded-md border border-surface-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 bg-white/80"
             />
           </FormField>

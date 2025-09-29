@@ -50,6 +50,10 @@ export class AdminCreateUserDto {
   @IsOptional()
   @IsString()
   githubId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  position?: string;
 }
 
 export class SetGithubIdDto {

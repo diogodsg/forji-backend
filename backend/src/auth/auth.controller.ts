@@ -90,6 +90,7 @@ export class AuthController {
           name: body.name,
           isAdmin: body.isAdmin || false,
           githubId: body.githubId || null,
+          position: body.position?.trim() || null,
         },
       });
       return { id: created.id };

@@ -117,6 +117,7 @@ export default function AdminAccessPage() {
     password: string;
     isAdmin: boolean;
     githubId?: string;
+    position?: string;
   }) {
     setCreateError(null);
     try {
