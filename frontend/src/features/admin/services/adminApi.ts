@@ -1,5 +1,6 @@
 import { api } from "@/lib/apiClient";
 import type { AdminUser, CreateAdminUserInput } from "../types";
+import type { UpdateProfileDto, UserProfile } from "@/features/settings/types/settings";
 
 export const adminApi = {
   async listUsers(): Promise<AdminUser[]> {
@@ -64,5 +65,15 @@ export const adminApi = {
         auth: true,
       }
     );
+  },
+  async updateProfile(
+    userId: number,
+    data: UpdateProfileDto
+  ): Promise<UserProfile> {
+    return api<UserProfile>(`/auth/admin/update-profile/${userId}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      auth: true,
+    });
   },
 };
