@@ -17,7 +17,6 @@ export interface AdminUser extends UserRow {}
 export interface CreateAdminUserInput {
   name: string;
   email: string;
-  password: string;
   isAdmin?: boolean;
   githubId?: string;
   position?: string;

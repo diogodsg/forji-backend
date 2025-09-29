@@ -7,7 +7,7 @@ interface UseAdminUsersResult {
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  create: (input: CreateAdminUserInput) => Promise<void>;
+  create: (input: CreateAdminUserInput) => Promise<{ id: number; generatedPassword: string }>;
   setGithub: (id: number, gh: string | null) => Promise<void>;
   toggleAdmin: (id: number, next: boolean) => Promise<void>;
   removeUser: (id: number) => Promise<void>;
@@ -64,8 +64,9 @@ export function useAdminUsers(): UseAdminUsersResult {
     async (input: CreateAdminUserInput) => {
       setCreating(true);
       try {
-        await adminApi.createUser(input);
+        const result = await adminApi.createUser(input);
         await refresh();
+        return result;
       } finally {
         setCreating(false);
       }

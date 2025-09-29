@@ -8,11 +8,10 @@ interface Props {
   onCreate: (data: {
     name: string;
     email: string;
-    password: string;
     isAdmin: boolean;
     githubId?: string;
     position?: string;
-  }) => Promise<void>;
+  }) => Promise<{ id: number; generatedPassword: string }>;
   creating: boolean;
   error: string | null;
 }
@@ -25,17 +24,29 @@ export function CreateUserModal({
   error,
 }: Props) {
   const [localError, setLocalError] = useState<string | null>(null);
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
   // Track last creating state to detect successful transition
   const prevCreating = useRef<boolean>(false);
   useEffect(() => {
     if (prevCreating.current && !creating && open && !error && !localError) {
       // Assume success transition
-      formRef.current?.reset();
-      onClose();
+      setShowSuccess(true);
     }
     prevCreating.current = creating;
-  }, [creating, open, error, localError, onClose]);
+  }, [creating, open, error, localError]);
+  
+  // Reset states when modal closes
+  useEffect(() => {
+    if (!open) {
+      setGeneratedPassword(null);
+      setShowSuccess(false);
+      setLocalError(null);
+      formRef.current?.reset();
+    }
+  }, [open]);
+  
   if (!open) return null;
 
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -44,7 +55,6 @@ export function CreateUserModal({
     const payload = {
       name: String(fd.get("name") || ""),
       email: String(fd.get("email") || ""),
-      password: String(fd.get("password") || ""),
       isAdmin: !!fd.get("isAdmin"),
       githubId: (String(fd.get("githubId") || "").trim() || undefined) as
         | string
@@ -55,7 +65,8 @@ export function CreateUserModal({
     };
     setLocalError(null);
     try {
-      await onCreate(payload);
+      const result = await onCreate(payload);
+      setGeneratedPassword(result.generatedPassword);
       // Success handling deferred to effect observing creating flag.
     } catch (err: any) {
       setLocalError(err?.message || "Erro ao criar");
@@ -89,6 +100,45 @@ export function CreateUserModal({
             {error || localError}
           </div>
         )}
+        {showSuccess && generatedPassword && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs">✓</span>
+              </div>
+              <h4 className="font-semibold text-green-800">Usuário criado com sucesso!</h4>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-green-700">
+                Uma senha foi gerada automaticamente para o usuário:
+              </p>
+              <div className="flex items-center gap-2 p-2 bg-white border border-green-300 rounded">
+                <code className="flex-1 text-sm font-mono bg-gray-100 px-2 py-1 rounded">
+                  {generatedPassword}
+                </code>
+                <button
+                  onClick={() => navigator.clipboard.writeText(generatedPassword)}
+                  className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                  title="Copiar senha"
+                >
+                  Copiar
+                </button>
+              </div>
+              <p className="text-xs text-green-600">
+                💡 Compartilhe esta senha com o usuário de forma segura. Ele poderá alterá-la após o primeiro login.
+              </p>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+        {!showSuccess && (
         <form
           ref={formRef}
           onSubmit={submit}
@@ -108,15 +158,6 @@ export function CreateUserModal({
               type="email"
               required
               placeholder="maria@empresa.com"
-              className="w-full rounded-md border border-surface-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 bg-white/80"
-            />
-          </FormField>
-          <FormField label="Senha">
-            <input
-              name="password"
-              type="password"
-              required
-              placeholder="••••••"
               className="w-full rounded-md border border-surface-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 bg-white/80"
             />
           </FormField>
@@ -161,6 +202,7 @@ export function CreateUserModal({
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

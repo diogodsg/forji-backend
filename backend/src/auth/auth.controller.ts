@@ -32,6 +32,16 @@ export class AuthController {
     private readonly prisma: PrismaService
   ) {}
 
+  // Método para gerar senha aleatória segura
+  private generateRandomPassword(length: number): string {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return password;
+  }
+
   @Post("login")
   async login(@Body() body: LoginDto) {
     const user = await this.authService.validateUser(body.email, body.password);
@@ -81,7 +91,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, new AdminGuard())
   async adminCreateUser(@Body() body: AdminCreateUserDto) {
     const bcrypt = await import("bcryptjs");
-    const hash = await bcrypt.hash(body.password, 10);
+    // Gerar senha automática de 12 caracteres
+    const generatedPassword = this.generateRandomPassword(12);
+    const hash = await bcrypt.hash(generatedPassword, 10);
     try {
       const created = await this.prisma.user.create({
         data: {
@@ -93,7 +105,7 @@ export class AuthController {
           position: body.position?.trim() || null,
         },
       });
-      return { id: created.id };
+      return { id: created.id, generatedPassword };
     } catch (error: any) {
       if (error.code === "P2002") {
         throw new BadRequestException("Email já está em uso");

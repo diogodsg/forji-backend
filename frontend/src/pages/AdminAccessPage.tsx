@@ -114,14 +114,14 @@ export default function AdminAccessPage() {
   async function handleCreateUser(data: {
     name: string;
     email: string;
-    password: string;
     isAdmin: boolean;
     githubId?: string;
     position?: string;
   }) {
     setCreateError(null);
     try {
-      await create(data as any);
+      const result = await create(data as any);
+      return result; // Retornar o resultado que inclui generatedPassword
     } catch (err: any) {
       const msg = String(err?.message || "");
       let display: string;

@@ -5,8 +5,8 @@ export const adminApi = {
   async listUsers(): Promise<AdminUser[]> {
     return api<AdminUser[]>("/auth/users", { auth: true });
   },
-  async createUser(input: CreateAdminUserInput): Promise<void> {
-    await api("/auth/admin/create-user", {
+  async createUser(input: CreateAdminUserInput): Promise<{ id: number; generatedPassword: string }> {
+    return api<{ id: number; generatedPassword: string }>("/auth/admin/create-user", {
       method: "POST",
       body: JSON.stringify(input),
       auth: true,
