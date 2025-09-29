@@ -76,7 +76,7 @@ export function ManagerDashboardPage() {
   }, [allTeams.teams, myDirectReports]);
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col">
       {completeError && (
         <div className="mx-4 mb-2 mt-4 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded p-2">
           {completeError}
@@ -88,7 +88,7 @@ export function ManagerDashboardPage() {
         </div>
       )}
 
-      <div className="flex-1 overflow-auto px-6 pb-8">
+      <div className="px-6 pb-8">
         <section className="mt-8">
           <div className="relative mb-8">
             {/* Background decorativo */}

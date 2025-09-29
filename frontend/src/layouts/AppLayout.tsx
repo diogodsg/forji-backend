@@ -17,7 +17,7 @@ export function AppLayout({
   showAdmin,
 }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-surface-100 text-gray-800">
+    <div className="min-h-screen bg-surface-100 text-gray-800 flex flex-col">
       {/* Top Navigation Bar */}
       <HorizontalNavbar
         userName={userName}
@@ -27,7 +27,7 @@ export function AppLayout({
       />
 
       {/* Main Content */}
-      <main className="relative flex min-h-0 overflow-y-auto">
+      <main className="relative flex-1 flex min-h-0 overflow-y-auto">
         <div
           className="pointer-events-none select-none absolute inset-0"
           aria-hidden="true"
