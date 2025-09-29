@@ -1,15 +1,5 @@
 import { useState, useEffect } from "react";
-import { FiX, FiUser, FiUsers, FiSearch } from "reac  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
-          onClick={onClose}
-        ></div>
-
-        <div className="relative z-10 bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">;
+import { FiX, FiUser, FiUsers, FiSearch } from "react-icons/fi";
 import { useAdminManagementRules } from "../../management/hooks/useAdminManagementRules";
 import { useAdminUsers } from "../hooks/useAdminUsers";
 import { useAdminTeams } from "../hooks/useAdminTeams";
