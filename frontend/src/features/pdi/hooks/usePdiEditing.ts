@@ -262,10 +262,12 @@ export function usePdiEditing(initial: PdiPlan) {
   );
 
   // Usar ref para evitar loops infinitos - armazenar uma string serializada para comparação estável
-  const lastInitialRef = useRef<string>(JSON.stringify({
-    userId: initial.userId,
-    updatedAt: initial.updatedAt,
-  }));
+  const lastInitialRef = useRef<string>(
+    JSON.stringify({
+      userId: initial.userId,
+      updatedAt: initial.updatedAt,
+    })
+  );
 
   // Reagir às mudanças do plano inicial apenas quando realmente há mudança significativa
   useEffect(() => {
@@ -276,14 +278,19 @@ export function usePdiEditing(initial: PdiPlan) {
 
     // Só reinicializar quando houver mudança real e não estivermos salvando
     if (
-      currentInitialStr !== lastInitialRef.current && 
-      !state.meta.saving && 
+      currentInitialStr !== lastInitialRef.current &&
+      !state.meta.saving &&
       !state.meta.pendingSave
     ) {
       lastInitialRef.current = currentInitialStr;
       dispatch({ type: "INIT", plan: initial });
     }
-  }, [initial.userId, initial.updatedAt, state.meta.saving, state.meta.pendingSave]);
+  }, [
+    initial.userId,
+    initial.updatedAt,
+    state.meta.saving,
+    state.meta.pendingSave,
+  ]);
   const toggleSection = useCallback(
     (section: keyof PdiEditingState["editing"]["sections"]) =>
       dispatch({ type: "TOGGLE_SECTION", section }),

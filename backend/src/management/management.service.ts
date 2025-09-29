@@ -71,7 +71,7 @@ export class ManagementService extends SoftDeleteService {
       throw new Error("Management rule not found or not owned by this manager");
     }
 
-    return this.softDelete('managementRule', BigInt(ruleId));
+    return this.softDelete("managementRule", BigInt(ruleId));
   }
 
   // Listar todas as regras de um gerente
@@ -294,7 +294,7 @@ export class ManagementService extends SoftDeleteService {
       throw new Error("Management rule not found");
     }
 
-    return this.softDelete('managementRule', BigInt(ruleId));
+    return this.softDelete("managementRule", BigInt(ruleId));
   }
 
   // Método auxiliar para calcular progresso do PDI

@@ -142,8 +142,8 @@ export class PrsService extends SoftDeleteService {
     return { items, total, page, pageSize, meta };
   }
   get(id: number) {
-    return this.prisma.pullRequest.findFirst({ 
-      where: this.addSoftDeleteFilter({ id })
+    return this.prisma.pullRequest.findFirst({
+      where: this.addSoftDeleteFilter({ id }),
     });
   }
   private mapIncoming(raw: any) {
@@ -198,8 +198,8 @@ export class PrsService extends SoftDeleteService {
     return created;
   }
   async update(id: number, data: any) {
-    const exists = await this.prisma.pullRequest.findFirst({ 
-      where: this.addSoftDeleteFilter({ id })
+    const exists = await this.prisma.pullRequest.findFirst({
+      where: this.addSoftDeleteFilter({ id }),
     });
     if (!exists) throw new NotFoundException("PR not found");
     const mapped = this.mapIncoming(data);
@@ -213,21 +213,21 @@ export class PrsService extends SoftDeleteService {
     return updated;
   }
   async remove(id: number) {
-    await this.softDelete('pullRequest', id);
+    await this.softDelete("pullRequest", id);
     logger.info({ msg: "prs.softDelete", id }, "prs.softDelete id=%s", id);
     return { deleted: true };
   }
 
   // Método para hard delete (apenas para admin ou casos especiais)
   async hardRemove(id: number) {
-    await this.hardDelete('pullRequest', id);
+    await this.hardDelete("pullRequest", id);
     logger.info({ msg: "prs.hardDelete", id }, "prs.hardDelete id=%s", id);
     return { deleted: true };
   }
 
   // Método para restaurar PR soft deleted
   async restorePr(id: number) {
-    await this.restore('pullRequest', id);
+    await this.restore("pullRequest", id);
     logger.info({ msg: "prs.restore", id }, "prs.restore id=%s", id);
     return { restored: true };
   }

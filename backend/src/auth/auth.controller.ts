@@ -107,7 +107,7 @@ export class AuthController {
     // Soft delete do usuário
     await this.prisma.user.update({
       where: { id: body.userId },
-      data: { deletedAt: new Date() }
+      data: { deletedAt: new Date() },
     });
     return { success: true };
   }
@@ -118,7 +118,7 @@ export class AuthController {
     // Restaurar usuário soft deleted
     await this.prisma.user.update({
       where: { id: body.userId },
-      data: { deletedAt: null }
+      data: { deletedAt: null },
     });
     return { success: true };
   }

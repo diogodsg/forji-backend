@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../core/prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../core/prisma/prisma.service";
 
 /**
  * Classe base para implementar soft delete em services

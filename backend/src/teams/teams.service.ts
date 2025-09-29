@@ -19,7 +19,12 @@ export class TeamsService extends SoftDeleteService {
       where: this.addSoftDeleteFilter({}),
       orderBy: { id: "asc" },
       include: summaryOnly
-        ? { memberships: { where: this.addSoftDeleteFilter({}), select: { role: true } } }
+        ? {
+            memberships: {
+              where: this.addSoftDeleteFilter({}),
+              select: { role: true },
+            },
+          }
         : {
             memberships: {
               where: this.addSoftDeleteFilter({}),
@@ -148,9 +153,9 @@ export class TeamsService extends SoftDeleteService {
       });
 
       // Depois, soft delete a equipe
-      await tx.team.update({ 
+      await tx.team.update({
         where: { id: BigInt(id) },
-        data: { deletedAt: new Date() }
+        data: { deletedAt: new Date() },
       });
     });
 
@@ -190,9 +195,9 @@ export class TeamsService extends SoftDeleteService {
     // Restaurar equipe e seus memberships
     await (this.prisma as any).$transaction(async (tx: any) => {
       // Restaurar a equipe
-      await tx.team.update({ 
+      await tx.team.update({
         where: { id: BigInt(id) },
-        data: { deletedAt: null }
+        data: { deletedAt: null },
       });
 
       // Restaurar memberships que foram deletados junto
@@ -215,7 +220,7 @@ export class TeamsService extends SoftDeleteService {
     if (!can) throw new BadRequestException("Not allowed");
     const existing = await (this.prisma as any).teamMembership.findFirst({
       where: this.addSoftDeleteFilter({
-        teamId: BigInt(teamId), 
+        teamId: BigInt(teamId),
         userId: BigInt(userId),
       }),
     });
@@ -240,7 +245,7 @@ export class TeamsService extends SoftDeleteService {
     if (!can) throw new BadRequestException("Not allowed");
     const membership = await (this.prisma as any).teamMembership.findFirst({
       where: this.addSoftDeleteFilter({
-        teamId: BigInt(teamId), 
+        teamId: BigInt(teamId),
         userId: BigInt(userId),
       }),
     });
@@ -248,7 +253,10 @@ export class TeamsService extends SoftDeleteService {
     // Garantir que não removemos último MANAGER
     if (membership.role === "MANAGER" && role !== "MANAGER") {
       const managers = await (this.prisma as any).teamMembership.count({
-        where: this.addSoftDeleteFilter({ teamId: BigInt(teamId), role: "MANAGER" }),
+        where: this.addSoftDeleteFilter({
+          teamId: BigInt(teamId),
+          role: "MANAGER",
+        }),
       });
       if (managers <= 1) {
         throw new BadRequestException(
@@ -270,14 +278,17 @@ export class TeamsService extends SoftDeleteService {
     if (!can) throw new BadRequestException("Not allowed");
     const membership = await (this.prisma as any).teamMembership.findFirst({
       where: this.addSoftDeleteFilter({
-        teamId: BigInt(teamId), 
+        teamId: BigInt(teamId),
         userId: BigInt(userId),
       }),
     });
     if (!membership) throw new NotFoundException("Membership not found");
     if (membership.role === "MANAGER") {
       const managers = await (this.prisma as any).teamMembership.count({
-        where: this.addSoftDeleteFilter({ teamId: BigInt(teamId), role: "MANAGER" }),
+        where: this.addSoftDeleteFilter({
+          teamId: BigInt(teamId),
+          role: "MANAGER",
+        }),
       });
       if (managers <= 1)
         throw new BadRequestException(

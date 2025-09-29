@@ -45,8 +45,8 @@ export class PdiService extends SoftDeleteService {
     super(prisma);
   }
   async getByUser(userId: number) {
-    return this.prisma.pdiPlan.findFirst({ 
-      where: this.addSoftDeleteFilter({ userId })
+    return this.prisma.pdiPlan.findFirst({
+      where: this.addSoftDeleteFilter({ userId }),
     });
   }
   async upsert(userId: number, data: PdiPlanDto) {
@@ -141,16 +141,24 @@ export class PdiService extends SoftDeleteService {
       where: this.addSoftDeleteFilter({ userId }),
     });
     if (!existing) throw new NotFoundException("PDI plan not found");
-    
-    await this.softDelete('pdiPlan', existing.id);
-    logger.warn({ msg: "pdi.softDelete", userId }, "pdi.softDelete userId=%d", userId);
+
+    await this.softDelete("pdiPlan", existing.id);
+    logger.warn(
+      { msg: "pdi.softDelete", userId },
+      "pdi.softDelete userId=%d",
+      userId
+    );
     return { deleted: true };
   }
 
   // Método para hard delete (apenas para admin ou casos especiais)
   async hardDeletePdi(userId: number) {
     await this.prisma.pdiPlan.delete({ where: { userId } });
-    logger.warn({ msg: "pdi.hardDelete", userId }, "pdi.hardDelete userId=%d", userId);
+    logger.warn(
+      { msg: "pdi.hardDelete", userId },
+      "pdi.hardDelete userId=%d",
+      userId
+    );
     return { deleted: true };
   }
 
@@ -160,9 +168,13 @@ export class PdiService extends SoftDeleteService {
       where: { userId, deletedAt: { not: null } },
     });
     if (!existing) throw new NotFoundException("Deleted PDI plan not found");
-    
-    await super.restore('pdiPlan', existing.id);
-    logger.info({ msg: "pdi.restore", userId }, "pdi.restore userId=%d", userId);
+
+    await super.restore("pdiPlan", existing.id);
+    logger.info(
+      { msg: "pdi.restore", userId },
+      "pdi.restore userId=%d",
+      userId
+    );
     return { restored: true };
   }
 }
