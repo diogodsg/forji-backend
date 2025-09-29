@@ -43,14 +43,14 @@ export function useAutoSave({
   useDebounceEffect(
     () => {
       if (!pending || saving || !working) return;
-      
+
       // Evitar auto-save se há milestones sendo editados ativamente
       // para prevenir race conditions durante digitação
       if (editingMilestones.size > 0) {
         console.log("Auto-save pausado: milestones em edição");
         return;
       }
-      
+
       const abort = new AbortController();
       (async () => {
         dispatch({ type: "SAVE_STARTED" });

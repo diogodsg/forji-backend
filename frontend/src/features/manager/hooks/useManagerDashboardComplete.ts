@@ -19,14 +19,17 @@ export function useManagerDashboardComplete(options: Options = {}) {
   useEffect(() => {
     if (skip) return;
     let cancelled = false;
-    
+
     (async () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await api<ManagerDashboardCompleteData>("/management/dashboard/complete", {
-          auth: true,
-        });
+        const res = await api<ManagerDashboardCompleteData>(
+          "/management/dashboard/complete",
+          {
+            auth: true,
+          }
+        );
         if (!cancelled) setData(res);
       } catch (e: any) {
         if (!cancelled) setError(e.message || "Erro ao carregar dashboard");
@@ -34,7 +37,7 @@ export function useManagerDashboardComplete(options: Options = {}) {
         if (!cancelled) setLoading(false);
       }
     })();
-    
+
     return () => {
       cancelled = true;
     };

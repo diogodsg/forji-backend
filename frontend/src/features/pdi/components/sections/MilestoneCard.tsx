@@ -704,7 +704,11 @@ interface TitleInputProps {
   placeholder?: string;
 }
 
-const TitleInput: React.FC<TitleInputProps> = ({ value, onChange, placeholder }) => {
+const TitleInput: React.FC<TitleInputProps> = ({
+  value,
+  onChange,
+  placeholder,
+}) => {
   const [localValue, setLocalValue] = useState(value);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
@@ -728,7 +732,7 @@ const TitleInput: React.FC<TitleInputProps> = ({ value, onChange, placeholder })
 
   const handleChange = (newValue: string) => {
     setLocalValue(newValue);
-    
+
     // Limpar timeout anterior
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);

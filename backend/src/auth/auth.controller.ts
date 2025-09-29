@@ -22,6 +22,7 @@ import {
   UserProfileDto,
   UpdateProfileDto,
   ChangePasswordDto,
+  AdminChangePasswordDto,
 } from "../dto/auth.dto";
 import { PrismaService } from "../core/prisma/prisma.service";
 
@@ -34,8 +35,9 @@ export class AuthController {
 
   // Método para gerar senha aleatória segura
   private generateRandomPassword(length: number): string {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-    let password = '';
+    const charset =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let password = "";
     for (let i = 0; i < length; i++) {
       password += charset.charAt(Math.floor(Math.random() * charset.length));
     }
@@ -197,6 +199,30 @@ export class AuthController {
     if (!success) {
       throw new BadRequestException("Senha atual incorreta");
     }
+    return { success: true };
+  }
+
+  @Post("admin/change-password")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminChangePassword(
+    @Body() body: AdminChangePasswordDto
+  ): Promise<{ success: boolean; generatedPassword?: string }> {
+    const bcrypt = await import("bcryptjs");
+    
+    // Se não forneceu senha, gera uma automaticamente
+    const newPassword = body.newPassword || this.generateRandomPassword(12);
+    const hash = await bcrypt.hash(newPassword, 10);
+    
+    await this.prisma.user.update({
+      where: { id: BigInt(body.userId) },
+      data: { password: hash },
+    });
+    
+    // Se gerou automaticamente, retorna a senha para mostrar ao admin
+    if (!body.newPassword) {
+      return { success: true, generatedPassword: newPassword };
+    }
+    
     return { success: true };
   }
 }

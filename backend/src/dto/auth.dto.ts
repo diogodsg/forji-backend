@@ -123,3 +123,13 @@ export class ChangePasswordDto {
   @MinLength(6)
   newPassword!: string;
 }
+
+export class AdminChangePasswordDto {
+  @IsInt()
+  userId!: number;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  newPassword?: string; // Se não fornecido, gera automaticamente
+}

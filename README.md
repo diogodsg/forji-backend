@@ -21,18 +21,18 @@ Arquitetura frontend migrou recentemente de um modelo "global components + globa
 **Melhorias Implementadas:**
 
 - **Consultas Bulk**: 3 consultas paralelas para todos os dados necessários
-- **Eliminação N+1**: `findMany` com `{ id: { in: subordinateIds } }` 
+- **Eliminação N+1**: `findMany` com `{ id: { in: subordinateIds } }`
 - **Estruturas Eficientes**: Maps para lookup rápido (`usersMap`, `teamsMap`, `pdiMap`)
 - **Paralelização**: `Promise.all` para dashboard + teams simultâneos
 - **Early Return**: Verificação rápida para listas vazias
 
 **Impacto de Performance:**
 
-| Métrica | Antes | Depois | Melhoria |
-|---------|-------|--------|----------|
-| **Latência** | ~10 segundos | ~500ms-1s | **90-95% redução** |
-| **Consultas DB** | 1 + 3×N queries | 4 queries bulk | **Escalabilidade linear** |
-| **Experiência** | Múltiplos loadings | Loading único | **UX unificada** |
+| Métrica          | Antes              | Depois         | Melhoria                  |
+| ---------------- | ------------------ | -------------- | ------------------------- |
+| **Latência**     | ~10 segundos       | ~500ms-1s      | **90-95% redução**        |
+| **Consultas DB** | 1 + 3×N queries    | 4 queries bulk | **Escalabilidade linear** |
+| **Experiência**  | Múltiplos loadings | Loading único  | **UX unificada**          |
 
 ### 🎨 **REDESIGN COMPLETO**: Interface Admin com Cards
 
@@ -64,8 +64,8 @@ Arquitetura frontend migrou recentemente de um modelo "global components + globa
 
 ```typescript
 // ❌ ANTES (3 chamadas)
-const legacy = useMyReports();        // /management/subordinates
-const dashboard = useManagerDashboard(); // /management/dashboard  
+const legacy = useMyReports(); // /management/subordinates
+const dashboard = useManagerDashboard(); // /management/dashboard
 const allTeams = useAllTeamsWithDetails(); // /teams?details=true
 
 // ✅ DEPOIS (1 chamada)

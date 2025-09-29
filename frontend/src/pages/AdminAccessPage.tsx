@@ -54,6 +54,7 @@ export default function AdminAccessPage() {
     error,
     create,
     removeUser: deleteUser,
+    changePassword,
     busy,
   } = useAdminUsers();
   const teams = useAdminTeams();
@@ -415,6 +416,7 @@ export default function AdminAccessPage() {
                 loading={loading}
                 error={error}
                 onRemove={deleteUser}
+                onChangePassword={changePassword}
               />
             </div>
           </section>

@@ -55,13 +55,13 @@ export function AdminTeamsTable({
           .slice(0, 2)
           .map((p) => p[0]?.toUpperCase())
           .join("");
-        
+
         return (
           <div
             key={t.id}
             className={`bg-white/80 backdrop-blur border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md group ${
-              selected 
-                ? "border-indigo-300 bg-indigo-50/60 shadow-md" 
+              selected
+                ? "border-indigo-300 bg-indigo-50/60 shadow-md"
                 : "border-surface-300/70 hover:border-surface-400/80"
             }`}
             onClick={() => !editing && onSelect(t.id)}
@@ -128,21 +128,25 @@ export function AdminTeamsTable({
                 )}
               </div>
               {!editing && (
-                <RowActions
-                  id={t.id}
-                  onSelect={onSelect}
-                  onRemove={onRemove}
-                />
+                <RowActions id={t.id} onSelect={onSelect} onRemove={onRemove} />
               )}
             </div>
-            
+
             {!editing && (
               <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
                 <div className="flex gap-4">
-                  <span>{t.managers} manager{t.managers !== 1 ? "s" : ""}</span>
-                  <span>{t.members} membro{t.members !== 1 ? "s" : ""}</span>
+                  <span>
+                    {t.managers} manager{t.managers !== 1 ? "s" : ""}
+                  </span>
+                  <span>
+                    {t.members} membro{t.members !== 1 ? "s" : ""}
+                  </span>
                 </div>
-                <span>{t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "—"}</span>
+                <span>
+                  {t.createdAt
+                    ? new Date(t.createdAt).toLocaleDateString()
+                    : "—"}
+                </span>
               </div>
             )}
           </div>

@@ -7,18 +7,22 @@ interface UseAdminUsersResult {
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  create: (input: CreateAdminUserInput) => Promise<{ id: number; generatedPassword: string }>;
+  create: (
+    input: CreateAdminUserInput
+  ) => Promise<{ id: number; generatedPassword: string }>;
   setGithub: (id: number, gh: string | null) => Promise<void>;
   toggleAdmin: (id: number, next: boolean) => Promise<void>;
   removeUser: (id: number) => Promise<void>;
   addManager: (userId: number, managerId: number) => Promise<void>;
   removeManager: (userId: number, managerId: number) => Promise<void>;
+  changePassword: (userId: number, newPassword?: string) => Promise<{ success: boolean; generatedPassword?: string }>;
   busy: {
     creating: boolean;
     deleting: Set<number>;
     togglingAdmin: Set<number>;
     updatingGithub: Set<number>;
     managerChange: Set<number>;
+    changingPassword: Set<number>;
   };
 }
 
@@ -31,6 +35,7 @@ export function useAdminUsers(): UseAdminUsersResult {
   const togglingAdmin = useRef(new Set<number>());
   const updatingGithub = useRef(new Set<number>());
   const managerChange = useRef(new Set<number>());
+  const changingPassword = useRef(new Set<number>());
   const [, force] = useState(0);
 
   const mark = (
@@ -139,6 +144,19 @@ export function useAdminUsers(): UseAdminUsersResult {
     [refresh]
   );
 
+  const changePassword = useCallback(
+    async (userId: number, newPassword?: string) => {
+      mark(changingPassword, userId, true);
+      try {
+        const result = await adminApi.changePassword(userId, newPassword);
+        return result;
+      } finally {
+        mark(changingPassword, userId, false);
+      }
+    },
+    []
+  );
+
   const busy = useMemo(
     () => ({
       creating,
@@ -146,6 +164,7 @@ export function useAdminUsers(): UseAdminUsersResult {
       togglingAdmin: togglingAdmin.current,
       updatingGithub: updatingGithub.current,
       managerChange: managerChange.current,
+      changingPassword: changingPassword.current,
     }),
     [creating]
   );
@@ -161,6 +180,7 @@ export function useAdminUsers(): UseAdminUsersResult {
     removeUser,
     addManager,
     removeManager,
+    changePassword,
     busy,
   };
 }

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { FiShield, FiGithub, FiTrash2 } from "react-icons/fi";
+import { FiShield, FiGithub, FiTrash2, FiKey } from "react-icons/fi";
 import type { AdminUser } from "../types";
 import { UserQuickView } from "./UserQuickView";
+import { ChangePasswordModal } from "./ChangePasswordModal";
 
 interface Props {
   users: AdminUser[];
@@ -9,6 +10,7 @@ interface Props {
   loading: boolean;
   error: string | null;
   onRemove: (id: number) => Promise<void> | void;
+  onChangePassword: (userId: number, newPassword?: string) => Promise<{ success: boolean; generatedPassword?: string }>;
 }
 
 export function SimplifiedUsersTable({
@@ -17,9 +19,11 @@ export function SimplifiedUsersTable({
   loading,
   error,
   onRemove,
+  onChangePassword,
 }: Props) {
   const [quickViewUser, setQuickViewUser] = useState<AdminUser | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [changePasswordUser, setChangePasswordUser] = useState<AdminUser | null>(null);
 
   if (loading) {
     return (
@@ -108,8 +112,7 @@ export function SimplifiedUsersTable({
                       )}
                       {user.githubId && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                          <FiGithub className="w-3 h-3" />
-                          @{user.githubId}
+                          <FiGithub className="w-3 h-3" />@{user.githubId}
                         </span>
                       )}
                     </div>
@@ -119,15 +122,22 @@ export function SimplifiedUsersTable({
                 {/* Informações principais */}
                 <div className="flex-1 space-y-2 mb-3">
                   <div>
-                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Email</p>
-                    <p className="text-sm text-gray-700 truncate" title={user.email}>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                      Email
+                    </p>
+                    <p
+                      className="text-sm text-gray-700 truncate"
+                      title={user.email}
+                    >
                       {user.email}
                     </p>
                   </div>
-                  
+
                   {(user as any).position && (
                     <div>
-                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Cargo</p>
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                        Cargo
+                      </p>
                       <p className="text-sm text-gray-700 font-medium">
                         {(user as any).position}
                       </p>
@@ -136,16 +146,20 @@ export function SimplifiedUsersTable({
 
                   {(managersCount > 0 || subordinatesCount > 0) && (
                     <div>
-                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Hierarquia</p>
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">
+                        Hierarquia
+                      </p>
                       <div className="flex flex-wrap gap-2 text-xs">
                         {managersCount > 0 && (
                           <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                            {managersCount} gerente{managersCount > 1 ? "s" : ""}
+                            {managersCount} gerente
+                            {managersCount > 1 ? "s" : ""}
                           </span>
                         )}
                         {subordinatesCount > 0 && (
                           <span className="bg-green-50 text-green-700 px-2 py-1 rounded-full">
-                            {subordinatesCount} subordinado{subordinatesCount > 1 ? "s" : ""}
+                            {subordinatesCount} subordinado
+                            {subordinatesCount > 1 ? "s" : ""}
                           </span>
                         )}
                       </div>
@@ -178,16 +192,28 @@ export function SimplifiedUsersTable({
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmDelete(user.id);
-                        }}
-                        className="p-2 rounded-lg border border-surface-300 bg-white text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors"
-                        title="Remover usuário"
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setChangePasswordUser(user);
+                          }}
+                          className="p-2 rounded-lg border border-surface-300 bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                          title="Alterar senha"
+                        >
+                          <FiKey className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDelete(user.id);
+                          }}
+                          className="p-2 rounded-lg border border-surface-300 bg-white text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors"
+                          title="Remover usuário"
+                        >
+                          <FiTrash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -200,8 +226,12 @@ export function SimplifiedUsersTable({
       {filtered.length === 0 && (
         <div className="text-center py-12">
           <div className="bg-gray-50 rounded-xl p-8">
-            <p className="text-gray-500 text-lg mb-2">Nenhum usuário encontrado</p>
-            <p className="text-gray-400 text-sm">Tente ajustar os filtros de busca</p>
+            <p className="text-gray-500 text-lg mb-2">
+              Nenhum usuário encontrado
+            </p>
+            <p className="text-gray-400 text-sm">
+              Tente ajustar os filtros de busca
+            </p>
           </div>
         </div>
       )}
@@ -211,6 +241,13 @@ export function SimplifiedUsersTable({
         isOpen={!!quickViewUser}
         onClose={() => setQuickViewUser(null)}
         allUsers={users}
+      />
+
+      <ChangePasswordModal
+        user={changePasswordUser}
+        isOpen={!!changePasswordUser}
+        onClose={() => setChangePasswordUser(null)}
+        onChangePassword={onChangePassword}
       />
     </>
   );

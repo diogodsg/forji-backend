@@ -5,12 +5,17 @@ export const adminApi = {
   async listUsers(): Promise<AdminUser[]> {
     return api<AdminUser[]>("/auth/users", { auth: true });
   },
-  async createUser(input: CreateAdminUserInput): Promise<{ id: number; generatedPassword: string }> {
-    return api<{ id: number; generatedPassword: string }>("/auth/admin/create-user", {
-      method: "POST",
-      body: JSON.stringify(input),
-      auth: true,
-    });
+  async createUser(
+    input: CreateAdminUserInput
+  ): Promise<{ id: number; generatedPassword: string }> {
+    return api<{ id: number; generatedPassword: string }>(
+      "/auth/admin/create-user",
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+        auth: true,
+      }
+    );
   },
   async setGithubId(userId: number, githubId: string | null): Promise<void> {
     await api("/auth/admin/set-github-id", {
@@ -46,5 +51,18 @@ export const adminApi = {
       body: JSON.stringify({ userId, managerId }),
       auth: true,
     });
+  },
+  async changePassword(
+    userId: number,
+    newPassword?: string
+  ): Promise<{ success: boolean; generatedPassword?: string }> {
+    return api<{ success: boolean; generatedPassword?: string }>(
+      "/auth/admin/change-password",
+      {
+        method: "POST",
+        body: JSON.stringify({ userId, newPassword }),
+        auth: true,
+      }
+    );
   },
 };

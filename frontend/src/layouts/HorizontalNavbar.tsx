@@ -44,13 +44,17 @@ export function HorizontalNavbar({
   React.useEffect(() => {
     function handler(e: KeyboardEvent) {
       if (e.altKey || e.ctrlKey || e.metaKey) return;
-      
+
       // Ignorar shortcuts quando usuário está digitando em inputs ou textareas
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
         return;
       }
-      
+
       if (e.key === "g") {
         (document as any)._navGPressed = true;
         setTimeout(() => {

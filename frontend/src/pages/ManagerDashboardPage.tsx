@@ -77,10 +77,11 @@ export function ManagerDashboardPage() {
 
   // Identificar pessoas que gerencio mas que não estão em nenhum time
   const myReportsWithoutTeams = useMemo(() => {
-    if (!allTeams.teams.length || !myDirectReports.length) return myDirectReports;
+    if (!allTeams.teams.length || !myDirectReports.length)
+      return myDirectReports;
 
     const peopleInTeams = new Set<number>();
-    
+
     // Coletar todos os IDs de pessoas que estão em times
     allTeams.teams.forEach((team) => {
       team.memberships.forEach((m) => {
@@ -89,7 +90,9 @@ export function ManagerDashboardPage() {
     });
 
     // Filtrar pessoas que gerencio e que não estão em nenhum time
-    return myDirectReports.filter((report) => !peopleInTeams.has(report.userId));
+    return myDirectReports.filter(
+      (report) => !peopleInTeams.has(report.userId)
+    );
   }, [allTeams.teams, myDirectReports]);
 
   return (
@@ -253,7 +256,8 @@ export function ManagerDashboardPage() {
                     </h3>
                     <p className="text-amber-700 text-sm">
                       {myReportsWithoutTeams.length} pessoa
-                      {myReportsWithoutTeams.length !== 1 ? "s" : ""} que você gerencia
+                      {myReportsWithoutTeams.length !== 1 ? "s" : ""} que você
+                      gerencia
                       <span className="text-amber-600 ml-2">
                         • Aguardando organização em times
                       </span>
