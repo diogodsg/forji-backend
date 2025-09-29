@@ -257,6 +257,52 @@ export class ManagementService extends SoftDeleteService {
     };
   }
 
+  // Obter dados consolidados do dashboard + times para o manager
+  async getManagerDashboardComplete(managerId: number) {
+    // Obter dashboard básico
+    const dashboardData = await this.getManagerDashboard(managerId);
+    
+    // Buscar todos os times com detalhes em uma única consulta
+    const allTeams = await this.prisma.team.findMany({
+      where: this.addSoftDeleteFilter({}),
+      include: {
+        memberships: {
+          where: this.addSoftDeleteFilter({}),
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Formatar dados dos times
+    const teams = allTeams.map((team) => ({
+      id: Number(team.id),
+      name: team.name,
+      description: team.description,
+      createdAt: team.createdAt,
+      memberships: team.memberships.map((m) => ({
+        user: {
+          id: Number(m.user.id),
+          name: m.user.name,
+          email: m.user.email,
+        },
+        role: m.role,
+      })),
+    }));
+
+    return {
+      ...dashboardData,
+      teams,
+    };
+  }
+
   // ============ ADMIN METHODS ============
 
   // Admin: Obter todas as regras do sistema

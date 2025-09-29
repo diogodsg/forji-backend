@@ -103,6 +103,16 @@ export class ManagementController {
     return this.managementService.getManagerDashboard(managerId);
   }
 
+  // Obter dados consolidados do dashboard + times do manager
+  @Get("dashboard/complete")
+  async getManagerDashboardComplete(@Request() req: any) {
+    const managerId = req.user?.id;
+    if (!managerId) {
+      throw new Error("User not authenticated");
+    }
+    return this.managementService.getManagerDashboardComplete(managerId);
+  }
+
   // ============ ADMIN ENDPOINTS ============
 
   // Admin: Criar regra para qualquer usuário

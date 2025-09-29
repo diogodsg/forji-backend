@@ -5,9 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useMyReports } from "../features/admin";
 import {
   ReportCard,
-  useManagerDashboard,
+  useManagerDashboardComplete,
   type ReportSummary,
-  useAllTeamsWithDetails,
 } from "../features/manager";
 
 export function ManagerDashboardPage() {
@@ -15,9 +14,9 @@ export function ManagerDashboardPage() {
   const legacy = useMyReports();
   const {
     data,
-    loading: loadingSummary,
-    error: summaryError,
-  } = useManagerDashboard();
+    loading: loadingComplete,
+    error: completeError,
+  } = useManagerDashboardComplete();
 
   // Foco principal: pessoas que sou manager direto
   const myDirectReports: ReportSummary[] =
@@ -40,8 +39,13 @@ export function ManagerDashboardPage() {
     );
   };
 
-  // Buscar todos os times com detalhes em uma única requisição
-  const allTeams = useAllTeamsWithDetails();
+  // Times agora vêm do endpoint consolidado
+  const allTeams = {
+    teams: data?.teams || [],
+    loading: loadingComplete,
+    error: completeError,
+  };
+  
   const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
 
   // Derivar times que contêm pessoas que gerencio

@@ -23,3 +23,18 @@ export interface ManagerDashboardData {
   reports: ReportSummary[];
   metrics: ManagerMetrics;
 }
+
+export interface TeamDetail {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
+  memberships: Array<{
+    user: { id: number; name: string; email: string };
+    role: string;
+  }>;
+}
+
+export interface ManagerDashboardCompleteData extends ManagerDashboardData {
+  teams: TeamDetail[];
+}
