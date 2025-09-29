@@ -8,6 +8,7 @@ import {
   Req,
   Patch,
   BadRequestException,
+  Param,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
@@ -200,6 +201,15 @@ export class AuthController {
       throw new BadRequestException("Senha atual incorreta");
     }
     return { success: true };
+  }
+
+  @Patch("admin/update-profile/:userId")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminUpdateProfile(
+    @Param("userId") userId: string,
+    @Body() body: UpdateProfileDto
+  ): Promise<UserProfileDto> {
+    return this.authService.updateProfile(BigInt(userId), body);
   }
 
   @Post("admin/change-password")
