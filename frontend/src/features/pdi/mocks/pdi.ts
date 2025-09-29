@@ -2,6 +2,7 @@ import type { PdiPlan } from "..";
 
 export const mockPdi: PdiPlan = {
   userId: "me",
+  cycles: [],
   competencies: [
     "Front - React",
     "Front - State Management",

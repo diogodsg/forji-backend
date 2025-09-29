@@ -8,6 +8,7 @@ import type { PdiPlan } from "..";
 function basePlan(): PdiPlan {
   return {
     userId: "1",
+    cycles: [],
     competencies: [],
     milestones: [],
     krs: [],

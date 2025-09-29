@@ -17,6 +17,7 @@ export function useRemotePdiForUser(userId?: number) {
       if (data) {
         const planData: PdiPlan = {
           userId: String(data.userId),
+          cycles: data.cycles || [],
           competencies: data.competencies || [],
           milestones: data.milestones || [],
           krs: data.krs || [],
@@ -58,6 +59,7 @@ export function useRemotePdiForUser(userId?: number) {
       });
       setPlan({
         userId: String(res.userId),
+        cycles: res.cycles || [],
         competencies: res.competencies,
         milestones: res.milestones,
         krs: res.krs || [],

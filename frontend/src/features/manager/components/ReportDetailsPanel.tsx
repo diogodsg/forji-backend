@@ -64,6 +64,7 @@ export function ReportDetailsPanel({
             userId &&
             upsertPdi({
               userId: String(userId),
+              cycles: [],
               competencies: [],
               milestones: [],
               krs: [],
