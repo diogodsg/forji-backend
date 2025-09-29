@@ -89,12 +89,12 @@ export function ManagerDashboardPage() {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {summaryError && (
+      {completeError && (
         <div className="mx-4 mb-2 mt-4 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded p-2">
-          {summaryError}
+          {completeError}
         </div>
       )}
-      {!loadingSummary && !allTeams.loading && myDirectReports.length === 0 && (
+      {!loadingComplete && !allTeams.loading && myDirectReports.length === 0 && (
         <div className="p-10 text-sm text-surface-600">
           Você ainda não gerencia ninguém.
         </div>
