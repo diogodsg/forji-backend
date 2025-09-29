@@ -53,6 +53,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, new AdminGuard())
   async listUsers() {
     const users = await this.prisma.user.findMany({
+      where: { deletedAt: null },
       select: {
         id: true,
         email: true,
@@ -103,6 +104,29 @@ export class AuthController {
   @Post("admin/delete-user")
   @UseGuards(JwtAuthGuard, new AdminGuard())
   async adminDeleteUser(@Body() body: { userId: bigint }) {
+    // Soft delete do usuário
+    await this.prisma.user.update({
+      where: { id: body.userId },
+      data: { deletedAt: new Date() }
+    });
+    return { success: true };
+  }
+
+  @Post("admin/restore-user")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminRestoreUser(@Body() body: { userId: bigint }) {
+    // Restaurar usuário soft deleted
+    await this.prisma.user.update({
+      where: { id: body.userId },
+      data: { deletedAt: null }
+    });
+    return { success: true };
+  }
+
+  @Post("admin/hard-delete-user")
+  @UseGuards(JwtAuthGuard, new AdminGuard())
+  async adminHardDeleteUser(@Body() body: { userId: bigint }) {
+    // Hard delete permanente (apenas para casos extremos)
     await this.prisma.user.delete({
       where: { id: body.userId },
     });

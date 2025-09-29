@@ -5,15 +5,18 @@ import { PrismaService } from "../core/prisma/prisma.service";
 import { handlePrismaUniqueError } from "../common/prisma/unique-error.util";
 import { logger } from "../common/logger/pino";
 import { UpdateProfileDto } from "../dto/auth.dto";
+import { SoftDeleteService } from "../common/prisma/soft-delete.extension";
 
 @Injectable()
-export class AuthService {
-  constructor(private jwtService: JwtService, private prisma: PrismaService) {}
+export class AuthService extends SoftDeleteService {
+  constructor(private jwtService: JwtService, prisma: PrismaService) {
+    super(prisma);
+  }
 
   async validateUser(email: string, pass: string) {
     const normEmail = email.trim().toLowerCase();
-    const user = await this.prisma.user.findUnique({
-      where: { email: normEmail },
+    const user = await this.prisma.user.findFirst({
+      where: this.addSoftDeleteFilter({ email: normEmail }),
     });
     if (user && (await bcrypt.compare(pass, user.password))) {
       logger.debug(
@@ -63,8 +66,8 @@ export class AuthService {
   }
 
   async getProfile(userId: any) {
-    const u = await this.prisma.user.findUnique({
-      where: { id: userId },
+    const u = await this.prisma.user.findFirst({
+      where: this.addSoftDeleteFilter({ id: userId }),
     });
     if (!u) {
       logger.debug({ userId }, "auth.profile.not_found");
@@ -73,7 +76,7 @@ export class AuthService {
 
     // Check if user is a manager by looking at management rules
     const managementRules = await this.prisma.managementRule.findMany({
-      where: { managerId: userId },
+      where: this.addSoftDeleteFilter({ managerId: userId }),
     });
     const isManager = managementRules.length > 0;
 

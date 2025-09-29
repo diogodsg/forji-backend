@@ -1,6 +1,6 @@
 // MOVED from src/components/EditablePdiView.tsx
 // Adjusted import paths for feature module structure
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   FiEdit2,
   FiCheckSquare,
@@ -50,8 +50,12 @@ export const EditablePdiView: React.FC<Props> = ({
     getCurrentPdiPlan,
   } = useCyclesManagement(initialPlan);
 
-  // Use o PDI do ciclo selecionado
-  const currentPlan = getCurrentPdiPlan();
+  // Use o PDI do ciclo selecionado - memoizado para evitar recriações
+  const currentPlan = useMemo(() => getCurrentPdiPlan(), [
+    selectedCycle, 
+    initialPlan.userId, 
+    initialPlan.updatedAt
+  ]);
   const { state, dispatch, toggleSection, toggleMilestone } =
     usePdiEditing(currentPlan);
   const working = state.working;
@@ -63,26 +67,45 @@ export const EditablePdiView: React.FC<Props> = ({
     editingSections.results ||
     editingMilestones.size > 0;
 
-  // Sincronizar mudanças do PDI com o ciclo selecionado
+  const pendingSave = state.meta.pendingSave;
+  const saving = state.meta.saving;
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sincronizar mudanças do PDI com o ciclo selecionado (com debounce para evitar loops)
   useEffect(() => {
-    if (selectedCycle) {
-      updateSelectedCyclePdi({
-        competencies: working.competencies,
-        milestones: working.milestones,
-        krs: working.krs,
-        records: working.records,
-      });
+    if (selectedCycle && !saving && !pendingSave) {
+      // Limpar timeout anterior
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+
+      // Debounce de 100ms para evitar atualizações muito frequentes
+      updateTimeoutRef.current = setTimeout(() => {
+        updateSelectedCyclePdi({
+          competencies: working.competencies,
+          milestones: working.milestones,
+          krs: working.krs,
+          records: working.records,
+        });
+      }, 100);
     }
+
+    // Cleanup na desmontagem
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
   }, [
     working.competencies,
     working.milestones,
     working.krs,
     working.records,
     updateSelectedCyclePdi,
-    selectedCycle,
+    selectedCycle?.id, // Só depender do ID, não do objeto inteiro
+    saving,
+    pendingSave,
   ]);
-  const pendingSave = state.meta.pendingSave;
-  const saving = state.meta.saving;
 
   useAutoSave({
     plan: state.working, // passa plano atual

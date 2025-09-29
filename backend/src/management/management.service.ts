@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../core/prisma/prisma.service";
 import { ManagementRuleType } from "@prisma/client";
+import { SoftDeleteService } from "../common/prisma/soft-delete.extension";
 
 export interface ManagementRuleDto {
   ruleType: ManagementRuleType;
@@ -17,8 +18,10 @@ export interface SubordinateInfo {
 }
 
 @Injectable()
-export class ManagementService {
-  constructor(private prisma: PrismaService) {}
+export class ManagementService extends SoftDeleteService {
+  constructor(prisma: PrismaService) {
+    super(prisma);
+  }
 
   // Criar uma nova regra de gerenciamento
   async createRule(managerId: number, rule: ManagementRuleDto) {
@@ -58,25 +61,23 @@ export class ManagementService {
   // Remover uma regra de gerenciamento
   async removeRule(managerId: number, ruleId: number) {
     const rule = await this.prisma.managementRule.findFirst({
-      where: {
+      where: this.addSoftDeleteFilter({
         id: BigInt(ruleId),
         managerId: BigInt(managerId),
-      },
+      }),
     });
 
     if (!rule) {
       throw new Error("Management rule not found or not owned by this manager");
     }
 
-    return this.prisma.managementRule.delete({
-      where: { id: BigInt(ruleId) },
-    });
+    return this.softDelete('managementRule', BigInt(ruleId));
   }
 
   // Listar todas as regras de um gerente
   async getManagerRules(managerId: number) {
     return this.prisma.managementRule.findMany({
-      where: { managerId: BigInt(managerId) },
+      where: this.addSoftDeleteFilter({ managerId: BigInt(managerId) }),
       include: {
         team: true,
         subordinate: {
@@ -109,7 +110,7 @@ export class ManagementService {
       } else if (rule.ruleType === ManagementRuleType.TEAM && rule.team) {
         // Buscar todos os membros da equipe
         const teamMembers = await this.prisma.teamMembership.findMany({
-          where: { teamId: rule.team.id },
+          where: this.addSoftDeleteFilter({ teamId: rule.team.id }),
           include: {
             user: {
               select: {
@@ -164,10 +165,10 @@ export class ManagementService {
         });
       } else if (rule.ruleType === ManagementRuleType.TEAM && rule.team) {
         const isMember = await this.prisma.teamMembership.findFirst({
-          where: {
+          where: this.addSoftDeleteFilter({
             teamId: rule.team.id,
             userId: BigInt(userId),
-          },
+          }),
         });
 
         if (isMember) {
@@ -201,7 +202,7 @@ export class ManagementService {
 
         // Buscar times do usuário
         const teamMemberships = await this.prisma.teamMembership.findMany({
-          where: { userId: BigInt(sub.id) },
+          where: this.addSoftDeleteFilter({ userId: BigInt(sub.id) }),
           include: {
             team: {
               select: {
@@ -261,6 +262,7 @@ export class ManagementService {
   // Admin: Obter todas as regras do sistema
   async getAllRules() {
     return this.prisma.managementRule.findMany({
+      where: this.addSoftDeleteFilter({}),
       include: {
         manager: {
           select: {
@@ -284,17 +286,15 @@ export class ManagementService {
 
   // Admin: Remover qualquer regra (sem verificação de ownership)
   async adminRemoveRule(ruleId: number) {
-    const rule = await this.prisma.managementRule.findUnique({
-      where: { id: BigInt(ruleId) },
+    const rule = await this.prisma.managementRule.findFirst({
+      where: this.addSoftDeleteFilter({ id: BigInt(ruleId) }),
     });
 
     if (!rule) {
       throw new Error("Management rule not found");
     }
 
-    return this.prisma.managementRule.delete({
-      where: { id: BigInt(ruleId) },
-    });
+    return this.softDelete('managementRule', BigInt(ruleId));
   }
 
   // Método auxiliar para calcular progresso do PDI

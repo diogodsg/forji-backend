@@ -6,21 +6,23 @@ import {
 import { PrismaService } from "../core/prisma/prisma.service";
 import { PermissionService } from "../core/permissions/permission.service";
 import { CreateTeamDto, UpdateTeamDto, TeamRoleDto } from "../dto/team.dto";
+import { SoftDeleteService } from "../common/prisma/soft-delete.extension";
 
 @Injectable()
-export class TeamsService {
-  constructor(
-    private prisma: PrismaService,
-    private permissions: PermissionService
-  ) {}
+export class TeamsService extends SoftDeleteService {
+  constructor(prisma: PrismaService, private permissions: PermissionService) {
+    super(prisma);
+  }
 
   list(summaryOnly = false) {
     return (this.prisma as any).team.findMany({
+      where: this.addSoftDeleteFilter({}),
       orderBy: { id: "asc" },
       include: summaryOnly
-        ? { memberships: { select: { role: true } } }
+        ? { memberships: { where: this.addSoftDeleteFilter({}), select: { role: true } } }
         : {
             memberships: {
+              where: this.addSoftDeleteFilter({}),
               include: {
                 user: { select: { id: true, name: true, email: true } },
               },
@@ -75,10 +77,11 @@ export class TeamsService {
   }
 
   async get(id: number) {
-    const team = await (this.prisma as any).team.findUnique({
-      where: { id: BigInt(id) },
+    const team = await (this.prisma as any).team.findFirst({
+      where: this.addSoftDeleteFilter({ id: BigInt(id) }),
       include: {
         memberships: {
+          where: this.addSoftDeleteFilter({}),
           include: { user: { select: { id: true, name: true, email: true } } },
           orderBy: { createdAt: "asc" },
         },
@@ -131,12 +134,35 @@ export class TeamsService {
     if (!can) throw new BadRequestException("Not allowed");
 
     // Verificar se a equipe existe
-    const team = await (this.prisma as any).team.findUnique({
-      where: { id: BigInt(id) },
+    const team = await (this.prisma as any).team.findFirst({
+      where: this.addSoftDeleteFilter({ id: BigInt(id) }),
     });
     if (!team) throw new NotFoundException("Team not found");
 
-    // Usar transação para garantir atomicidade
+    // Usar transação para garantir atomicidade (soft delete)
+    await (this.prisma as any).$transaction(async (tx: any) => {
+      // Primeiro, soft delete todos os memberships da equipe
+      await tx.teamMembership.updateMany({
+        where: { teamId: BigInt(id), deletedAt: null },
+        data: { deletedAt: new Date() },
+      });
+
+      // Depois, soft delete a equipe
+      await tx.team.update({ 
+        where: { id: BigInt(id) },
+        data: { deletedAt: new Date() }
+      });
+    });
+
+    return { deleted: true };
+  }
+
+  // Método para hard delete (apenas para admin)
+  async hardDeleteTeam(id: number, requesterId: number) {
+    const can = await this.permissions.canManageTeam(requesterId, id);
+    if (!can) throw new BadRequestException("Not allowed");
+
+    // Usar transação para garantir atomicidade (hard delete)
     await (this.prisma as any).$transaction(async (tx: any) => {
       // Primeiro, remover todos os memberships da equipe
       await tx.teamMembership.deleteMany({
@@ -150,6 +176,35 @@ export class TeamsService {
     return { deleted: true };
   }
 
+  // Método para restaurar equipe
+  async restoreTeam(id: number, requesterId: number) {
+    const can = await this.permissions.canManageTeam(requesterId, id);
+    if (!can) throw new BadRequestException("Not allowed");
+
+    // Verificar se a equipe existe e está deletada
+    const team = await (this.prisma as any).team.findFirst({
+      where: { id: BigInt(id), deletedAt: { not: null } },
+    });
+    if (!team) throw new NotFoundException("Deleted team not found");
+
+    // Restaurar equipe e seus memberships
+    await (this.prisma as any).$transaction(async (tx: any) => {
+      // Restaurar a equipe
+      await tx.team.update({ 
+        where: { id: BigInt(id) },
+        data: { deletedAt: null }
+      });
+
+      // Restaurar memberships que foram deletados junto
+      await tx.teamMembership.updateMany({
+        where: { teamId: BigInt(id), deletedAt: team.deletedAt },
+        data: { deletedAt: null },
+      });
+    });
+
+    return { restored: true };
+  }
+
   async addMember(
     teamId: number,
     userId: number,
@@ -158,10 +213,11 @@ export class TeamsService {
   ) {
     const can = await this.permissions.canManageTeam(requesterId, teamId);
     if (!can) throw new BadRequestException("Not allowed");
-    const existing = await (this.prisma as any).teamMembership.findUnique({
-      where: {
-        teamId_userId: { teamId: BigInt(teamId), userId: BigInt(userId) },
-      },
+    const existing = await (this.prisma as any).teamMembership.findFirst({
+      where: this.addSoftDeleteFilter({
+        teamId: BigInt(teamId), 
+        userId: BigInt(userId),
+      }),
     });
     if (existing) throw new BadRequestException("User already in team");
     await (this.prisma as any).teamMembership.create({
@@ -182,16 +238,17 @@ export class TeamsService {
   ) {
     const can = await this.permissions.canManageTeam(requesterId, teamId);
     if (!can) throw new BadRequestException("Not allowed");
-    const membership = await (this.prisma as any).teamMembership.findUnique({
-      where: {
-        teamId_userId: { teamId: BigInt(teamId), userId: BigInt(userId) },
-      },
+    const membership = await (this.prisma as any).teamMembership.findFirst({
+      where: this.addSoftDeleteFilter({
+        teamId: BigInt(teamId), 
+        userId: BigInt(userId),
+      }),
     });
     if (!membership) throw new NotFoundException("Membership not found");
     // Garantir que não removemos último MANAGER
     if (membership.role === "MANAGER" && role !== "MANAGER") {
       const managers = await (this.prisma as any).teamMembership.count({
-        where: { teamId: BigInt(teamId), role: "MANAGER" },
+        where: this.addSoftDeleteFilter({ teamId: BigInt(teamId), role: "MANAGER" }),
       });
       if (managers <= 1) {
         throw new BadRequestException(
@@ -211,25 +268,27 @@ export class TeamsService {
   async removeMember(teamId: number, userId: number, requesterId: number) {
     const can = await this.permissions.canManageTeam(requesterId, teamId);
     if (!can) throw new BadRequestException("Not allowed");
-    const membership = await (this.prisma as any).teamMembership.findUnique({
-      where: {
-        teamId_userId: { teamId: BigInt(teamId), userId: BigInt(userId) },
-      },
+    const membership = await (this.prisma as any).teamMembership.findFirst({
+      where: this.addSoftDeleteFilter({
+        teamId: BigInt(teamId), 
+        userId: BigInt(userId),
+      }),
     });
     if (!membership) throw new NotFoundException("Membership not found");
     if (membership.role === "MANAGER") {
       const managers = await (this.prisma as any).teamMembership.count({
-        where: { teamId: BigInt(teamId), role: "MANAGER" },
+        where: this.addSoftDeleteFilter({ teamId: BigInt(teamId), role: "MANAGER" }),
       });
       if (managers <= 1)
         throw new BadRequestException(
           "Não é possível remover o último gerente"
         );
     }
-    await (this.prisma as any).teamMembership.delete({
+    await (this.prisma as any).teamMembership.update({
       where: {
         teamId_userId: { teamId: BigInt(teamId), userId: BigInt(userId) },
       },
+      data: { deletedAt: new Date() },
     });
     return this.get(teamId);
   }

@@ -27,8 +27,9 @@ Arquitetura frontend migrou recentemente de um modelo "global components + globa
 ### 🎯 NOVA FUNCIONALIDADE PRINCIPAL: Sistema de Ciclos de PDI
 
 **Interface Revolucionária com Abas Organizadas:**
+
 - ✨ **Sistema de Ciclos Temporais** - Organize PDIs em períodos específicos com progresso automático
-- 🔖 **Interface por Abas** - Navegação limpa separando Ciclos e PDI para reduzir sobrecarga visual  
+- 🔖 **Interface por Abas** - Navegação limpa separando Ciclos e PDI para reduzir sobrecarga visual
 - ⚡ **Templates Rápidos** - Criação instantânea de ciclos (trimestres, semestres, sprints)
 - 🎨 **Design Compacto** - Modais otimizados e interface mais eficiente
 - 🚫 **Remoção de Duplicações** - Interface limpa sem botões redundantes
@@ -271,9 +272,9 @@ Planejado → Ativo → Pausado ↔ Concluído
 - **📋 Cards de Ciclo**: Design moderno com badges de status coloridos
 - **⏰ Progresso Temporal**: Barra de progresso baseada em tempo decorrido
 - **📊 Estatísticas PDI**: Contadores visuais de elementos em cada ciclo
-- **🎨 Indicadores de Status**: 
+- **🎨 Indicadores de Status**:
   - 🟢 Ativo (Em Andamento)
-  - 🔵 Planejado (Agendado)  
+  - 🔵 Planejado (Agendado)
   - 🟡 Pausado
   - ✅ Concluído
   - 🔴 Atrasado
@@ -307,7 +308,7 @@ Planejado → Ativo → Pausado ↔ Concluído
 ```typescript
 // Estrutura das Abas
 📋 PDI          → Competências, objetivos e marcos
-📅 Ciclos       → Gerencie ciclos de desenvolvimento  
+📅 Ciclos       → Gerencie ciclos de desenvolvimento
 📊 Estatísticas → Progresso e métricas (futuro)
 ```
 
@@ -393,7 +394,7 @@ Planejado → Ativo → Pausado ↔ Concluído
 **Melhorias de Interface e UX:**
 
 - **📊 Aba Estatísticas**: Dashboard completo com métricas visuais de desenvolvimento
-- **🔍 Busca Global**: Pesquisa unificada entre ciclos, competências e marcos  
+- **🔍 Busca Global**: Pesquisa unificada entre ciclos, competências e marcos
 - **🏷️ Tags e Categorias**: Sistema de classificação para organização avançada
 - **📱 Interface Mobile**: Otimização completa para dispositivos móveis
 - **🌙 Modo Escuro**: Tema alternativo para uso prolongado

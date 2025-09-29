@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { PdiCycle, PdiPlan } from "../types/pdi";
 
 export function useCyclesManagement(initialPlan: PdiPlan) {
@@ -31,11 +31,15 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
     return [defaultCycle];
   });
 
-  const [selectedCycleId, setSelectedCycleId] = useState<string>(() => {
-    // Selecionar o ciclo ativo ou o primeiro ciclo
-    const activeCycle = cycles.find((c) => c.status === "active");
-    return activeCycle?.id || cycles[0]?.id || "";
-  });
+  const [selectedCycleId, setSelectedCycleId] = useState<string>("");
+
+  // Inicializar o selectedCycleId quando cycles estiver pronto
+  useEffect(() => {
+    if (cycles.length > 0 && !selectedCycleId) {
+      const activeCycle = cycles.find((c) => c.status === "active");
+      setSelectedCycleId(activeCycle?.id || cycles[0]?.id || "");
+    }
+  }, [cycles, selectedCycleId]);
 
   const selectedCycle = cycles.find((c) => c.id === selectedCycleId);
 
@@ -88,14 +92,25 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
     (pdiUpdates: Partial<PdiCycle["pdi"]>) => {
       if (!selectedCycleId) return;
 
-      updateCycle(selectedCycleId, {
-        pdi: {
-          ...selectedCycle?.pdi,
-          ...pdiUpdates,
-        } as PdiCycle["pdi"],
+      setCycles((prevCycles) => {
+        const targetCycle = prevCycles.find((c) => c.id === selectedCycleId);
+        if (!targetCycle) return prevCycles;
+
+        return prevCycles.map((cycle) =>
+          cycle.id === selectedCycleId
+            ? {
+                ...cycle,
+                pdi: {
+                  ...targetCycle.pdi,
+                  ...pdiUpdates,
+                } as PdiCycle["pdi"],
+                updatedAt: new Date().toISOString(),
+              }
+            : cycle
+        );
       });
     },
-    [selectedCycleId, selectedCycle, updateCycle]
+    [selectedCycleId]
   );
 
   // Gerar PdiPlan compatível para o ciclo selecionado
@@ -112,7 +127,8 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
       milestones: selectedCycle.pdi.milestones,
       krs: selectedCycle.pdi.krs,
       records: selectedCycle.pdi.records,
-      updatedAt: selectedCycle.updatedAt,
+      // Manter o updatedAt do initialPlan para evitar loops
+      updatedAt: initialPlan.updatedAt,
     };
   }, [selectedCycle, cycles, initialPlan]);
 

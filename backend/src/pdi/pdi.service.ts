@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { logger } from "../common/logger/pino";
 import { PrismaService } from "../core/prisma/prisma.service";
+import { SoftDeleteService } from "../common/prisma/soft-delete.extension";
 
 export interface PdiTask {
   id: string;
@@ -39,14 +40,18 @@ export interface PdiPlanDto {
 }
 
 @Injectable()
-export class PdiService {
-  constructor(private prisma: PrismaService) {}
+export class PdiService extends SoftDeleteService {
+  constructor(prisma: PrismaService) {
+    super(prisma);
+  }
   async getByUser(userId: number) {
-    return this.prisma.pdiPlan.findUnique({ where: { userId } });
+    return this.prisma.pdiPlan.findFirst({ 
+      where: this.addSoftDeleteFilter({ userId })
+    });
   }
   async upsert(userId: number, data: PdiPlanDto) {
-    const existing = await this.prisma.pdiPlan.findUnique({
-      where: { userId },
+    const existing = await this.prisma.pdiPlan.findFirst({
+      where: this.addSoftDeleteFilter({ userId }),
     });
     if (!existing) {
       const created = await this.prisma.pdiPlan.create({
@@ -102,8 +107,8 @@ export class PdiService {
     return updated;
   }
   async patch(userId: number, partial: Partial<PdiPlanDto>) {
-    const existing = await this.prisma.pdiPlan.findUnique({
-      where: { userId },
+    const existing = await this.prisma.pdiPlan.findFirst({
+      where: this.addSoftDeleteFilter({ userId }),
     });
     if (!existing) throw new NotFoundException("PDI plan not found");
     const updated = await this.prisma.pdiPlan.update({
@@ -132,8 +137,32 @@ export class PdiService {
     return updated;
   }
   async delete(userId: number) {
-    await this.prisma.pdiPlan.delete({ where: { userId } });
-    logger.warn({ msg: "pdi.delete", userId }, "pdi.delete userId=%d", userId);
+    const existing = await this.prisma.pdiPlan.findFirst({
+      where: this.addSoftDeleteFilter({ userId }),
+    });
+    if (!existing) throw new NotFoundException("PDI plan not found");
+    
+    await this.softDelete('pdiPlan', existing.id);
+    logger.warn({ msg: "pdi.softDelete", userId }, "pdi.softDelete userId=%d", userId);
     return { deleted: true };
+  }
+
+  // Método para hard delete (apenas para admin ou casos especiais)
+  async hardDeletePdi(userId: number) {
+    await this.prisma.pdiPlan.delete({ where: { userId } });
+    logger.warn({ msg: "pdi.hardDelete", userId }, "pdi.hardDelete userId=%d", userId);
+    return { deleted: true };
+  }
+
+  // Método para restaurar PDI soft deleted
+  async restorePdi(userId: number) {
+    const existing = await this.prisma.pdiPlan.findFirst({
+      where: { userId, deletedAt: { not: null } },
+    });
+    if (!existing) throw new NotFoundException("Deleted PDI plan not found");
+    
+    await super.restore('pdiPlan', existing.id);
+    logger.info({ msg: "pdi.restore", userId }, "pdi.restore userId=%d", userId);
+    return { restored: true };
   }
 }

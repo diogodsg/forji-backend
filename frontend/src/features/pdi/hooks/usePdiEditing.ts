@@ -261,30 +261,29 @@ export function usePdiEditing(initial: PdiPlan) {
     })
   );
 
-  // Usar ref para evitar loops infinitos
-  const lastInitialRef = useRef<{ userId: string | number; updatedAt: string }>(
-    {
-      userId: initial.userId,
-      updatedAt: initial.updatedAt,
-    }
-  );
+  // Usar ref para evitar loops infinitos - armazenar uma string serializada para comparação estável
+  const lastInitialRef = useRef<string>(JSON.stringify({
+    userId: initial.userId,
+    updatedAt: initial.updatedAt,
+  }));
 
-  // Reagir às mudanças do plano inicial
+  // Reagir às mudanças do plano inicial apenas quando realmente há mudança significativa
   useEffect(() => {
-    const currentInitial = {
+    const currentInitialStr = JSON.stringify({
       userId: initial.userId,
       updatedAt: initial.updatedAt,
-    };
-    const lastInitial = lastInitialRef.current;
+    });
 
+    // Só reinicializar quando houver mudança real e não estivermos salvando
     if (
-      currentInitial.userId !== lastInitial.userId ||
-      currentInitial.updatedAt !== lastInitial.updatedAt
+      currentInitialStr !== lastInitialRef.current && 
+      !state.meta.saving && 
+      !state.meta.pendingSave
     ) {
-      lastInitialRef.current = currentInitial;
+      lastInitialRef.current = currentInitialStr;
       dispatch({ type: "INIT", plan: initial });
     }
-  }, [initial.userId, initial.updatedAt]);
+  }, [initial.userId, initial.updatedAt, state.meta.saving, state.meta.pendingSave]);
   const toggleSection = useCallback(
     (section: keyof PdiEditingState["editing"]["sections"]) =>
       dispatch({ type: "TOGGLE_SECTION", section }),

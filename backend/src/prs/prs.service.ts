@@ -1,10 +1,13 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { logger } from "../common/logger/pino";
 import { PrismaService } from "../core/prisma/prisma.service";
+import { SoftDeleteService } from "../common/prisma/soft-delete.extension";
 
 @Injectable()
-export class PrsService {
-  constructor(private prisma: PrismaService) {}
+export class PrsService extends SoftDeleteService {
+  constructor(prisma: PrismaService) {
+    super(prisma);
+  }
   async list(filter?: {
     ownerUserId?: number;
     repo?: string;
@@ -24,7 +27,7 @@ export class PrsService {
     const andClauses: any[] = [];
     if (filter?.ownerUserId) {
       const user = await this.prisma.user.findFirst({
-        where: { id: filter.ownerUserId as any },
+        where: this.addSoftDeleteFilter({ id: filter.ownerUserId as any }),
         select: { githubId: true },
       });
       const gh = (user as any)?.githubId?.trim?.();
@@ -74,18 +77,18 @@ export class PrsService {
     }
     const [rawItems, total, meta] = await Promise.all([
       this.prisma.pullRequest.findMany({
-        where,
+        where: this.addSoftDeleteFilter(where),
         orderBy,
         skip,
         take: pageSize,
       }),
-      this.prisma.pullRequest.count({ where }),
+      this.prisma.pullRequest.count({ where: this.addSoftDeleteFilter(where) }),
       (async () => {
         if (!filter?.includeMeta) return undefined;
         let metaWhere: any = undefined;
         if (filter?.ownerUserId) {
           const user = await this.prisma.user.findFirst({
-            where: { id: filter.ownerUserId as any },
+            where: this.addSoftDeleteFilter({ id: filter.ownerUserId as any }),
             select: { githubId: true },
           });
           const gh = (user as any)?.githubId?.trim?.();
@@ -139,7 +142,9 @@ export class PrsService {
     return { items, total, page, pageSize, meta };
   }
   get(id: number) {
-    return this.prisma.pullRequest.findUnique({ where: { id } });
+    return this.prisma.pullRequest.findFirst({ 
+      where: this.addSoftDeleteFilter({ id })
+    });
   }
   private mapIncoming(raw: any) {
     if (!raw || typeof raw !== "object") return {};
@@ -193,7 +198,9 @@ export class PrsService {
     return created;
   }
   async update(id: number, data: any) {
-    const exists = await this.prisma.pullRequest.findUnique({ where: { id } });
+    const exists = await this.prisma.pullRequest.findFirst({ 
+      where: this.addSoftDeleteFilter({ id })
+    });
     if (!exists) throw new NotFoundException("PR not found");
     const mapped = this.mapIncoming(data);
     delete mapped.id;
@@ -206,16 +213,30 @@ export class PrsService {
     return updated;
   }
   async remove(id: number) {
-    await this.prisma.pullRequest.delete({ where: { id } });
-    logger.info({ msg: "prs.delete", id }, "prs.delete id=%s", id);
+    await this.softDelete('pullRequest', id);
+    logger.info({ msg: "prs.softDelete", id }, "prs.softDelete id=%s", id);
     return { deleted: true };
+  }
+
+  // Método para hard delete (apenas para admin ou casos especiais)
+  async hardRemove(id: number) {
+    await this.hardDelete('pullRequest', id);
+    logger.info({ msg: "prs.hardDelete", id }, "prs.hardDelete id=%s", id);
+    return { deleted: true };
+  }
+
+  // Método para restaurar PR soft deleted
+  async restorePr(id: number) {
+    await this.restore('pullRequest', id);
+    logger.info({ msg: "prs.restore", id }, "prs.restore id=%s", id);
+    return { restored: true };
   }
   private async assignOwnerUserId(mapped: any) {
     if (mapped.ownerUserId || !mapped.user) return;
     const gh = String(mapped.user).trim();
     if (!gh) return;
     const owner = (await this.prisma.user.findFirst({
-      where: { githubId: gh },
+      where: this.addSoftDeleteFilter({ githubId: gh }),
     })) as any;
     if (owner) mapped.ownerUserId = owner.id as any;
   }
