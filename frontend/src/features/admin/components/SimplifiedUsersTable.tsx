@@ -23,23 +23,38 @@ export function SimplifiedUsersTable({
 
   if (loading) {
     return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-4"
+            className="bg-white/90 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-4"
           >
             <div className="animate-pulse">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+              <div className="flex items-start gap-3 mb-3">
+                <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-48"></div>
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                  <div className="flex gap-1 mb-2">
+                    <div className="h-5 bg-gray-200 rounded-full w-16"></div>
+                    <div className="h-5 bg-gray-200 rounded-full w-12"></div>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
-                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
-                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <div className="h-3 bg-gray-200 rounded w-12 mb-1"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                </div>
+                <div>
+                  <div className="h-3 bg-gray-200 rounded w-16 mb-1"></div>
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                </div>
+                <div>
+                  <div className="h-3 bg-gray-200 rounded w-20 mb-1"></div>
+                  <div className="flex gap-2">
+                    <div className="h-6 bg-gray-200 rounded-full w-16"></div>
+                    <div className="h-6 bg-gray-200 rounded-full w-20"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -59,7 +74,7 @@ export function SimplifiedUsersTable({
 
   return (
     <>
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((user) => {
           const managersCount = user.managers.filter(
             (m) => m.id !== user.id
@@ -71,86 +86,110 @@ export function SimplifiedUsersTable({
           return (
             <div
               key={user.id}
-              className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-lg p-3 hover:shadow-md transition-all duration-200 group cursor-pointer"
+              className="bg-white/90 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-4 hover:shadow-lg hover:border-surface-400/70 transition-all duration-200 group cursor-pointer"
               onClick={() => setQuickViewUser(user)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-xs font-semibold flex items-center justify-center flex-shrink-0">
+              <div className="flex flex-col h-full">
+                {/* Header com avatar e badges */}
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0 shadow-md">
                     {user.name?.[0]?.toUpperCase() || "U"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900 truncate text-sm">
-                        {user.name}
-                      </h3>
+                    <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">
+                      {user.name}
+                    </h3>
+                    <div className="flex flex-wrap gap-1 mb-2">
                       {user.isAdmin && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 flex-shrink-0">
-                          <FiShield className="w-2.5 h-2.5" />
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                          <FiShield className="w-3 h-3" />
                           Admin
                         </span>
                       )}
                       {user.githubId && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
-                          <FiGithub className="w-2.5 h-2.5" />@{user.githubId}
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                          <FiGithub className="w-3 h-3" />
+                          @{user.githubId}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-600 truncate">
+                  </div>
+                </div>
+
+                {/* Informações principais */}
+                <div className="flex-1 space-y-2 mb-3">
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Email</p>
+                    <p className="text-sm text-gray-700 truncate" title={user.email}>
                       {user.email}
                     </p>
-                    {(managersCount > 0 || subordinatesCount > 0) && (
-                      <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-500">
+                  </div>
+                  
+                  {(user as any).position && (
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Cargo</p>
+                      <p className="text-sm text-gray-700 font-medium">
+                        {(user as any).position}
+                      </p>
+                    </div>
+                  )}
+
+                  {(managersCount > 0 || subordinatesCount > 0) && (
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Hierarquia</p>
+                      <div className="flex flex-wrap gap-2 text-xs">
                         {managersCount > 0 && (
-                          <span>
+                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
                             {managersCount} gerente{managersCount > 1 ? "s" : ""}
                           </span>
                         )}
                         {subordinatesCount > 0 && (
-                          <span>
-                            {subordinatesCount} subordinado
-                            {subordinatesCount > 1 ? "s" : ""}
+                          <span className="bg-green-50 text-green-700 px-2 py-1 rounded-full">
+                            {subordinatesCount} subordinado{subordinatesCount > 1 ? "s" : ""}
                           </span>
                         )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  {confirmDelete === user.id ? (
-                    <div
-                      className="flex items-center gap-1"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                {/* Footer com ações */}
+                <div className="flex justify-end pt-2 border-t border-gray-100">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {confirmDelete === user.id ? (
+                      <div
+                        className="flex items-center gap-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => {
+                            onRemove(user.id);
+                            setConfirmDelete(null);
+                          }}
+                          className="px-3 py-1.5 text-xs bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors font-medium"
+                        >
+                          Confirmar
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(null)}
+                          className="px-3 py-1.5 text-xs bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors font-medium"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
                       <button
-                        onClick={() => {
-                          onRemove(user.id);
-                          setConfirmDelete(null);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmDelete(user.id);
                         }}
-                        className="px-2 py-1 text-xs bg-rose-600 text-white rounded hover:bg-rose-700 transition-colors"
+                        className="p-2 rounded-lg border border-surface-300 bg-white text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors"
+                        title="Remover usuário"
                       >
-                        Confirmar
+                        <FiTrash2 className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => setConfirmDelete(null)}
-                        className="px-2 py-1 text-xs bg-gray-400 text-white rounded hover:bg-gray-500 transition-colors"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setConfirmDelete(user.id);
-                      }}
-                      className="p-2 rounded-lg border border-surface-300 bg-white text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Remover usuário"
-                    >
-                      <FiTrash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -160,7 +199,10 @@ export function SimplifiedUsersTable({
 
       {filtered.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">Nenhum usuário encontrado</p>
+          <div className="bg-gray-50 rounded-xl p-8">
+            <p className="text-gray-500 text-lg mb-2">Nenhum usuário encontrado</p>
+            <p className="text-gray-400 text-sm">Tente ajustar os filtros de busca</p>
+          </div>
         </div>
       )}
 

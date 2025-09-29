@@ -4,6 +4,8 @@ export interface UserRow {
   name: string;
   githubId?: string | null;
   isAdmin?: boolean;
+  position?: string | null;
+  bio?: string | null;
   createdAt: string;
   updatedAt: string;
   managers: { id: number }[];
