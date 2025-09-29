@@ -45,7 +45,7 @@ export function ManagerDashboardPage() {
     loading: loadingComplete,
     error: completeError,
   };
-  
+
   const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
 
   // Derivar times que contêm pessoas que gerencio
@@ -75,6 +75,23 @@ export function ManagerDashboardPage() {
     >;
   }, [allTeams.teams, myDirectReports]);
 
+  // Identificar pessoas que gerencio mas que não estão em nenhum time
+  const myReportsWithoutTeams = useMemo(() => {
+    if (!allTeams.teams.length || !myDirectReports.length) return myDirectReports;
+
+    const peopleInTeams = new Set<number>();
+    
+    // Coletar todos os IDs de pessoas que estão em times
+    allTeams.teams.forEach((team) => {
+      team.memberships.forEach((m) => {
+        peopleInTeams.add(Number(m.user.id));
+      });
+    });
+
+    // Filtrar pessoas que gerencio e que não estão em nenhum time
+    return myDirectReports.filter((report) => !peopleInTeams.has(report.userId));
+  }, [allTeams.teams, myDirectReports]);
+
   return (
     <div className="flex flex-col">
       {completeError && (
@@ -82,11 +99,13 @@ export function ManagerDashboardPage() {
           {completeError}
         </div>
       )}
-      {!loadingComplete && !allTeams.loading && myDirectReports.length === 0 && (
-        <div className="p-10 text-sm text-surface-600">
-          Você ainda não gerencia ninguém.
-        </div>
-      )}
+      {!loadingComplete &&
+        !allTeams.loading &&
+        myDirectReports.length === 0 && (
+          <div className="p-10 text-sm text-surface-600">
+            Você ainda não gerencia ninguém.
+          </div>
+        )}
 
       <div className="px-6 pb-8">
         <section className="mt-8">
@@ -208,111 +227,72 @@ export function ManagerDashboardPage() {
             </div>
           )}
 
-          {/* Seção para mostrar todas as pessoas gerenciadas, mesmo sem times */}
-          {!allTeams.loading &&
-            myDirectReports.length > 0 &&
-            myTeamsWithMyReports.length === 0 && (
-              <div className="mt-6">
-                <div className="bg-gradient-to-br from-indigo-50 via-blue-50/80 to-purple-50/60 border border-indigo-200/60 rounded-2xl p-6 shadow-sm">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-indigo-100 rounded-lg">
-                      <svg
-                        className="w-5 h-5 text-indigo-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m9 5.197v1M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-indigo-900 text-lg">
-                        Pessoas que Gerencio
-                      </h3>
-                      <p className="text-indigo-700 text-sm">
-                        {myDirectReports.length} pessoa
-                        {myDirectReports.length !== 1 ? "s" : ""} sob sua gestão
-                        <span className="text-indigo-500 ml-2">
-                          • Aguardando organização em times
-                        </span>
-                      </p>
-                    </div>
+          {/* Seção para mostrar pessoas sem time */}
+          {!allTeams.loading && myReportsWithoutTeams.length > 0 && (
+            <div className="mb-6">
+              <div className="bg-gradient-to-br from-amber-50 via-orange-50/80 to-yellow-50/60 border border-amber-200/60 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <svg
+                      className="w-5 h-5 text-amber-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m9 5.197v1M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                      />
+                    </svg>
                   </div>
-
-                  <div className="grid gap-3">
-                    {myDirectReports.map((person) => (
-                      <div
-                        key={person.userId}
-                        className="bg-white rounded-xl p-4 border border-indigo-100/60 hover:border-indigo-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
-                        onClick={() => handleSelectUser(person.userId)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                              {person.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .slice(0, 2)
-                                .toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="font-semibold text-surface-900 group-hover:text-indigo-700 transition-colors">
-                                {person.name}
-                              </div>
-                              <div className="text-sm text-surface-600">
-                                {person.email}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            {/* PDI Status */}
-                            <div className="flex items-center gap-2">
-                              <div className="text-xs text-surface-500">
-                                PDI:
-                              </div>
-                              <div
-                                className={`w-3 h-3 rounded-full ${
-                                  person.pdi.exists
-                                    ? "bg-green-500"
-                                    : "bg-gray-300"
-                                }`}
-                              ></div>
-                              {person.pdi.exists && (
-                                <span className="text-xs text-surface-600">
-                                  {Math.round(person.pdi.progress * 100)}%
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Arrow */}
-                            <svg
-                              className="w-5 h-5 text-surface-400 group-hover:text-indigo-500 transition-colors"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div>
+                    <h3 className="font-bold text-amber-900 text-lg">
+                      Pessoas Sem Time
+                    </h3>
+                    <p className="text-amber-700 text-sm">
+                      {myReportsWithoutTeams.length} pessoa
+                      {myReportsWithoutTeams.length !== 1 ? "s" : ""} que você gerencia
+                      <span className="text-amber-600 ml-2">
+                        • Aguardando organização em times
+                      </span>
+                    </p>
                   </div>
                 </div>
+
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {myReportsWithoutTeams.map((person) => (
+                    <div key={person.userId} className="relative">
+                      <ReportCard
+                        report={person}
+                        active={false}
+                        onSelect={handleSelectUser}
+                      />
+                      <div
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full border-3 border-white shadow-sm flex items-center justify-center"
+                        title="Pessoa sem time definido"
+                      >
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+            </div>
+          )}
+
+          {/* Seção para mostrar todas as pessoas gerenciadas, mesmo sem times - REMOVIDA */}
 
           {!allTeams.loading && (
             <div className="space-y-4">
