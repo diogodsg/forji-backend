@@ -1,6 +1,8 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { FiX } from "react-icons/fi";
 import { UserProfileEditor } from "@/features/settings/components/UserProfileEditor";
+import { ChangePasswordModal } from "./ChangePasswordModal";
+import { useAdminUsers } from "../hooks/useAdminUsers";
 import type { UserProfile } from "@/features/settings/types/settings";
 
 interface Props {
@@ -17,6 +19,8 @@ export function EditUserProfileModal({
   onSuccess,
 }: Props) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const { changePassword } = useAdminUsers();
 
   useEffect(() => {
     if (open) {
@@ -89,8 +93,49 @@ export function EditUserProfileModal({
             onSuccess={onSuccess}
             onClose={onClose}
           />
+          
+          {/* Seção de Alteração de Senha */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="text-base font-medium text-gray-900">
+                  Alterar Senha
+                </h4>
+                <p className="text-sm text-gray-600">
+                  Defina uma nova senha para este usuário
+                </p>
+              </div>
+              <button
+                onClick={() => setShowChangePassword(true)}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Alterar Senha
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Modal de Alteração de Senha */}
+      <ChangePasswordModal
+        user={{
+          ...user,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          managers: [],
+          reports: []
+        }}
+        isOpen={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+        onChangePassword={async (userId: number, newPassword?: string) => {
+          try {
+            const result = await changePassword(userId, newPassword);
+            return result;
+          } catch (error) {
+            return { success: false };
+          }
+        }}
+      />
     </div>
   );
 }
