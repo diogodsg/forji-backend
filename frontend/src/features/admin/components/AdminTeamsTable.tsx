@@ -46,84 +46,44 @@ export function AdminTeamsTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-surface-300/70">
-      <table className="min-w-full text-sm">
-        <thead className="bg-surface-100/70 text-gray-600">
-          <tr className="text-left">
-            <th className="py-2.5 px-3 w-[40%]">Equipe</th>
-            <th className="py-2.5 px-3 w-[10%]">Managers</th>
-            <th className="py-2.5 px-3 w-[10%]">Membros</th>
-            <th className="py-2.5 px-3 w-[15%]">Criada</th>
-            <th className="py-2.5 px-3 w-[25%] text-right">Ações</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-surface-200/70">
-          {filtered.map((t) => {
-            const selected = selectedId === t.id;
-            const editing = editingId === t.id;
-            const initials = t.name
-              .split(/\s+/)
-              .slice(0, 2)
-              .map((p) => p[0]?.toUpperCase())
-              .join("");
-            return (
-              <tr
-                key={t.id}
-                className={`hover:bg-surface-50/80 ${
-                  selected ? "bg-indigo-50/60" : ""
-                }`}
-                onClick={() => !editing && onSelect(t.id)}
-              >
-                <td className="py-2.5 px-3">
-                  <div className="flex items-start gap-3">
-                    <div className="h-8 w-8 flex items-center justify-center rounded-md bg-indigo-100 text-indigo-700 text-xs font-semibold shrink-0">
-                      {initials || "?"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      {editing ? (
-                        <input
-                          value={tempName}
-                          onChange={(e) => setTempName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") commitEdit(t.id);
-                            if (e.key === "Escape") cancelEdit();
-                          }}
-                          autoFocus
-                          className="w-full rounded border border-indigo-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
-                        />
-                      ) : (
-                        <div className="font-medium text-gray-800 truncate flex items-center gap-2">
-                          <span>{t.name}</span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startEdit(t);
-                            }}
-                            className="text-[10px] text-gray-400 hover:text-indigo-600 inline-flex items-center"
-                            title="Renomear"
-                          >
-                            <FiEdit2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      )}
-                      {t.description && !editing && (
-                        <div className="text-[11px] text-gray-500 line-clamp-1">
-                          {t.description}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td className="py-2.5 px-3 tabular-nums">{t.managers}</td>
-                <td className="py-2.5 px-3 tabular-nums">{t.members}</td>
-                <td className="py-2.5 px-3 text-xs text-gray-500">
-                  {t.createdAt
-                    ? new Date(t.createdAt).toLocaleDateString()
-                    : "—"}
-                </td>
-                <td className="py-2.5 px-3 text-right">
-                  {editing ? (
-                    <div className="inline-flex gap-2">
+    <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      {filtered.map((t) => {
+        const selected = selectedId === t.id;
+        const editing = editingId === t.id;
+        const initials = t.name
+          .split(/\s+/)
+          .slice(0, 2)
+          .map((p) => p[0]?.toUpperCase())
+          .join("");
+        
+        return (
+          <div
+            key={t.id}
+            className={`bg-white/80 backdrop-blur border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md group ${
+              selected 
+                ? "border-indigo-300 bg-indigo-50/60 shadow-md" 
+                : "border-surface-300/70 hover:border-surface-400/80"
+            }`}
+            onClick={() => !editing && onSelect(t.id)}
+          >
+            <div className="flex items-start gap-3 mb-3">
+              <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 text-sm font-semibold shrink-0">
+                {initials || "?"}
+              </div>
+              <div className="flex-1 min-w-0">
+                {editing ? (
+                  <div className="space-y-2">
+                    <input
+                      value={tempName}
+                      onChange={(e) => setTempName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") commitEdit(t.id);
+                        if (e.key === "Escape") cancelEdit();
+                      }}
+                      autoFocus
+                      className="w-full rounded border border-indigo-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+                    />
+                    <div className="flex gap-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -143,19 +103,51 @@ export function AdminTeamsTable({
                         Cancelar
                       </button>
                     </div>
-                  ) : (
-                    <RowActions
-                      id={t.id}
-                      onSelect={onSelect}
-                      onRemove={onRemove}
-                    />
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  </div>
+                ) : (
+                  <>
+                    <div className="font-semibold text-gray-800 truncate flex items-center gap-2">
+                      <span className="text-sm">{t.name}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEdit(t);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-indigo-600 inline-flex items-center transition-opacity"
+                        title="Renomear"
+                      >
+                        <FiEdit2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                    {t.description && (
+                      <div className="text-xs text-gray-500 line-clamp-2 mt-1">
+                        {t.description}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+              {!editing && (
+                <RowActions
+                  id={t.id}
+                  onSelect={onSelect}
+                  onRemove={onRemove}
+                />
+              )}
+            </div>
+            
+            {!editing && (
+              <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+                <div className="flex gap-4">
+                  <span>{t.managers} manager{t.managers !== 1 ? "s" : ""}</span>
+                  <span>{t.members} membro{t.members !== 1 ? "s" : ""}</span>
+                </div>
+                <span>{t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "—"}</span>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

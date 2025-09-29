@@ -59,7 +59,7 @@ export function SimplifiedUsersTable({
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {filtered.map((user) => {
           const managersCount = user.managers.filter(
             (m) => m.id !== user.id
@@ -71,48 +71,49 @@ export function SimplifiedUsersTable({
           return (
             <div
               key={user.id}
-              className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-4 hover:shadow-md transition-all duration-200 group cursor-pointer"
+              className="bg-white/80 backdrop-blur border border-surface-300/70 shadow-sm rounded-lg p-3 hover:shadow-md transition-all duration-200 group cursor-pointer"
               onClick={() => setQuickViewUser(user)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-xs font-semibold flex items-center justify-center flex-shrink-0">
                     {user.name?.[0]?.toUpperCase() || "U"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 truncate">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900 truncate text-sm">
                         {user.name}
                       </h3>
                       {user.isAdmin && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 flex-shrink-0">
-                          <FiShield className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 flex-shrink-0">
+                          <FiShield className="w-2.5 h-2.5" />
                           Admin
                         </span>
                       )}
                       {user.githubId && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
-                          <FiGithub className="w-3 h-3" />@{user.githubId}
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
+                          <FiGithub className="w-2.5 h-2.5" />@{user.githubId}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 truncate">
+                    <p className="text-xs text-gray-600 truncate">
                       {user.email}
                     </p>
-                    <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
-                      <span>ID: {user.id}</span>
-                      {managersCount > 0 && (
-                        <span>
-                          {managersCount} gerente{managersCount > 1 ? "s" : ""}
-                        </span>
-                      )}
-                      {subordinatesCount > 0 && (
-                        <span>
-                          {subordinatesCount} subordinado
-                          {subordinatesCount > 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </div>
+                    {(managersCount > 0 || subordinatesCount > 0) && (
+                      <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-500">
+                        {managersCount > 0 && (
+                          <span>
+                            {managersCount} gerente{managersCount > 1 ? "s" : ""}
+                          </span>
+                        )}
+                        {subordinatesCount > 0 && (
+                          <span>
+                            {subordinatesCount} subordinado
+                            {subordinatesCount > 1 ? "s" : ""}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
