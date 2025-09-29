@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiShield, FiGithub, FiTrash2, FiKey } from "react-icons/fi";
+import { FiShield, FiGithub, FiTrash2 } from "react-icons/fi";
 import type { AdminUser } from "../types";
 import { UserQuickView } from "./UserQuickView";
 import { ChangePasswordModal } from "./ChangePasswordModal";
@@ -93,9 +93,21 @@ export function SimplifiedUsersTable({
               className="bg-white/90 backdrop-blur border border-surface-300/70 shadow-sm rounded-xl p-4 hover:shadow-lg hover:border-surface-400/70 transition-all duration-200 group cursor-pointer"
               onClick={() => setQuickViewUser(user)}
             >
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col h-full relative">
+                {/* Botão deletar no top right */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setConfirmDelete(user.id);
+                  }}
+                  className="absolute top-0 right-0 p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors z-10"
+                  title="Remover usuário"
+                >
+                  <FiTrash2 className="w-4 h-4" />
+                </button>
+
                 {/* Header com avatar e badges */}
-                <div className="flex items-start gap-3 mb-3">
+                <div className="flex items-start gap-3 mb-3 pr-8">
                   <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-sm font-semibold flex items-center justify-center flex-shrink-0 shadow-md">
                     {user.name?.[0]?.toUpperCase() || "U"}
                   </div>
@@ -192,27 +204,10 @@ export function SimplifiedUsersTable({
                         </button>
                       </div>
                     ) : (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setChangePasswordUser(user);
-                          }}
-                          className="p-2 rounded-lg border border-surface-300 bg-white text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                          title="Alterar senha"
-                        >
-                          <FiKey className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirmDelete(user.id);
-                          }}
-                          className="p-2 rounded-lg border border-surface-300 bg-white text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors"
-                          title="Remover usuário"
-                        >
-                          <FiTrash2 className="w-4 h-4" />
-                        </button>
+                      <div className="flex justify-center">
+                        <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+                          Clique para editar
+                        </span>
                       </div>
                     )}
                   </div>
