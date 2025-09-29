@@ -3,12 +3,116 @@
 Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Desenvolvimento Individual (PDI). Stack: **NestJS + Prisma/PostgreSQL** (backend) e **React 19 + Vite + TailwindCSS** (frontend). Inclui:
 
 - Área do desenvolvedor (PRs e PDI próprio)
-- Dashboard de manager (PRs + PDI dos subordinados)
+- Dashboard de manager (PRs + PDI dos subordinados)  
 - Área administrativa (gestão de contas, relacionamentos e permissões)
 
 Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`).
 
 ## 🚀 Atualizações Mais Recentes (2025-09-29)
+
+### 🔐 **SISTEMA DE SENHAS ADMINISTRATIVO COMPLETO**
+
+**Gerenciamento de Senhas pelo Admin:**
+
+- **🔑 Alteração de Senha**: Admin pode alterar senha de qualquer usuário
+- **🎯 Localização Estratégica**: Funcionalidade na aba "Conta" da página `/admin/users/:id`
+- **⚡ Geração Automática**: Senhas seguras de 12 caracteres com símbolos especiais
+- **🎨 Interface Consistente**: Mesmo componente da página de configurações do usuário
+- **🔒 Validação Robusta**: Mínimo 6 caracteres com confirmação obrigatória
+- **✨ Feedback Visual**: Mensagens de sucesso/erro e botões mostrar/ocultar senha
+
+**Endpoints de Backend Implementados:**
+
+```typescript
+// Novo endpoint para admin alterar senha
+POST /auth/admin/change-password
+{
+  "userId": number,
+  "newPassword"?: string  // Opcional - gera automaticamente se não fornecido
+}
+
+// Resposta com senha gerada (se aplicável)
+{
+  "success": true,
+  "generatedPassword"?: string
+}
+```
+
+**Segurança Implementada:**
+
+- **AdminGuard**: Apenas administradores podem alterar senhas
+- **Hash bcrypt**: Senhas criptografadas com salt seguro
+- **Sem senha atual**: Admin não precisa da senha atual (diferente do usuário comum)
+- **Log de auditoria**: Registros de alterações para rastreabilidade
+
+### 🎨 **REDESIGN CARDS DE USUÁRIOS - MODERNO E COMPACTO**
+
+**Layout Revolucionário:**
+
+- **📱 Grid Ultra-Responsivo**: `1→2→3→4` colunas (mobile→tablet→desktop→wide)
+- **🎯 Navegação Direta**: Clique no card = página de edição (sem modal intermediário)
+- **✨ Visual Moderno**: Gradientes azul-indigo, sombras suaves, bordas arredondadas
+- **🔘 Badge Admin**: Posicionado elegantemente no canto do avatar
+- **📧 Ícones Informativos**: Email, GitHub, hierarquia com ícones React Icons
+- **🗑️ Botão Delete**: Aparece apenas no hover para interface limpa
+
+**Melhorias de UX:**
+
+- **⚡ Menos Cliques**: Eliminado modal "Detalhes do Usuário" desnecessário
+- **🧹 Interface Limpa**: Botões de ação ocultos até hover
+- **📊 Informações Densas**: Máximo de informação em espaço mínimo
+- **🎭 Efeitos Visuais**: Gradiente sutil no hover indica interatividade
+- **📱 Mobile-First**: Design otimizado para todos os tamanhos de tela
+
+**Layout Antes vs Depois:**
+
+```
+❌ ANTES: Modal → Página de Edição (2 passos)
+✅ DEPOIS: Clique → Página de Edição (1 passo)
+
+❌ ANTES: 3 colunas máximo
+✅ DEPOIS: 4 colunas em telas wide
+
+❌ ANTES: Botões sempre visíveis
+✅ DEPOIS: Botões apenas no hover
+```
+
+### 🛠️ **CORREÇÃO CRÍTICA: Endpoint Admin Update Profile**
+
+**Problema Resolvido:**
+
+- **❌ Erro 404**: `PATCH /auth/admin/update-profile/:userId` não existia
+- **🔧 Endpoint Criado**: Admin pode atualizar perfil de qualquer usuário
+- **🔗 Integração**: Usa `AuthService.updateProfile` existente com `userId` específico
+- **🛡️ Segurança**: Protegido por `JwtAuthGuard` + `AdminGuard`
+
+**Implementação Backend:**
+
+```typescript
+@Patch("admin/update-profile/:userId")
+@UseGuards(JwtAuthGuard, new AdminGuard())
+async adminUpdateProfile(
+  @Param("userId") userId: string,
+  @Body() body: UpdateProfileDto
+): Promise<UserProfileDto> {
+  return this.authService.updateProfile(BigInt(userId), body);
+}
+```
+
+**AdminApi Frontend:**
+
+```typescript
+async updateProfile(
+  userId: number, 
+  data: UpdateProfileDto
+): Promise<UserProfile> {
+  return api<UserProfile>(`/auth/admin/update-profile/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+    auth: true,
+  });
+}
+```
 
 ### ⚡ **OTIMIZAÇÃO CRÍTICA**: Manager Dashboard - De 10s para <1s
 
@@ -33,44 +137,6 @@ Arquitetura frontend migrou recentemente de um modelo "global components + globa
 | **Latência**     | ~10 segundos       | ~500ms-1s      | **90-95% redução**        |
 | **Consultas DB** | 1 + 3×N queries    | 4 queries bulk | **Escalabilidade linear** |
 | **Experiência**  | Múltiplos loadings | Loading único  | **UX unificada**          |
-
-### 🎨 **REDESIGN COMPLETO**: Interface Admin com Cards
-
-**Layout de Usuários Modernizado:**
-
-- **Grid Responsivo**: 1 coluna (mobile) → 2 (tablet) → 3 (desktop)
-- **Cards Informativos**: Avatar, nome, cargo, email e hierarquia
-- **Campos Aprimorados**: Campo **cargo/posição** incluído na criação e exibição
-- **Visual Hierarchy**: Badges coloridos para Admin/GitHub, informações hierárquicas organizadas
-- **Hover Effects**: Transições suaves e ações contextuais
-
-**Campo de Cargo Integrado:**
-
-- **Modal de Criação**: Campo "Cargo/Posição" opcional no formulário
-- **Backend Suportado**: DTO `AdminCreateUserDto` atualizado com `position?: string`
-- **Exibição Completa**: Cargo aparece nos cards de usuários quando preenchido
-- **Tipos Atualizados**: `CreateAdminUserInput` e interfaces compatíveis
-
-### 🏗️ **CONSOLIDAÇÃO DE ENDPOINTS**: Manager Dashboard Unificado
-
-**Eliminação de Múltiplos Loadings:**
-
-- **Problema**: 3 chamadas de API separadas causando 2 steps de loading
-- **Solução**: Novo endpoint `/management/dashboard/complete`
-- **Hook Unificado**: `useManagerDashboardComplete` substitui 3 hooks diferentes
-- **Dados Consolidados**: Subordinados + métricas + times em uma resposta
-
-**Arquitetura Simplificada:**
-
-```typescript
-// ❌ ANTES (3 chamadas)
-const legacy = useMyReports(); // /management/subordinates
-const dashboard = useManagerDashboard(); // /management/dashboard
-const allTeams = useAllTeamsWithDetails(); // /teams?details=true
-
-// ✅ DEPOIS (1 chamada)
-const complete = useManagerDashboardComplete(); // /management/dashboard/complete
-```
 
 ### 🎯 **FUNCIONALIDADES APRIMORADAS**
 
@@ -1237,6 +1303,62 @@ Skeletons criados:
 - Sanitização: função que prepara payload remove `lastEditedAt` e outros campos desconhecidos.
 - Acessibilidade: snapshot de roles/ARIA nos botões de nível.
 
+## 🛠️ Stack Tecnológica
+
+### Frontend
+- **React 19** + **TypeScript** - Interface moderna e type-safe
+- **Vite** - Build tool rápido e otimizado
+- **TailwindCSS** - Styling utilitário com design system
+- **React Router** - Navegação SPA com lazy loading
+- **React Icons** - Ícones profissionais (Feather Icons)
+- **Headless UI** - Componentes acessíveis (modais, dropdowns)
+
+### Backend  
+- **NestJS** - Framework Node.js escalável
+- **Prisma** - ORM type-safe com migrations
+- **PostgreSQL** - Banco de dados relacional
+- **JWT** - Autenticação stateless
+- **bcryptjs** - Hash seguro de senhas
+- **Pino** - Logging estruturado de alta performance
+
+### DevOps & Qualidade
+- **Docker** - Containerização completa
+- **ESLint + Prettier** - Code quality e formatação
+- **TypeScript strict** - Type checking rigoroso
+- **Jest** - Testes unitários e de integração
+
+## 🏗️ Arquitetura
+
+### Feature-First Structure
+```
+frontend/src/
+├── features/           # Módulos isolados por domínio
+│   ├── admin/         # Sistema administrativo
+│   ├── auth/          # Autenticação
+│   ├── pdi/           # PDI e ciclos
+│   ├── prs/           # Pull Requests  
+│   ├── settings/      # Configurações de usuário
+│   └── management/    # Gerenciamento hierárquico
+├── shared/            # Componentes reutilizáveis
+├── lib/               # Utilitários e clientes
+└── pages/             # Páginas principais
+
+backend/src/
+├── auth/              # Autenticação e usuários
+├── management/        # Sistema hierárquico  
+├── pdi/               # PDI e ciclos
+├── teams/             # Equipes
+├── common/            # Guards, middlewares, utils
+└── core/              # Prisma, configurações
+```
+
+### Padrões Implementados
+- **Hooks Personalizados**: Lógica de estado isolada
+- **Type Safety**: Interfaces compartilhadas entre frontend/backend
+- **Error Boundaries**: Tratamento gracioso de erros
+- **Loading States**: UX consistente durante carregamento
+- **Responsive Design**: Mobile-first com breakpoints inteligentes
+
 ## 🧪 Testes e Validação
 
 ### Backend Tests
@@ -1257,29 +1379,48 @@ npm run test:cov        # Cobertura de código
 - Autenticação e autorização
 - Queries complexas com Prisma
 
-### Testando Funcionalidades Novas (2025-09-28)
+### Testando Funcionalidades Novas (2025-09-29)
 
-**Sistema de Gerenciamento:**
+**Sistema de Senhas Admin:**
 
 ```bash
-# 1. Testar criação de múltiplas regras
-POST /management/rules
-Body: { personIds: [1,2], teamIds: [3] }
+# 1. Login como admin
+POST /auth/login { "email": "admin@example.com", "password": "admin123" }
 
-# 2. Verificar dashboard do manager
-GET /management/dashboard
-# Deve retornar: subordinados + PRs + PDI stats
+# 2. Alterar senha de usuário
+POST /auth/admin/change-password
+Body: { "userId": 14, "newPassword": "novaSenha123" }
+# Ou deixar vazio para gerar automaticamente
 
-# 3. Testar anti-duplicação
-# Tentar criar regra já existente - deve falhar graciosamente
+# 3. Verificar resposta
+{
+  "success": true,
+  "generatedPassword": "xK9mN2pQ7vR1"  // Se auto-gerada
+}
 ```
 
-**Frontend Multi-Select:**
+**Cards de Usuários:**
 
-- Abrir modal "Adicionar Regra"
-- Selecionar múltiplas pessoas/equipes
-- Verificar que duplicatas não aparecem na lista
-- Confirmar criação em lote (Promise.all)
+- Abrir `/admin` 
+- Verificar grid responsivo (1→2→3→4 colunas)
+- Clicar em card = navegação direta para `/admin/users/:id`
+- Hover no botão delete (canto superior direito)
+- Testar modal de confirmação de exclusão
+
+**Update Profile Admin:**
+
+```bash
+# 1. Acessar página de edição
+GET /admin/users/14
+
+# 2. Atualizar perfil via admin
+PATCH /auth/admin/update-profile/14
+Body: {
+  "name": "Nome Atualizado",
+  "position": "Cargo Novo",
+  "bio": "Biografia atualizada"
+}
+```
 
 **Validação Completa:**
 
@@ -1288,11 +1429,14 @@ GET /management/dashboard
 bash script.sh  # Popula dados completos
 
 # 2. Login como admin
-POST /auth/login { "username": "admin", "password": "admin123" }
+POST /auth/login { "email": "admin@example.com", "password": "admin123" }
 
-# 3. Criar manager e devs via admin panel
-# 4. Testar fluxo completo de gerenciamento
-# 5. Validar dashboard com dados reais
+# 3. Testar fluxo admin completo:
+#    - Visualizar cards de usuários
+#    - Editar perfil de usuário
+#    - Alterar senha (aba Conta)
+#    - Gerenciar subordinados  
+#    - Administrar equipes
 ```
 
 ### Frontend Refactor (Feature PRs & Shared Layer)
