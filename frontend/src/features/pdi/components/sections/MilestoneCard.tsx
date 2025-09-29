@@ -163,12 +163,10 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
 
             <div className="flex-1">
               {editing ? (
-                <input
+                <TitleInput
                   value={m.title}
-                  onChange={(e) => onUpdate(m.id, { title: e.target.value })}
-                  className="w-full text-lg font-semibold text-indigo-700 bg-transparent focus:outline-none focus:ring-0 placeholder:text-indigo-300"
+                  onChange={(value) => onUpdate(m.id, { title: value })}
                   placeholder="Título do acompanhamento"
-                  onClick={(e) => e.stopPropagation()} // Evita colapsar ao clicar no input
                 />
               ) : (
                 <h3 className="text-lg font-semibold text-indigo-700">
@@ -698,3 +696,68 @@ const CardWrapper: React.FC<{
     {children}
   </div>
 );
+
+// Componente com debounce para edição de título
+interface TitleInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}
+
+const TitleInput: React.FC<TitleInputProps> = ({ value, onChange, placeholder }) => {
+  const [localValue, setLocalValue] = useState(value);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+
+  // Sincronizar valor externo com estado local (quando não estiver editando)
+  useEffect(() => {
+    if (value !== localValue) {
+      setLocalValue(value);
+    }
+  }, [value]);
+
+  // Cleanup no unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleChange = (newValue: string) => {
+    setLocalValue(newValue);
+    
+    // Limpar timeout anterior
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Debounce de 300ms para reduzir chamadas frequentes
+    timeoutRef.current = setTimeout(() => {
+      if (isMountedRef.current) {
+        onChange(newValue);
+      }
+    }, 300);
+  };
+
+  const handleBlur = () => {
+    // Força commit imediato no blur
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      onChange(localValue);
+    }
+  };
+
+  return (
+    <input
+      value={localValue}
+      onChange={(e) => handleChange(e.target.value)}
+      onBlur={handleBlur}
+      className="w-full text-lg font-semibold text-indigo-700 bg-transparent focus:outline-none focus:ring-0 placeholder:text-indigo-300"
+      placeholder={placeholder}
+      onClick={(e) => e.stopPropagation()} // Evita colapsar ao clicar no input
+    />
+  );
+};
