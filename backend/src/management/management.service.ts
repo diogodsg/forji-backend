@@ -99,42 +99,58 @@ export class ManagementService extends SoftDeleteService {
     const rules = await this.getManagerRules(managerId);
     const subordinatesMap = new Map<number, SubordinateInfo>();
 
-    for (const rule of rules) {
-      if (rule.ruleType === ManagementRuleType.INDIVIDUAL && rule.subordinate) {
-        subordinatesMap.set(Number(rule.subordinate.id), {
-          id: Number(rule.subordinate.id),
-          name: rule.subordinate.name,
-          email: rule.subordinate.email,
-          source: "individual",
-        });
-      } else if (rule.ruleType === ManagementRuleType.TEAM && rule.team) {
-        // Buscar todos os membros da equipe
-        const teamMembers = await this.prisma.teamMembership.findMany({
-          where: this.addSoftDeleteFilter({ teamId: rule.team.id }),
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
+    // Separar regras por tipo para processamento otimizado
+    const individualRules = rules.filter(r => r.ruleType === ManagementRuleType.INDIVIDUAL && r.subordinate);
+    const teamRules = rules.filter(r => r.ruleType === ManagementRuleType.TEAM && r.team);
+
+    // Processar regras individuais (já temos os dados)
+    individualRules.forEach(rule => {
+      subordinatesMap.set(Number(rule.subordinate!.id), {
+        id: Number(rule.subordinate!.id),
+        name: rule.subordinate!.name,
+        email: rule.subordinate!.email,
+        source: "individual",
+      });
+    });
+
+    // Processar regras de equipe em batch se houver
+    if (teamRules.length > 0) {
+      const teamIds = teamRules.map(rule => rule.team!.id);
+      
+      // Buscar todos os membros de todas as equipes em uma única consulta
+      const allTeamMembers = await this.prisma.teamMembership.findMany({
+        where: this.addSoftDeleteFilter({ teamId: { in: teamIds } }),
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
             },
           },
-        });
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
 
-        for (const membership of teamMembers) {
-          // Não incluir o próprio gerente como subordinado
-          if (Number(membership.user.id) !== managerId) {
-            subordinatesMap.set(Number(membership.user.id), {
-              id: Number(membership.user.id),
-              name: membership.user.name,
-              email: membership.user.email,
-              source: "team",
-              teamName: rule.team.name,
-            });
-          }
+      // Processar membros encontrados
+      allTeamMembers.forEach(membership => {
+        const userId = Number(membership.user.id);
+        // Não incluir o próprio gerente como subordinado
+        if (userId !== managerId) {
+          subordinatesMap.set(userId, {
+            id: userId,
+            name: membership.user.name,
+            email: membership.user.email,
+            source: "team",
+            teamName: membership.team.name,
+          });
         }
-      }
+      });
     }
 
     return Array.from(subordinatesMap.values()).sort((a, b) =>
@@ -187,57 +203,95 @@ export class ManagementService extends SoftDeleteService {
   // Obter dados completos do dashboard do manager
   async getManagerDashboard(managerId: number) {
     const subordinates = await this.getEffectiveSubordinates(managerId);
+    
+    if (subordinates.length === 0) {
+      return {
+        reports: [],
+        metrics: {
+          totalReports: 0,
+          pdiActive: 0,
+          avgPdiProgress: 0,
+        },
+      };
+    }
 
-    // Buscar dados completos para cada subordinado incluindo cargo e times
-    const reports = await Promise.all(
-      subordinates.map(async (sub) => {
-        // Buscar dados completos do usuário incluindo cargo
-        const user = await this.prisma.user.findUnique({
-          where: { id: BigInt(sub.id) },
-          select: {
-            position: true,
-            bio: true,
-          },
-        });
+    const subordinateIds = subordinates.map(sub => BigInt(sub.id));
 
-        // Buscar times do usuário
-        const teamMemberships = await this.prisma.teamMembership.findMany({
-          where: this.addSoftDeleteFilter({ userId: BigInt(sub.id) }),
-          include: {
-            team: {
-              select: {
-                id: true,
-                name: true,
-              },
+    // Buscar todos os dados necessários em paralelo com consultas bulk
+    const [usersData, teamMemberships, pdiPlans] = await Promise.all([
+      // Buscar dados completos de todos os usuários de uma vez
+      this.prisma.user.findMany({
+        where: { id: { in: subordinateIds } },
+        select: {
+          id: true,
+          position: true,
+          bio: true,
+        },
+      }),
+      
+      // Buscar todos os times dos subordinados de uma vez
+      this.prisma.teamMembership.findMany({
+        where: this.addSoftDeleteFilter({ userId: { in: subordinateIds } }),
+        include: {
+          team: {
+            select: {
+              id: true,
+              name: true,
             },
           },
-        });
+        },
+      }),
+      
+      // Buscar todos os PDIs de uma vez
+      this.prisma.pdiPlan.findMany({
+        where: { userId: { in: subordinateIds } },
+        select: {
+          userId: true,
+          milestones: true,
+          updatedAt: true,
+        },
+      }),
+    ]);
 
-        // Buscar PDI do subordinado
-        const pdi = await this.prisma.pdiPlan.findUnique({
-          where: { userId: BigInt(sub.id) },
-        });
+    // Criar maps para lookup rápido
+    const usersMap = new Map(usersData.map(user => [Number(user.id), user]));
+    const teamsMap = new Map<number, Array<{id: number, name: string}>>();
+    const pdiMap = new Map(pdiPlans.map(pdi => [Number(pdi.userId), pdi]));
 
-        const pdiInfo = {
-          exists: !!pdi,
-          progress: pdi ? this.calculatePdiProgress(pdi) : 0,
-          updatedAt: pdi?.updatedAt.toISOString(),
-        };
+    // Agrupar times por usuário
+    teamMemberships.forEach(tm => {
+      const userId = Number(tm.userId);
+      if (!teamsMap.has(userId)) {
+        teamsMap.set(userId, []);
+      }
+      teamsMap.get(userId)!.push({
+        id: Number(tm.team.id),
+        name: tm.team.name,
+      });
+    });
 
-        return {
-          userId: sub.id,
-          name: sub.name,
-          email: sub.email,
-          position: user?.position || null,
-          bio: user?.bio || null,
-          teams: teamMemberships.map((tm) => ({
-            id: Number(tm.team.id),
-            name: tm.team.name,
-          })),
-          pdi: pdiInfo,
-        };
-      })
-    );
+    // Montar reports com dados já carregados
+    const reports = subordinates.map(sub => {
+      const user = usersMap.get(sub.id);
+      const teams = teamsMap.get(sub.id) || [];
+      const pdi = pdiMap.get(sub.id);
+      
+      const pdiInfo = {
+        exists: !!pdi,
+        progress: pdi ? this.calculatePdiProgress(pdi) : 0,
+        updatedAt: pdi?.updatedAt.toISOString(),
+      };
+
+      return {
+        userId: sub.id,
+        name: sub.name,
+        email: sub.email,
+        position: user?.position || null,
+        bio: user?.bio || null,
+        teams,
+        pdi: pdiInfo,
+      };
+    });
 
     // Calcular métricas agregadas
     const totalReports = reports.length;
@@ -259,27 +313,27 @@ export class ManagementService extends SoftDeleteService {
 
   // Obter dados consolidados do dashboard + times para o manager
   async getManagerDashboardComplete(managerId: number) {
-    // Obter dashboard básico
-    const dashboardData = await this.getManagerDashboard(managerId);
-    
-    // Buscar todos os times com detalhes em uma única consulta
-    const allTeams = await this.prisma.team.findMany({
-      where: this.addSoftDeleteFilter({}),
-      include: {
-        memberships: {
-          where: this.addSoftDeleteFilter({}),
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
+    // Executar dashboard e teams em paralelo para máxima performance
+    const [dashboardData, allTeams] = await Promise.all([
+      this.getManagerDashboard(managerId),
+      this.prisma.team.findMany({
+        where: this.addSoftDeleteFilter({}),
+        include: {
+          memberships: {
+            where: this.addSoftDeleteFilter({}),
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      }),
+    ]);
 
     // Formatar dados dos times
     const teams = allTeams.map((team) => ({
