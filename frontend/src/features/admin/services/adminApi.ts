@@ -1,6 +1,9 @@
 import { api } from "@/lib/apiClient";
 import type { AdminUser, CreateAdminUserInput } from "../types";
-import type { UpdateProfileDto, UserProfile } from "@/features/settings/types/settings";
+import type {
+  UpdateProfileDto,
+  UserProfile,
+} from "@/features/settings/types/settings";
 
 export const adminApi = {
   async listUsers(): Promise<AdminUser[]> {

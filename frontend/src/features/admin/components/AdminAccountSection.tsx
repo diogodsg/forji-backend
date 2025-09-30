@@ -8,7 +8,7 @@ interface Props {
 
 export function AdminAccountSection({ userId, userName }: Props) {
   const { changePassword } = useAdminUsers();
-  
+
   const [formData, setFormData] = useState({
     newPassword: "",
     confirmPassword: "",
@@ -25,7 +25,7 @@ export function AdminAccountSection({ userId, userName }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.newPassword !== formData.confirmPassword) {
       setError("As senhas não coincidem");
       return;
@@ -38,7 +38,7 @@ export function AdminAccountSection({ userId, userName }: Props) {
 
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await changePassword(userId, formData.newPassword);
       if (result.success) {

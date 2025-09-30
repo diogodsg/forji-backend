@@ -88,6 +88,17 @@ export function useAutoSave({
       return () => abort.abort();
     },
     800,
-    [pending, saving, working, saveForUserId, lastSavedAt]
+    // IMPORTANTE: dependência de editingMilestones (tamanho) para que ao clicar em
+    // "Concluir" (retirando o id do set) o efeito seja reavaliado e o auto‑save aconteça.
+    // Antes, o efeito era agendado durante a edição, abortava por size>0 e nunca reexecutava
+    // ao sair do modo de edição (pois size não estava nas deps), deixando alterações sem persistir.
+    [
+      pending,
+      saving,
+      working,
+      saveForUserId,
+      lastSavedAt,
+      editingMilestones.size,
+    ]
   );
 }

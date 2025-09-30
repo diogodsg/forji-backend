@@ -15,7 +15,10 @@ interface UseAdminUsersResult {
   removeUser: (id: number) => Promise<void>;
   addManager: (userId: number, managerId: number) => Promise<void>;
   removeManager: (userId: number, managerId: number) => Promise<void>;
-  changePassword: (userId: number, newPassword?: string) => Promise<{ success: boolean; generatedPassword?: string }>;
+  changePassword: (
+    userId: number,
+    newPassword?: string
+  ) => Promise<{ success: boolean; generatedPassword?: string }>;
   busy: {
     creating: boolean;
     deleting: Set<number>;

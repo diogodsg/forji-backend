@@ -6,15 +6,26 @@ interface Props {
   user: AdminUser | null;
   isOpen: boolean;
   onClose: () => void;
-  onChangePassword: (userId: number, newPassword?: string) => Promise<{ success: boolean; generatedPassword?: string }>;
+  onChangePassword: (
+    userId: number,
+    newPassword?: string
+  ) => Promise<{ success: boolean; generatedPassword?: string }>;
 }
 
-export function ChangePasswordModal({ user, isOpen, onClose, onChangePassword }: Props) {
+export function ChangePasswordModal({
+  user,
+  isOpen,
+  onClose,
+  onChangePassword,
+}: Props) {
   const [mode, setMode] = useState<"generate" | "custom">("generate");
   const [customPassword, setCustomPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ success?: boolean; generatedPassword?: string } | null>(null);
+  const [result, setResult] = useState<{
+    success?: boolean;
+    generatedPassword?: string;
+  } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +39,7 @@ export function ChangePasswordModal({ user, isOpen, onClose, onChangePassword }:
         mode === "custom" ? customPassword : undefined
       );
       setResult(response);
-      
+
       if (mode === "custom") {
         // Para senha customizada, limpa o formulário
         setCustomPassword("");
@@ -68,9 +79,7 @@ export function ChangePasswordModal({ user, isOpen, onClose, onChangePassword }:
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Alterar Senha
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900">Alterar Senha</h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -81,9 +90,7 @@ export function ChangePasswordModal({ user, isOpen, onClose, onChangePassword }:
 
         <div className="p-6">
           <div className="mb-4">
-            <p className="text-sm text-gray-600 mb-2">
-              Alterando senha para:
-            </p>
+            <p className="text-sm text-gray-600 mb-2">Alterando senha para:</p>
             <div className="bg-gray-50 rounded-lg p-3">
               <p className="font-medium text-gray-900">{user.name}</p>
               <p className="text-sm text-gray-600">{user.email}</p>
@@ -162,7 +169,9 @@ export function ChangePasswordModal({ user, isOpen, onClose, onChangePassword }:
                       onChange={(e) => setMode(e.target.value as "generate")}
                       className="mr-2"
                     />
-                    <span className="text-sm">Gerar senha automática (recomendado)</span>
+                    <span className="text-sm">
+                      Gerar senha automática (recomendado)
+                    </span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -218,10 +227,16 @@ export function ChangePasswordModal({ user, isOpen, onClose, onChangePassword }:
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || (mode === "custom" && customPassword.length < 6)}
+                  disabled={
+                    loading || (mode === "custom" && customPassword.length < 6)
+                  }
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
                 >
-                  {loading ? "Alterando..." : mode === "generate" ? "Gerar Senha" : "Alterar Senha"}
+                  {loading
+                    ? "Alterando..."
+                    : mode === "generate"
+                    ? "Gerar Senha"
+                    : "Alterar Senha"}
                 </button>
               </div>
             </form>

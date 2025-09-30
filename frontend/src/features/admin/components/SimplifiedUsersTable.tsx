@@ -10,7 +10,10 @@ interface Props {
   loading: boolean;
   error: string | null;
   onRemove: (id: number) => Promise<void> | void;
-  onChangePassword: (userId: number, newPassword?: string) => Promise<{ success: boolean; generatedPassword?: string }>;
+  onChangePassword: (
+    userId: number,
+    newPassword?: string
+  ) => Promise<{ success: boolean; generatedPassword?: string }>;
 }
 
 export function SimplifiedUsersTable({
@@ -23,7 +26,8 @@ export function SimplifiedUsersTable({
 }: Props) {
   const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
-  const [changePasswordUser, setChangePasswordUser] = useState<AdminUser | null>(null);
+  const [changePasswordUser, setChangePasswordUser] =
+    useState<AdminUser | null>(null);
 
   const handleCardClick = (userId: number) => {
     navigate(`/admin/users/${userId}`);
@@ -137,7 +141,9 @@ export function SimplifiedUsersTable({
                 {(user as any).position && (
                   <div className="text-xs">
                     <span className="text-gray-500">Cargo:</span>
-                    <span className="ml-1 font-medium text-gray-700">{(user as any).position}</span>
+                    <span className="ml-1 font-medium text-gray-700">
+                      {(user as any).position}
+                    </span>
                   </div>
                 )}
 
@@ -152,9 +158,15 @@ export function SimplifiedUsersTable({
                   <div className="flex items-center gap-1 text-xs text-gray-600">
                     <FiUsers className="w-3 h-3" />
                     <span>
-                      {managersCount > 0 && `${managersCount} gerente${managersCount > 1 ? 's' : ''}`}
-                      {managersCount > 0 && subordinatesCount > 0 && ', '}
-                      {subordinatesCount > 0 && `${subordinatesCount} subordinado${subordinatesCount > 1 ? 's' : ''}`}
+                      {managersCount > 0 &&
+                        `${managersCount} gerente${
+                          managersCount > 1 ? "s" : ""
+                        }`}
+                      {managersCount > 0 && subordinatesCount > 0 && ", "}
+                      {subordinatesCount > 0 &&
+                        `${subordinatesCount} subordinado${
+                          subordinatesCount > 1 ? "s" : ""
+                        }`}
                     </span>
                   </div>
                 )}
@@ -188,7 +200,8 @@ export function SimplifiedUsersTable({
               Confirmar exclusão
             </h3>
             <p className="text-gray-600 mb-4">
-              Tem certeza que deseja remover este usuário? Esta ação não pode ser desfeita.
+              Tem certeza que deseja remover este usuário? Esta ação não pode
+              ser desfeita.
             </p>
             <div className="flex gap-2 justify-end">
               <button

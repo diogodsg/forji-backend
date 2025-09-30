@@ -11,7 +11,7 @@ const tabs = [
   { id: "account", label: "Conta", icon: FiKey },
 ] as const;
 
-type TabId = typeof tabs[number]["id"];
+type TabId = (typeof tabs)[number]["id"];
 
 export function AdminUserEditPage() {
   const { userId } = useParams<{ userId: string }>();
@@ -57,7 +57,7 @@ export function AdminUserEditPage() {
 
   const renderTabContent = () => {
     if (!userProfile) return null;
-    
+
     switch (activeTab) {
       case "profile":
         return (
@@ -169,9 +169,7 @@ export function AdminUserEditPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
-          {renderTabContent()}
-        </div>
+        <div className="p-6">{renderTabContent()}</div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@
 Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Desenvolvimento Individual (PDI). Stack: **NestJS + Prisma/PostgreSQL** (backend) e **React 19 + Vite + TailwindCSS** (frontend). Inclui:
 
 - Área do desenvolvedor (PRs e PDI próprio)
-- Dashboard de manager (PRs + PDI dos subordinados)  
+- Dashboard de manager (PRs + PDI dos subordinados)
 - Área administrativa (gestão de contas, relacionamentos e permissões)
 
 Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`).
@@ -103,7 +103,7 @@ async adminUpdateProfile(
 
 ```typescript
 async updateProfile(
-  userId: number, 
+  userId: number,
   data: UpdateProfileDto
 ): Promise<UserProfile> {
   return api<UserProfile>(`/auth/admin/update-profile/${userId}`, {
@@ -1306,6 +1306,7 @@ Skeletons criados:
 ## 🛠️ Stack Tecnológica
 
 ### Frontend
+
 - **React 19** + **TypeScript** - Interface moderna e type-safe
 - **Vite** - Build tool rápido e otimizado
 - **TailwindCSS** - Styling utilitário com design system
@@ -1313,7 +1314,8 @@ Skeletons criados:
 - **React Icons** - Ícones profissionais (Feather Icons)
 - **Headless UI** - Componentes acessíveis (modais, dropdowns)
 
-### Backend  
+### Backend
+
 - **NestJS** - Framework Node.js escalável
 - **Prisma** - ORM type-safe com migrations
 - **PostgreSQL** - Banco de dados relacional
@@ -1322,6 +1324,7 @@ Skeletons criados:
 - **Pino** - Logging estruturado de alta performance
 
 ### DevOps & Qualidade
+
 - **Docker** - Containerização completa
 - **ESLint + Prettier** - Code quality e formatação
 - **TypeScript strict** - Type checking rigoroso
@@ -1330,13 +1333,14 @@ Skeletons criados:
 ## 🏗️ Arquitetura
 
 ### Feature-First Structure
+
 ```
 frontend/src/
 ├── features/           # Módulos isolados por domínio
 │   ├── admin/         # Sistema administrativo
 │   ├── auth/          # Autenticação
 │   ├── pdi/           # PDI e ciclos
-│   ├── prs/           # Pull Requests  
+│   ├── prs/           # Pull Requests
 │   ├── settings/      # Configurações de usuário
 │   └── management/    # Gerenciamento hierárquico
 ├── shared/            # Componentes reutilizáveis
@@ -1345,7 +1349,7 @@ frontend/src/
 
 backend/src/
 ├── auth/              # Autenticação e usuários
-├── management/        # Sistema hierárquico  
+├── management/        # Sistema hierárquico
 ├── pdi/               # PDI e ciclos
 ├── teams/             # Equipes
 ├── common/            # Guards, middlewares, utils
@@ -1353,6 +1357,7 @@ backend/src/
 ```
 
 ### Padrões Implementados
+
 - **Hooks Personalizados**: Lógica de estado isolada
 - **Type Safety**: Interfaces compartilhadas entre frontend/backend
 - **Error Boundaries**: Tratamento gracioso de erros
@@ -1401,7 +1406,7 @@ Body: { "userId": 14, "newPassword": "novaSenha123" }
 
 **Cards de Usuários:**
 
-- Abrir `/admin` 
+- Abrir `/admin`
 - Verificar grid responsivo (1→2→3→4 colunas)
 - Clicar em card = navegação direta para `/admin/users/:id`
 - Hover no botão delete (canto superior direito)
@@ -1435,7 +1440,7 @@ POST /auth/login { "email": "admin@example.com", "password": "admin123" }
 #    - Visualizar cards de usuários
 #    - Editar perfil de usuário
 #    - Alterar senha (aba Conta)
-#    - Gerenciar subordinados  
+#    - Gerenciar subordinados
 #    - Administrar equipes
 ```
 
