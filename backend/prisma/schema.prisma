@@ -26,6 +26,7 @@ model User {
   pullRequests     PullRequest[]
   User_A           User[]           @relation("UserManagers")
   User_B           User[]           @relation("UserManagers")
+  pdiCycles        PdiCycle[]
 }
 
 model PullRequest {
@@ -70,6 +71,29 @@ model PdiPlan {
   updatedAt    DateTime @updatedAt
   deletedAt    DateTime? @map("deleted_at")
   user         User     @relation(fields: [userId], references: [id])
+}
+
+/// Cycles of a PDI plan. Each cycle encapsulates its own competencies, milestones, key results and records snapshot.
+model PdiCycle {
+  id           BigInt         @id @default(autoincrement())
+  userId       BigInt
+  title        String
+  description  String?
+  status       PdiCycleStatus @default(PLANNED)
+  startDate    DateTime       @map("start_date")
+  endDate      DateTime       @map("end_date")
+  competencies String[]
+  milestones   Json           // array of PdiMilestoneDto
+  krs          Json?          // array of PdiKeyResultDto
+  records      Json           // array of PdiCompetencyRecordDto
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?      @map("deleted_at")
+  user         User           @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
 }
 
 model FileChange {
@@ -148,4 +172,11 @@ enum TeamRole {
 enum ManagementRuleType {
   TEAM
   INDIVIDUAL
+}
+
+enum PdiCycleStatus {
+  PLANNED
+  ACTIVE
+  PAUSED
+  COMPLETED
 }
