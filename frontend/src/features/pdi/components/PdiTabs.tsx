@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FiTarget, FiCalendar, FiBarChart } from "react-icons/fi";
 import { CyclesManager } from "./cycles/CyclesManager";
+import { ActiveCycleBadge } from "./ActiveCycleBadge";
 import type { PdiCycle } from "../types/pdi";
 
 interface PdiTabsProps {
@@ -122,6 +123,8 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
     : baseTabs;
 
   const currentTab = tabs.find((tab) => tab.id === activeTab);
+  const activeCycle = cycles.find(c => c.status === 'active');
+  const currentCycle = cycles.find(c => c.id === selectedCycleId) || activeCycle;
 
   return (
     <div className="space-y-4">
@@ -156,13 +159,18 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
         </nav>
       </div>
 
-      {/* Indicador da aba ativa */}
+      {/* Indicador da aba ativa + ciclo atual */}
       {currentTab && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
-          <currentTab.icon className="w-5 h-5 text-indigo-500" />
-          <div>
-            <h3 className="font-medium text-gray-900">{currentTab.label}</h3>
-            <p className="text-sm text-gray-600">{currentTab.description}</p>
+        <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-3">
+            <currentTab.icon className="w-5 h-5 text-indigo-500" />
+            <div>
+              <h3 className="font-medium text-gray-900">{currentTab.label}</h3>
+              <p className="text-sm text-gray-600">{currentTab.description}</p>
+            </div>
+          </div>
+          <div className="ml-auto">
+            <ActiveCycleBadge cycle={currentCycle} />
           </div>
         </div>
       )}
