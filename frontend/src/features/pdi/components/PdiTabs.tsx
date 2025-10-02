@@ -14,13 +14,12 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
   const [activeTab, setActiveTab] = useState<"cycles" | "pdi" | "stats">("pdi");
   const [cycles, setCycles] = useState<PdiCycle[]>([]);
   const [selectedCycleId, setSelectedCycleId] = useState<string>("");
-  // Futuro: estados de loading e erro podem ser expostos na UI
-  // const [loadingCycles, setLoadingCycles] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
+  const [loadingCycles, setLoadingCycles] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-  // setLoadingCycles(true);
-  // setError(null);
+  setLoadingCycles(true);
+  setError(null);
     try {
       const data = await fetchMyCycles();
       setCycles(data);
@@ -29,9 +28,9 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
         setSelectedCycleId(active.id);
       }
     } catch (e: any) {
-      // setError(e.message || 'Falha ao carregar ciclos');
+      setError(e.message || 'Falha ao carregar ciclos');
     } finally {
-      // setLoadingCycles(false);
+      setLoadingCycles(false);
     }
   }
 
@@ -165,6 +164,28 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
             <h3 className="font-medium text-gray-900">{currentTab.label}</h3>
             <p className="text-sm text-gray-600">{currentTab.description}</p>
           </div>
+        </div>
+      )}
+
+      {/* Feedback de ciclos (apenas quando tab cycles ativa) */}
+      {activeTab === 'cycles' && (
+        <div className="space-y-3">
+          {loadingCycles && (
+            <div className="p-4 border border-indigo-200 rounded-lg bg-indigo-50 animate-pulse text-sm text-indigo-700">
+              Carregando ciclos...
+            </div>
+          )}
+          {error && !loadingCycles && (
+            <div className="p-4 border border-red-200 rounded-lg bg-red-50 text-sm text-red-700 flex justify-between items-center">
+              <span>{error}</span>
+              <button
+                onClick={load}
+                className="px-2 py-1 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          )}
         </div>
       )}
 
