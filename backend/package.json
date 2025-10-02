@@ -10,7 +10,8 @@
     "start:prod": "node .",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "pdi:migrate-cycles": "node scripts/migrate-pdi-plan-to-cycles.js"
   },
   "keywords": [],
   "author": "",
