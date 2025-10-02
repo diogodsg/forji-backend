@@ -1,85 +1,33 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Patch,
-  Delete,
-  Query,
-  Req,
-  UseGuards,
-} from "@nestjs/common";
-import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
-import { OwnerOrManagerGuard } from "../common/guards/owner-or-manager.guard";
-import { PdiCyclesService } from "./cycles.service";
-import { CreatePdiCycleDto, UpdatePdiCycleDto, PdiCycleStatusDto } from "./cycles.dto";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { OwnerOrManagerGuard } from '../common/guards/owner-or-manager.guard';
+import { PdiCyclesService } from './cycles.service';
+import { CreatePdiCycleDto, UpdatePdiCycleDto, ChangeStatusDto } from './cycle.dto';
 
-@Controller("pdi/cycles")
+@Controller('pdi/cycles')
 @UseGuards(JwtAuthGuard, OwnerOrManagerGuard)
 export class PdiCyclesController {
-  constructor(private readonly cycles: PdiCyclesService) {}
+  constructor(private readonly service: PdiCyclesService) {}
 
-  @Get("me")
-  listMine(
-    @Req() req: any,
-    @Query("status") status?: PdiCycleStatusDto,
-    @Query("activeOnly") activeOnly?: string
-  ) {
-    return this.cycles.listForUser(req.user.id, {
-      status,
-      activeOnly: activeOnly === "true",
-    });
+  @Get('me')
+  listMine(@Req() req: any) { return this.service.list(req.user.id); }
+
+  @Get(':userId')
+  list(@Param('userId', ParseIntPipe) userId: number) { return this.service.list(userId); }
+
+  @Post()
+  create(@Req() req: any, @Body() body: CreatePdiCycleDto) { return this.service.create(req.user.id, body); }
+
+  @Patch(':id')
+  update(@Req() req: any, @Param('id', ParseIntPipe) id: number, @Body() body: UpdatePdiCycleDto) {
+    return this.service.update(id, req.user.id, body);
   }
 
-  @Get(":userId")
-  listForUser(
-    @Param("userId", ParseIntPipe) userId: number,
-    @Query("status") status?: PdiCycleStatusDto,
-    @Query("activeOnly") activeOnly?: string
-  ) {
-    return this.cycles.listForUser(userId, {
-      status,
-      activeOnly: activeOnly === "true",
-    });
+  @Patch(':id/status')
+  changeStatus(@Req() req: any, @Param('id', ParseIntPipe) id: number, @Body() body: ChangeStatusDto) {
+    return this.service.changeStatus(id, req.user.id, body.status);
   }
 
-  @Get(":userId/:id")
-  getOne(
-    @Param("userId", ParseIntPipe) userId: number,
-    @Param("id", ParseIntPipe) id: number
-  ) {
-    return this.cycles.get(userId, id);
-  }
-
-  @Post("me")
-  createMine(@Req() req: any, @Body() body: CreatePdiCycleDto) {
-    return this.cycles.create(req.user.id, body);
-  }
-
-  @Post(":userId")
-  createForUser(
-    @Param("userId", ParseIntPipe) userId: number,
-    @Body() body: CreatePdiCycleDto
-  ) {
-    return this.cycles.create(userId, body);
-  }
-
-  @Patch(":userId/:id")
-  update(
-    @Param("userId", ParseIntPipe) userId: number,
-    @Param("id", ParseIntPipe) id: number,
-    @Body() patch: UpdatePdiCycleDto
-  ) {
-    return this.cycles.update(userId, id, patch);
-  }
-
-  @Delete(":userId/:id")
-  remove(
-    @Param("userId", ParseIntPipe) userId: number,
-    @Param("id", ParseIntPipe) id: number
-  ) {
-    return this.cycles.softDeleteCycle(userId, id);
-  }
+  @Delete(':id')
+  remove(@Req() req: any, @Param('id', ParseIntPipe) id: number) { return this.service.remove(id, req.user.id); }
 }

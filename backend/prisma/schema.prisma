@@ -7,155 +7,137 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id               BigInt           @id @default(autoincrement())
-  email            String           @unique
-  password         String
-  name             String
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  deletedAt        DateTime?        @map("deleted_at")
-  isAdmin          Boolean          @default(false)
-  githubId         String?          @unique @map("github_id")
-  bio              String?
-  position         String?
-  managementRules  ManagementRule[] @relation("ManagerRules")
-  subordinateRules ManagementRule[] @relation("SubordinateRules")
-  pdiPlan          PdiPlan?
-  memberships      TeamMembership[]
-  pullRequests     PullRequest[]
-  User_A           User[]           @relation("UserManagers")
-  User_B           User[]           @relation("UserManagers")
-  pdiCycles        PdiCycle[]
-}
-
-model PullRequest {
-  id             BigInt       @id
-  number         BigInt?      @map("number")
-  nodeId         String?      @map("node_id")
-  user           String?      @map("user")
-  title          String?
-  createdAt      DateTime?    @map("created_at")
-  updatedAt      DateTime?    @map("updated_at")
-  deletedAt      DateTime?    @map("deleted_at")
-  closedAt       DateTime?    @map("closed_at")
-  mergedAt       DateTime?    @map("merged_at")
-  body           String?
-  repo           String?
-  lastReviewedAt DateTime?    @map("last_reviewed_at")
-  reviewText     String?      @map("review_text")
-  totalAdditions BigInt?      @map("total_additions")
-  totalDeletions BigInt?      @map("total_deletions")
-  totalChanges   BigInt?      @map("total_changes")
-  ownerUserId    BigInt?
-  state          PrState?
-  fileChanges    FileChange[]
-  ownerUser      User?        @relation(fields: [ownerUserId], references: [id])
-
-  @@index([ownerUserId], map: "pull_req_owner_user_id_idx")
-  @@index([repo], map: "pull_req_repo_idx")
-  @@index([state], map: "pull_req_state_idx")
-  @@index([user], map: "pull_req_user_idx")
-  @@index([title], map: "pull_req_title_idx")
-  @@map("pull_requests")
+model ManagementRule {
+  id                                      BigInt             @id @default(autoincrement())
+  managerId                               BigInt
+  teamId                                  BigInt?
+  subordinateId                           BigInt?
+  createdAt                               DateTime           @default(now())
+  updatedAt                               DateTime           @updatedAt
+  ruleType                                ManagementRuleType
+  deleted_at                              DateTime?
+  User_ManagementRule_managerIdToUser     User               @relation("ManagementRule_managerIdToUser", fields: [managerId], references: [id], onDelete: Cascade)
+  User_ManagementRule_subordinateIdToUser User?              @relation("ManagementRule_subordinateIdToUser", fields: [subordinateId], references: [id], onDelete: Cascade)
+  Team                                    Team?              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  @@unique([managerId, subordinateId, ruleType])
+  @@unique([managerId, teamId, ruleType])
+  @@index([managerId])
+  @@index([subordinateId])
+  @@index([teamId])
+  @@index([ruleType])
 }
 
 model PdiPlan {
-  id           BigInt   @id @default(autoincrement())
-  userId       BigInt   @unique
+  id           BigInt    @id @default(autoincrement())
+  userId       BigInt    @unique
   competencies String[]
   milestones   Json
   krs          Json?
   records      Json
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  deletedAt    DateTime? @map("deleted_at")
-  user         User     @relation(fields: [userId], references: [id])
-}
-
-/// Cycles of a PDI plan. Each cycle encapsulates its own competencies, milestones, key results and records snapshot.
-model PdiCycle {
-  id           BigInt         @id @default(autoincrement())
-  userId       BigInt
-  title        String
-  description  String?
-  status       PdiCycleStatus @default(PLANNED)
-  startDate    DateTime       @map("start_date")
-  endDate      DateTime       @map("end_date")
-  competencies String[]
-  milestones   Json           // array of PdiMilestoneDto
-  krs          Json?          // array of PdiKeyResultDto
-  records      Json           // array of PdiCompetencyRecordDto
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deletedAt    DateTime?      @map("deleted_at")
-  user         User           @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([status])
-  @@index([startDate])
-}
-
-model FileChange {
-  sha         String       @id
-  filename    String?
-  status      String?
-  additions   BigInt?
-  deletions   BigInt?
-  changes     BigInt?
-  patch       String?
-  prId        BigInt?      @map("pr_id")
-  deletedAt   DateTime?    @map("deleted_at")
-  pullRequest PullRequest? @relation(fields: [prId], references: [id])
-
-  @@index([prId])
-  @@map("file_changes")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deleted_at   DateTime?
+  User         User      @relation(fields: [userId], references: [id])
 }
 
 model Team {
-  id              BigInt           @id @default(autoincrement())
-  name            String           @unique
-  description     String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  deletedAt       DateTime?        @map("deleted_at")
-  managementRules ManagementRule[]
-  memberships     TeamMembership[]
+  id             BigInt           @id @default(autoincrement())
+  name           String           @unique
+  description    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deleted_at     DateTime?
+  ManagementRule ManagementRule[]
+  TeamMembership TeamMembership[]
 }
 
 model TeamMembership {
-  id        BigInt   @id @default(autoincrement())
-  teamId    BigInt
-  userId    BigInt
-  role      TeamRole @default(MEMBER)
-  createdAt DateTime @default(now())
-  deletedAt DateTime? @map("deleted_at")
-  team      Team     @relation(fields: [teamId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  id         BigInt    @id @default(autoincrement())
+  teamId     BigInt
+  userId     BigInt
+  role       TeamRole  @default(MEMBER)
+  createdAt  DateTime  @default(now())
+  deleted_at DateTime?
+  Team       Team      @relation(fields: [teamId], references: [id])
+  User       User      @relation(fields: [userId], references: [id])
 
   @@unique([teamId, userId])
-  @@index([userId])
   @@index([teamId, role])
+  @@index([userId])
 }
 
-model ManagementRule {
-  id            BigInt             @id @default(autoincrement())
-  managerId     BigInt
-  teamId        BigInt?
-  subordinateId BigInt?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  deletedAt     DateTime?          @map("deleted_at")
-  ruleType      ManagementRuleType
-  manager       User               @relation("ManagerRules", fields: [managerId], references: [id], onDelete: Cascade)
-  subordinate   User?              @relation("SubordinateRules", fields: [subordinateId], references: [id], onDelete: Cascade)
-  team          Team?              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+model User {
+  id                                                BigInt           @id @default(autoincrement())
+  email                                             String           @unique
+  password                                          String
+  name                                              String
+  createdAt                                         DateTime         @default(now())
+  updatedAt                                         DateTime         @updatedAt
+  isAdmin                                           Boolean          @default(false)
+  github_id                                         String?          @unique
+  bio                                               String?
+  position                                          String?
+  deleted_at                                        DateTime?
+  ManagementRule_ManagementRule_managerIdToUser     ManagementRule[] @relation("ManagementRule_managerIdToUser")
+  ManagementRule_ManagementRule_subordinateIdToUser ManagementRule[] @relation("ManagementRule_subordinateIdToUser")
+  PdiPlan                                           PdiPlan?
+  TeamMembership                                    TeamMembership[]
+  pull_requests                                     pull_requests[]
+  User_A                                            User[]           @relation("UserManagers")
+  User_B                                            User[]           @relation("UserManagers")
+  pdiCycles                                         PdiCycle[]
+}
 
-  @@unique([managerId, teamId])
-  @@unique([managerId, subordinateId])
-  @@index([managerId])
-  @@index([teamId])
-  @@index([subordinateId])
+model file_changes {
+  sha           String         @id
+  filename      String?
+  status        String?
+  additions     BigInt?
+  deletions     BigInt?
+  changes       BigInt?
+  patch         String?
+  pr_id         BigInt?
+  deleted_at    DateTime?
+  pull_requests pull_requests? @relation(fields: [pr_id], references: [id])
+
+  @@index([pr_id])
+}
+
+model pull_requests {
+  id               BigInt         @id
+  number           BigInt?
+  node_id          String?
+  user             String?
+  title            String?
+  created_at       DateTime?
+  updated_at       DateTime?
+  closed_at        DateTime?
+  merged_at        DateTime?
+  body             String?
+  repo             String?
+  last_reviewed_at DateTime?
+  review_text      String?
+  total_additions  BigInt?
+  total_deletions  BigInt?
+  total_changes    BigInt?
+  ownerUserId      BigInt?
+  state            PrState?
+  deleted_at       DateTime?
+  file_changes     file_changes[]
+  User             User?          @relation(fields: [ownerUserId], references: [id])
+
+  @@index([ownerUserId], map: "pull_req_owner_user_id_idx")
+  @@index([repo], map: "pull_req_repo_idx")
+  @@index([state], map: "pull_req_state_idx")
+  @@index([title], map: "pull_req_title_idx")
+  @@index([user], map: "pull_req_user_idx")
+  @@index([created_at])
+  @@index([merged_at])
+}
+
+enum ManagementRuleType {
+  TEAM
+  INDIVIDUAL
 }
 
 enum PrState {
@@ -169,14 +151,33 @@ enum TeamRole {
   MANAGER
 }
 
-enum ManagementRuleType {
-  TEAM
-  INDIVIDUAL
-}
-
 enum PdiCycleStatus {
   PLANNED
   ACTIVE
   PAUSED
   COMPLETED
+  ARCHIVED
+}
+
+model PdiCycle {
+  id           BigInt         @id @default(autoincrement())
+  userId       BigInt
+  title        String
+  description  String?
+  startDate    DateTime
+  endDate      DateTime
+  status       PdiCycleStatus @default(PLANNED)
+  competencies String[]
+  krs          Json?
+  milestones   Json
+  records      Json
+  progressMeta Json?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deleted_at   DateTime?
+  User         User           @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+  @@index([startDate])
+  @@index([endDate])
 }
