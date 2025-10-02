@@ -148,14 +148,14 @@ export class TeamsService extends SoftDeleteService {
     await (this.prisma as any).$transaction(async (tx: any) => {
       // Primeiro, soft delete todos os memberships da equipe
       await tx.teamMembership.updateMany({
-        where: { teamId: BigInt(id), deletedAt: null },
-        data: { deletedAt: new Date() },
+        where: { teamId: BigInt(id), deleted_at: null },
+        data: { deleted_at: new Date() },
       });
 
       // Depois, soft delete a equipe
       await tx.team.update({
         where: { id: BigInt(id) },
-        data: { deletedAt: new Date() },
+        data: { deleted_at: new Date() },
       });
     });
 
@@ -188,7 +188,7 @@ export class TeamsService extends SoftDeleteService {
 
     // Verificar se a equipe existe e está deletada
     const team = await (this.prisma as any).team.findFirst({
-      where: { id: BigInt(id), deletedAt: { not: null } },
+  where: { id: BigInt(id), deleted_at: { not: null } },
     });
     if (!team) throw new NotFoundException("Deleted team not found");
 
@@ -197,13 +197,13 @@ export class TeamsService extends SoftDeleteService {
       // Restaurar a equipe
       await tx.team.update({
         where: { id: BigInt(id) },
-        data: { deletedAt: null },
+        data: { deleted_at: null },
       });
 
       // Restaurar memberships que foram deletados junto
       await tx.teamMembership.updateMany({
-        where: { teamId: BigInt(id), deletedAt: team.deletedAt },
-        data: { deletedAt: null },
+        where: { teamId: BigInt(id), deleted_at: team.deleted_at },
+        data: { deleted_at: null },
       });
     });
 
@@ -299,7 +299,7 @@ export class TeamsService extends SoftDeleteService {
       where: {
         teamId_userId: { teamId: BigInt(teamId), userId: BigInt(userId) },
       },
-      data: { deletedAt: new Date() },
+      data: { deleted_at: new Date() },
     });
     return this.get(teamId);
   }

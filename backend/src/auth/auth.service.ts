@@ -67,7 +67,7 @@ export class AuthService extends SoftDeleteService {
 
   async getProfile(userId: any) {
     const u = await this.prisma.user.findFirst({
-      where: this.addSoftDeleteFilter({ id: userId }),
+      where: this.addSoftDeleteFilter({ id: BigInt(userId) }),
     });
     if (!u) {
       logger.debug({ userId }, "auth.profile.not_found");
@@ -76,7 +76,7 @@ export class AuthService extends SoftDeleteService {
 
     // Check if user is a manager by looking at management rules
     const managementRules = await this.prisma.managementRule.findMany({
-      where: this.addSoftDeleteFilter({ managerId: userId }),
+      where: this.addSoftDeleteFilter({ managerId: BigInt(userId) }),
     });
     const isManager = managementRules.length > 0;
 

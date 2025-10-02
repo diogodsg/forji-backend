@@ -10,12 +10,12 @@ export abstract class SoftDeleteService {
   constructor(protected readonly prisma: PrismaService) {}
 
   /**
-   * Adiciona automaticamente a condição deletedAt: null nas consultas
+   * Adiciona automaticamente a condição deleted_at: null nas consultas
    */
   protected addSoftDeleteFilter(where: any = {}) {
     return {
       ...where,
-      deletedAt: null,
+      deleted_at: null,
     };
   }
 
@@ -25,7 +25,7 @@ export abstract class SoftDeleteService {
   protected async softDelete(model: string, id: number | bigint) {
     return (this.prisma as any)[model].update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { deleted_at: new Date() },
     });
   }
 
@@ -35,7 +35,7 @@ export abstract class SoftDeleteService {
   protected async softDeleteMany(model: string, where: any) {
     return (this.prisma as any)[model].updateMany({
       where,
-      data: { deletedAt: new Date() },
+      data: { deleted_at: new Date() },
     });
   }
 
@@ -45,7 +45,7 @@ export abstract class SoftDeleteService {
   protected async restore(model: string, id: number | bigint) {
     return (this.prisma as any)[model].update({
       where: { id },
-      data: { deletedAt: null },
+      data: { deleted_at: null },
     });
   }
 
@@ -64,7 +64,7 @@ export abstract class SoftDeleteService {
       ...args,
       where: {
         ...args.where,
-        deletedAt: { not: null },
+        deleted_at: { not: null },
       },
     });
   }
