@@ -53,7 +53,7 @@ export const EditablePdiView: React.FC<Props> = ({
   // Use o PDI do ciclo selecionado - memoizado para evitar recriações
   const currentPlan = useMemo(
     () => getCurrentPdiPlan(),
-    [selectedCycle, initialPlan.userId, initialPlan.updatedAt]
+    [getCurrentPdiPlan]
   );
   const { state, dispatch, toggleSection, toggleMilestone } =
     usePdiEditing(currentPlan);

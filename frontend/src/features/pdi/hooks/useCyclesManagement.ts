@@ -3,45 +3,27 @@ import type { PdiCycle, PdiPlan } from "../types/pdi";
 
 export function useCyclesManagement(initialPlan: PdiPlan) {
   // Se o plano já tem ciclos, use-os; senão, crie um ciclo padrão com o PDI atual
-  const [cycles, setCycles] = useState<PdiCycle[]>(() => {
-    if (initialPlan.cycles && initialPlan.cycles.length > 0) {
-      return initialPlan.cycles;
-    }
-
-    // Migrar PDI atual para um ciclo padrão
-    const defaultCycle: PdiCycle = {
-      id: `cycle-${Date.now()}`,
-      title: "Ciclo Principal",
-      description: "Ciclo principal de desenvolvimento",
-      startDate: new Date().toISOString().split("T")[0],
-      endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0], // 90 dias
-      status: "active",
-      pdi: {
-        competencies: initialPlan.competencies || [],
-        milestones: initialPlan.milestones || [],
-        krs: initialPlan.krs || [],
-        records: initialPlan.records || [],
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    return [defaultCycle];
-  });
+  const [cycles, setCycles] = useState<PdiCycle[]>(() => initialPlan.cycles || []);
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>("");
 
   // Inicializar o selectedCycleId quando cycles estiver pronto
   useEffect(() => {
-    if (cycles.length > 0 && !selectedCycleId) {
+    if (cycles.length > 0) {
+      // Sempre priorizar ciclo ativo vindo do backend
       const activeCycle = cycles.find((c) => c.status === "active");
-      setSelectedCycleId(activeCycle?.id || cycles[0]?.id || "");
+      if (!selectedCycleId) {
+        setSelectedCycleId(activeCycle?.id || cycles[0].id);
+      } else {
+        // Se o selecionado não existe mais, fallback
+        if (!cycles.some(c => c.id === selectedCycleId)) {
+          setSelectedCycleId(activeCycle?.id || cycles[0].id);
+        }
+      }
     }
   }, [cycles, selectedCycleId]);
 
-  const selectedCycle = cycles.find((c) => c.id === selectedCycleId);
+  const selectedCycle = cycles.find((c) => c.id === selectedCycleId) || cycles.find(c => c.status === 'active');
 
   const createCycle = useCallback(
     (cycleData: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">) => {
@@ -115,19 +97,14 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
 
   // Gerar PdiPlan compatível para o ciclo selecionado
   const getCurrentPdiPlan = useCallback((): PdiPlan => {
-    if (!selectedCycle) {
-      return initialPlan;
-    }
-
+    if (!selectedCycle) return initialPlan;
     return {
       ...initialPlan,
       cycles,
-      // Usar dados do ciclo selecionado para compatibilidade
       competencies: selectedCycle.pdi.competencies,
       milestones: selectedCycle.pdi.milestones,
       krs: selectedCycle.pdi.krs,
       records: selectedCycle.pdi.records,
-      // Manter o updatedAt do initialPlan para evitar loops
       updatedAt: initialPlan.updatedAt,
     };
   }, [selectedCycle, cycles, initialPlan]);
