@@ -1,35 +1,86 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiTarget, FiCalendar, FiBarChart } from "react-icons/fi";
 import { CyclesManager } from "./cycles/CyclesManager";
 import type { PdiCycle } from "../types/pdi";
 
 interface PdiTabsProps {
-  // Ciclos
-  cycles: PdiCycle[];
-  selectedCycleId: string;
-  onCreateCycle: (
-    cycle: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">
-  ) => void;
-  onUpdateCycle: (cycleId: string, updates: Partial<PdiCycle>) => void;
-  onDeleteCycle: (cycleId: string) => void;
-  onSelectCycle: (cycleId: string) => void;
-
-  // Conteúdo das abas
   pdiContent: React.ReactNode;
   statisticsContent?: React.ReactNode;
 }
 
-export function PdiTabs({
-  cycles,
-  selectedCycleId,
-  onCreateCycle,
-  onUpdateCycle,
-  onDeleteCycle,
-  onSelectCycle,
-  pdiContent,
-  statisticsContent,
-}: PdiTabsProps) {
+import { fetchMyCycles, createCycle, updateCycle, deleteCycle } from '../api/cycles';
+
+export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
   const [activeTab, setActiveTab] = useState<"cycles" | "pdi" | "stats">("pdi");
+  const [cycles, setCycles] = useState<PdiCycle[]>([]);
+  const [selectedCycleId, setSelectedCycleId] = useState<string>("");
+  // Futuro: estados de loading e erro podem ser expostos na UI
+  // const [loadingCycles, setLoadingCycles] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
+
+  async function load() {
+  // setLoadingCycles(true);
+  // setError(null);
+    try {
+      const data = await fetchMyCycles();
+      setCycles(data);
+      if (data.length && !selectedCycleId) {
+        const active = data.find(c => c.status === 'active') || data[0];
+        setSelectedCycleId(active.id);
+      }
+    } catch (e: any) {
+      // setError(e.message || 'Falha ao carregar ciclos');
+    } finally {
+      // setLoadingCycles(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function handleCreateCycle(cyclePartial: Omit<PdiCycle, 'id' | 'createdAt' | 'updatedAt'>) {
+    // Mapear estrutura inversa para payload server
+    const payload = {
+      title: cyclePartial.title,
+      description: cyclePartial.description,
+      startDate: cyclePartial.startDate,
+      endDate: cyclePartial.endDate,
+      competencies: cyclePartial.pdi.competencies,
+      krs: cyclePartial.pdi.krs,
+      milestones: cyclePartial.pdi.milestones,
+      records: cyclePartial.pdi.records,
+    };
+    const created = await createCycle(payload);
+    setCycles(prev => [...prev, created]);
+  }
+
+  async function handleUpdateCycle(id: string, updates: Partial<PdiCycle>) {
+    const payload: any = {};
+    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.description !== undefined) payload.description = updates.description;
+    if (updates.startDate !== undefined) payload.startDate = updates.startDate;
+    if (updates.endDate !== undefined) payload.endDate = updates.endDate;
+    if (updates.status !== undefined) payload.status = updates.status.toUpperCase();
+    if (updates.pdi) {
+      if (updates.pdi.competencies) payload.competencies = updates.pdi.competencies;
+      if (updates.pdi.krs) payload.krs = updates.pdi.krs;
+      if (updates.pdi.milestones) payload.milestones = updates.pdi.milestones;
+      if (updates.pdi.records) payload.records = updates.pdi.records;
+    }
+    const updated = await updateCycle(id, payload);
+    setCycles(prev => prev.map(c => c.id === id ? updated : c));
+  }
+
+  async function handleDeleteCycle(id: string) {
+    await deleteCycle(id);
+    setCycles(prev => prev.filter(c => c.id !== id));
+    if (selectedCycleId === id) setSelectedCycleId("");
+  }
+
+  function handleSelectCycle(id: string) {
+    setSelectedCycleId(id);
+  }
 
   const baseTabs = [
     {
@@ -47,10 +98,10 @@ export function PdiTabs({
         <CyclesManager
           cycles={cycles}
           selectedCycleId={selectedCycleId}
-          onCreateCycle={onCreateCycle}
-          onUpdateCycle={onUpdateCycle}
-          onDeleteCycle={onDeleteCycle}
-          onSelectCycle={onSelectCycle}
+          onCreateCycle={handleCreateCycle}
+          onUpdateCycle={handleUpdateCycle}
+          onDeleteCycle={handleDeleteCycle}
+          onSelectCycle={handleSelectCycle}
           editing={true}
         />
       ),
