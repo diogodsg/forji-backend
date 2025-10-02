@@ -3,7 +3,9 @@ import type { PdiCycle, PdiPlan } from "../types/pdi";
 
 export function useCyclesManagement(initialPlan: PdiPlan) {
   // Se o plano já tem ciclos, use-os; senão, crie um ciclo padrão com o PDI atual
-  const [cycles, setCycles] = useState<PdiCycle[]>(() => initialPlan.cycles || []);
+  const [cycles, setCycles] = useState<PdiCycle[]>(
+    () => initialPlan.cycles || []
+  );
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>("");
 
@@ -16,14 +18,16 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
         setSelectedCycleId(activeCycle?.id || cycles[0].id);
       } else {
         // Se o selecionado não existe mais, fallback
-        if (!cycles.some(c => c.id === selectedCycleId)) {
+        if (!cycles.some((c) => c.id === selectedCycleId)) {
           setSelectedCycleId(activeCycle?.id || cycles[0].id);
         }
       }
     }
   }, [cycles, selectedCycleId]);
 
-  const selectedCycle = cycles.find((c) => c.id === selectedCycleId) || cycles.find(c => c.status === 'active');
+  const selectedCycle =
+    cycles.find((c) => c.id === selectedCycleId) ||
+    cycles.find((c) => c.status === "active");
 
   const createCycle = useCallback(
     (cycleData: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">) => {
@@ -52,6 +56,15 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
     },
     []
   );
+
+  // Permite substituir (ou inserir) um ciclo vindo do backend (ex: fetch histórico)
+  const replaceCycle = useCallback((incoming: PdiCycle) => {
+    setCycles((prev) => {
+      const exists = prev.some((c) => c.id === incoming.id);
+      if (exists) return prev.map((c) => (c.id === incoming.id ? incoming : c));
+      return [...prev, incoming];
+    });
+  }, []);
 
   const deleteCycle = useCallback(
     (cycleId: string) => {
@@ -105,7 +118,8 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
       milestones: selectedCycle.pdi.milestones,
       krs: selectedCycle.pdi.krs,
       records: selectedCycle.pdi.records,
-      updatedAt: initialPlan.updatedAt,
+      // usar updatedAt do ciclo selecionado para forçar reinit no editor quando troca
+      updatedAt: selectedCycle.updatedAt,
     };
   }, [selectedCycle, cycles, initialPlan]);
 
@@ -114,8 +128,10 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
     selectedCycleId,
     selectedCycle,
     setSelectedCycleId,
+    setCycles, // expõe para integração controlada
     createCycle,
     updateCycle,
+    replaceCycle,
     deleteCycle,
     updateSelectedCyclePdi,
     getCurrentPdiPlan,

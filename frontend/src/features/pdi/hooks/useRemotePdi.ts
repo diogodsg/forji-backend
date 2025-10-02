@@ -23,7 +23,7 @@ export function useRemotePdi(): RemoteState {
     setLoading(true);
     setError(null);
     try {
-  const data = await api<any>("/pdi/me", { auth: true });
+      const data = await api<any>("/pdi/me", { auth: true });
       if (data) {
         const planData: PdiPlan = {
           userId: String(data.userId),
@@ -33,7 +33,7 @@ export function useRemotePdi(): RemoteState {
             description: c.description ?? undefined,
             startDate: c.startDate,
             endDate: c.endDate,
-            status: (c.status || '').toLowerCase(),
+            status: (c.status || "").toLowerCase(),
             pdi: {
               competencies: c.competencies || [],
               milestones: c.milestones || [],
@@ -92,7 +92,7 @@ export function useRemotePdi(): RemoteState {
             description: c.description ?? undefined,
             startDate: c.startDate,
             endDate: c.endDate,
-            status: (c.status || '').toLowerCase(),
+            status: (c.status || "").toLowerCase(),
             pdi: {
               competencies: c.competencies || [],
               milestones: c.milestones || [],
@@ -142,7 +142,7 @@ export function useRemotePdi(): RemoteState {
             description: c.description ?? undefined,
             startDate: c.startDate,
             endDate: c.endDate,
-            status: (c.status || '').toLowerCase(),
+            status: (c.status || "").toLowerCase(),
             pdi: {
               competencies: c.competencies || [],
               milestones: c.milestones || [],

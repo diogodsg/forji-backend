@@ -7,39 +7,99 @@ import type { PdiCycle } from "../types/pdi";
 interface PdiTabsProps {
   pdiContent: React.ReactNode;
   statisticsContent?: React.ReactNode;
+  // Controlled cycles API (opcional). Se fornecido, componente não faz fetch inicial.
+  cycles?: PdiCycle[];
+  selectedCycleId?: string;
+  onSelectCycle?: (id: string) => void;
+  onCreateCycle?: (
+    cycle: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">
+  ) => void;
+  onUpdateCycle?: (id: string, updates: Partial<PdiCycle>) => void;
+  onDeleteCycle?: (id: string) => void;
+  onReplaceCycle?: (cycle: PdiCycle) => void; // usado quando buscamos snapshot histórico
 }
 
-import { fetchMyCycles, createCycle, updateCycle, deleteCycle } from '../api/cycles';
+import {
+  fetchMyCycles,
+  createCycle,
+  updateCycle,
+  deleteCycle,
+  fetchMyCycleById,
+} from "../api/cycles";
 
-export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
+export function PdiTabs({
+  pdiContent,
+  statisticsContent,
+  cycles: controlledCycles,
+  selectedCycleId: controlledSelectedId,
+  onSelectCycle,
+  onCreateCycle,
+  onUpdateCycle,
+  onDeleteCycle,
+  onReplaceCycle,
+}: PdiTabsProps) {
   const [activeTab, setActiveTab] = useState<"cycles" | "pdi" | "stats">("pdi");
-  const [cycles, setCycles] = useState<PdiCycle[]>([]);
-  const [selectedCycleId, setSelectedCycleId] = useState<string>("");
+  const [cycleLoading, setCycleLoading] = useState(false);
+  const isControlled = Array.isArray(controlledCycles);
+  const [uncontrolledCycles, setUncontrolledCycles] = useState<PdiCycle[]>([]);
+  const [uncontrolledSelectedId, setUncontrolledSelectedId] =
+    useState<string>("");
+  const cycles = isControlled
+    ? (controlledCycles as PdiCycle[])
+    : uncontrolledCycles;
+  const selectedCycleId = isControlled
+    ? controlledSelectedId || ""
+    : uncontrolledSelectedId;
   const [loadingCycles, setLoadingCycles] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
-  setLoadingCycles(true);
-  setError(null);
+    if (isControlled) return; // parent cuida
+    setLoadingCycles(true);
+    setError(null);
     try {
       const data = await fetchMyCycles();
-      setCycles(data);
-      if (data.length && !selectedCycleId) {
-        const active = data.find(c => c.status === 'active') || data[0];
-        setSelectedCycleId(active.id);
+      setUncontrolledCycles(data);
+      if (data.length && !uncontrolledSelectedId) {
+        const active = data.find((c) => c.status === "active") || data[0];
+        setUncontrolledSelectedId(active.id);
       }
     } catch (e: any) {
-      setError(e.message || 'Falha ao carregar ciclos');
+      setError(e.message || "Falha ao carregar ciclos");
     } finally {
       setLoadingCycles(false);
     }
   }
 
   useEffect(() => {
-    load();
+    if (!isControlled) load();
   }, []);
 
-  async function handleCreateCycle(cyclePartial: Omit<PdiCycle, 'id' | 'createdAt' | 'updatedAt'>) {
+  // Sincronizar mudança de cycles controlados para garantir seleção válida
+  useEffect(() => {
+    if (isControlled && controlledCycles) {
+      if (controlledCycles.length && !controlledSelectedId) {
+        const active =
+          controlledCycles.find((c) => c.status === "active") ||
+          controlledCycles[0];
+        onSelectCycle?.(active.id);
+      } else if (
+        controlledSelectedId &&
+        !controlledCycles.some((c) => c.id === controlledSelectedId)
+      ) {
+        const fallback = controlledCycles[0];
+        if (fallback) onSelectCycle?.(fallback.id);
+      }
+    }
+  }, [isControlled, controlledCycles, controlledSelectedId, onSelectCycle]);
+
+  async function handleCreateCycle(
+    cyclePartial: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">
+  ) {
+    if (isControlled) {
+      onCreateCycle?.(cyclePartial);
+      return;
+    }
     // Mapear estrutura inversa para payload server
     const payload = {
       title: cyclePartial.title,
@@ -52,34 +112,78 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
       records: cyclePartial.pdi.records,
     };
     const created = await createCycle(payload);
-    setCycles(prev => [...prev, created]);
+    setUncontrolledCycles((prev) => [...prev, created]);
   }
 
   async function handleUpdateCycle(id: string, updates: Partial<PdiCycle>) {
+    if (isControlled) {
+      onUpdateCycle?.(id, updates);
+      return;
+    }
     const payload: any = {};
     if (updates.title !== undefined) payload.title = updates.title;
-    if (updates.description !== undefined) payload.description = updates.description;
+    if (updates.description !== undefined)
+      payload.description = updates.description;
     if (updates.startDate !== undefined) payload.startDate = updates.startDate;
     if (updates.endDate !== undefined) payload.endDate = updates.endDate;
-    if (updates.status !== undefined) payload.status = updates.status.toUpperCase();
+    if (updates.status !== undefined)
+      payload.status = updates.status.toUpperCase();
     if (updates.pdi) {
-      if (updates.pdi.competencies) payload.competencies = updates.pdi.competencies;
+      if (updates.pdi.competencies)
+        payload.competencies = updates.pdi.competencies;
       if (updates.pdi.krs) payload.krs = updates.pdi.krs;
       if (updates.pdi.milestones) payload.milestones = updates.pdi.milestones;
       if (updates.pdi.records) payload.records = updates.pdi.records;
     }
     const updated = await updateCycle(id, payload);
-    setCycles(prev => prev.map(c => c.id === id ? updated : c));
+    setUncontrolledCycles((prev) =>
+      prev.map((c) => (c.id === id ? updated : c))
+    );
   }
 
   async function handleDeleteCycle(id: string) {
+    if (isControlled) {
+      onDeleteCycle?.(id);
+      return;
+    }
     await deleteCycle(id);
-    setCycles(prev => prev.filter(c => c.id !== id));
-    if (selectedCycleId === id) setSelectedCycleId("");
+    setUncontrolledCycles((prev) => prev.filter((c) => c.id !== id));
+    if (selectedCycleId === id) setUncontrolledSelectedId("");
   }
 
-  function handleSelectCycle(id: string) {
-    setSelectedCycleId(id);
+  async function handleSelectCycle(id: string) {
+    setCycleLoading(true);
+    if (isControlled) {
+      onSelectCycle?.(id);
+    } else {
+      setUncontrolledSelectedId(id);
+    }
+    const existing = cycles.find((c) => c.id === id);
+    const looksEmpty =
+      existing &&
+      (existing.pdi.competencies?.length ?? 0) +
+        (existing.pdi.milestones?.length ?? 0) +
+        (existing.pdi.krs?.length ?? 0) +
+        (existing.pdi.records?.length ?? 0) ===
+        0;
+    if (!existing || looksEmpty) {
+      try {
+        const fresh = await fetchMyCycleById(id);
+        if (isControlled) {
+          onReplaceCycle?.(fresh);
+        } else {
+          setUncontrolledCycles((prev) => {
+            const has = prev.some((c) => c.id === fresh.id);
+            return has
+              ? prev.map((c) => (c.id === fresh.id ? fresh : c))
+              : [...prev, fresh];
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    setCycleLoading(false);
   }
 
   const baseTabs = [
@@ -87,7 +191,34 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
       id: "pdi" as const,
       label: "PDI",
       icon: FiTarget,
-      content: pdiContent,
+      content: (
+        <div className="space-y-4">
+          {cycles.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="font-medium text-gray-600">Ciclo:</span>
+              {cycles.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => handleSelectCycle(c.id)}
+                  className={`px-2.5 py-1 rounded-md border transition-colors ${
+                    c.id === selectedCycleId
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600"
+                  }`}
+                >
+                  {c.title}
+                </button>
+              ))}
+            </div>
+          )}
+          {(!cycleLoading || activeTab !== "pdi") && pdiContent}
+          {cycleLoading && activeTab === "pdi" && (
+            <div className="p-4 rounded-md border border-gray-200 bg-gray-50 animate-pulse text-xs text-gray-600">
+              Carregando ciclo...
+            </div>
+          )}
+        </div>
+      ),
       description: "Competências, objetivos e marcos",
     },
     {
@@ -123,8 +254,10 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
     : baseTabs;
 
   const currentTab = tabs.find((tab) => tab.id === activeTab);
-  const activeCycle = cycles.find(c => c.status === 'active');
-  const currentCycle = cycles.find(c => c.id === selectedCycleId) || activeCycle;
+  const activeCycle = cycles.find((c) => c.status === "active");
+  const currentCycle =
+    cycles.find((c) => c.id === selectedCycleId) || activeCycle;
+  const isHistorical = currentCycle && currentCycle.status === "completed";
 
   return (
     <div className="space-y-4">
@@ -176,7 +309,7 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
       )}
 
       {/* Feedback de ciclos (apenas quando tab cycles ativa) */}
-      {activeTab === 'cycles' && (
+      {activeTab === "cycles" && (
         <div className="space-y-3">
           {loadingCycles && (
             <div className="p-4 border border-indigo-200 rounded-lg bg-indigo-50 animate-pulse text-sm text-indigo-700">
@@ -198,7 +331,18 @@ export function PdiTabs({ pdiContent, statisticsContent }: PdiTabsProps) {
       )}
 
       {/* Conteúdo da aba ativa */}
-      <div className="min-h-[400px]">{currentTab?.content}</div>
+      <div className="space-y-4 min-h-[400px]">
+        {activeTab === "pdi" && isHistorical && (
+          <div className="p-3 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-start gap-2">
+            <span className="font-medium">Ciclo Histórico:</span>
+            <span>
+              Você está visualizando um ciclo concluído. O conteúdo é um
+              snapshot e não pode ser editado.
+            </span>
+          </div>
+        )}
+        {currentTab?.content}
+      </div>
     </div>
   );
 }

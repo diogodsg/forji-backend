@@ -14,38 +14,68 @@ export class TeamsService extends SoftDeleteService {
     super(prisma);
   }
 
+  private normalizeTeam(raw: any, summaryOnly: boolean) {
+    if (!raw) return raw;
+    // Prisma relation now is TeamMembership[] with nested User; we expose legacy shape 'memberships'
+    const membershipsSrc: any[] = raw.TeamMembership || [];
+    const memberships = membershipsSrc.map((m) => {
+      if (summaryOnly) {
+        return { role: m.role };
+      }
+      return {
+        role: m.role,
+        user: m.User ? { ...m.User } : undefined,
+      };
+    });
+    const { TeamMembership, ...rest } = raw;
+    return { ...rest, memberships };
+  }
+
   list(summaryOnly = false) {
-    return (this.prisma as any).team.findMany({
-      where: this.addSoftDeleteFilter({}),
-      orderBy: { id: "asc" },
-      include: summaryOnly
-        ? {
-            memberships: {
-              where: this.addSoftDeleteFilter({}),
-              select: { role: true },
-            },
-          }
-        : {
-            memberships: {
-              where: this.addSoftDeleteFilter({}),
-              include: {
-                user: { select: { id: true, name: true, email: true } },
+    return (this.prisma as any).team
+      .findMany({
+        where: this.addSoftDeleteFilter({}),
+        orderBy: { id: "asc" },
+        include: summaryOnly
+          ? {
+              TeamMembership: {
+                where: this.addSoftDeleteFilter({}),
+                select: { role: true },
+              },
+            }
+          : {
+              TeamMembership: {
+                where: this.addSoftDeleteFilter({}),
+                include: {
+                  User: { select: { id: true, name: true, email: true } },
+                },
+                orderBy: { createdAt: "asc" },
               },
             },
-          },
-    });
+      })
+      .then((teams: any[]) =>
+        teams.map((t) => this.normalizeTeam(t, summaryOnly))
+      );
   }
 
   listManagedBy(userId: number) {
-    return (this.prisma as any).team.findMany({
-      orderBy: { id: "asc" },
-      where: {
-        memberships: {
-          some: { userId: BigInt(userId), role: "MANAGER" },
+    return (this.prisma as any).team
+      .findMany({
+        orderBy: { id: "asc" },
+        where: {
+          TeamMembership: {
+            some: { userId: BigInt(userId), role: "MANAGER", deleted_at: null },
+          },
+          deleted_at: null,
         },
-      },
-      include: { memberships: { select: { role: true } } },
-    });
+        include: {
+          TeamMembership: {
+            select: { role: true },
+            where: { deleted_at: null },
+          },
+        },
+      })
+      .then((teams: any[]) => teams.map((t) => this.normalizeTeam(t, true)));
   }
 
   async metrics() {
@@ -82,42 +112,43 @@ export class TeamsService extends SoftDeleteService {
   }
 
   async get(id: number) {
-    const team = await (this.prisma as any).team.findFirst({
+    const teamRaw = await (this.prisma as any).team.findFirst({
       where: this.addSoftDeleteFilter({ id: BigInt(id) }),
       include: {
-        memberships: {
+        TeamMembership: {
           where: this.addSoftDeleteFilter({}),
-          include: { user: { select: { id: true, name: true, email: true } } },
+          include: { User: { select: { id: true, name: true, email: true } } },
           orderBy: { createdAt: "asc" },
         },
       },
     });
-    if (!team) throw new NotFoundException("Team not found");
-    return team;
+    if (!teamRaw) throw new NotFoundException("Team not found");
+    return this.normalizeTeam(teamRaw, false);
   }
 
   async create(data: CreateTeamDto, requesterId: number) {
     // Criador se torna MANAGER automaticamente
-    return (this.prisma as any).team.create({
+    const created = await (this.prisma as any).team.create({
       data: {
         name: data.name.trim(),
         description: data.description?.trim(),
-        memberships: {
+        TeamMembership: {
           create: { userId: BigInt(requesterId), role: "MANAGER" },
         },
       },
       include: {
-        memberships: {
-          include: { user: { select: { id: true, name: true, email: true } } },
+        TeamMembership: {
+          include: { User: { select: { id: true, name: true, email: true } } },
         },
       },
     });
+    return this.normalizeTeam(created, false);
   }
 
   async update(id: number, data: UpdateTeamDto, requesterId: number) {
     const can = await this.permissions.canManageTeam(requesterId, id);
     if (!can) throw new BadRequestException("Not allowed");
-    return (this.prisma as any).team.update({
+    const updated = await (this.prisma as any).team.update({
       where: { id: BigInt(id) },
       data: {
         name: data.name?.trim(),
@@ -127,11 +158,12 @@ export class TeamsService extends SoftDeleteService {
             : data.description?.trim() || null,
       },
       include: {
-        memberships: {
-          include: { user: { select: { id: true, name: true, email: true } } },
+        TeamMembership: {
+          include: { User: { select: { id: true, name: true, email: true } } },
         },
       },
     });
+    return this.normalizeTeam(updated, false);
   }
 
   async delete(id: number, requesterId: number) {
@@ -188,7 +220,7 @@ export class TeamsService extends SoftDeleteService {
 
     // Verificar se a equipe existe e está deletada
     const team = await (this.prisma as any).team.findFirst({
-  where: { id: BigInt(id), deleted_at: { not: null } },
+      where: { id: BigInt(id), deleted_at: { not: null } },
     });
     if (!team) throw new NotFoundException("Deleted team not found");
 

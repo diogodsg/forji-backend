@@ -13,7 +13,7 @@ export class TestController {
           id: true,
           email: true,
           name: true,
-          githubId: true,
+          github_id: true,
           isAdmin: true,
           position: true,
           bio: true,
@@ -26,8 +26,9 @@ export class TestController {
       return {
         success: true,
         count: users.length,
-        users: users.map((user) => ({
+        users: users.map((user: any) => ({
           ...user,
+          githubId: user.github_id,
           managers: [],
           reports: [],
         })),

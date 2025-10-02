@@ -38,6 +38,49 @@ export class ManagementService extends SoftDeleteService {
       );
     }
 
+    // Verificar se já existe uma regra igual (soft-delete aware)
+    const existing = await this.prisma.managementRule.findFirst({
+      where: this.addSoftDeleteFilter({
+        managerId: BigInt(managerId),
+        ruleType: rule.ruleType,
+        teamId: rule.teamId ? BigInt(rule.teamId) : null,
+        subordinateId: rule.subordinateId ? BigInt(rule.subordinateId) : null,
+      }),
+      include: {
+        Team: true,
+        User_ManagementRule_subordinateIdToUser: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+    if (existing) return existing; // idempotente
+
+    // Se havia uma mesma combinação deletada anteriormente, restaurar ao invés de criar outra
+    const softDeleted = await this.prisma.managementRule.findFirst({
+      where: {
+        managerId: BigInt(managerId),
+        ruleType: rule.ruleType,
+        teamId: rule.teamId ? BigInt(rule.teamId) : null,
+        subordinateId: rule.subordinateId ? BigInt(rule.subordinateId) : null,
+        deleted_at: { not: null },
+      },
+    });
+    if (softDeleted) {
+      await this.prisma.managementRule.update({
+        where: { id: softDeleted.id },
+        data: { deleted_at: null },
+      });
+      return this.prisma.managementRule.findFirst({
+        where: { id: softDeleted.id },
+        include: {
+          Team: true,
+          User_ManagementRule_subordinateIdToUser: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+      });
+    }
+
     return this.prisma.managementRule.create({
       data: {
         managerId: BigInt(managerId),
@@ -93,7 +136,9 @@ export class ManagementService extends SoftDeleteService {
 
     // Separar regras por tipo para processamento otimizado
     const individualRules = (rules as any[]).filter(
-      (r) => r.ruleType === ManagementRuleType.INDIVIDUAL && r.User_ManagementRule_subordinateIdToUser
+      (r) =>
+        r.ruleType === ManagementRuleType.INDIVIDUAL &&
+        r.User_ManagementRule_subordinateIdToUser
     );
     const teamRules = (rules as any[]).filter(
       (r) => r.ruleType === ManagementRuleType.TEAM && r.Team
@@ -112,7 +157,7 @@ export class ManagementService extends SoftDeleteService {
 
     // Processar regras de equipe em batch se houver
     if (teamRules.length > 0) {
-  const teamIds = teamRules.map((rule: any) => rule.Team!.id);
+      const teamIds = teamRules.map((rule: any) => rule.Team!.id);
 
       // Buscar todos os membros de todas as equipes em uma única consulta
       const allTeamMembers = await this.prisma.teamMembership.findMany({

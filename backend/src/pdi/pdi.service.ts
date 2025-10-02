@@ -53,7 +53,7 @@ export class PdiService extends SoftDeleteService {
     // Anexar ciclos do usuário para permitir derivação no frontend
     const cycles = await this.prisma.pdiCycle.findMany({
       where: { userId, deleted_at: null },
-      orderBy: { startDate: 'desc' },
+      orderBy: { startDate: "desc" },
     });
     return { ...plan, cycles } as any;
   }
@@ -103,7 +103,10 @@ export class PdiService extends SoftDeleteService {
         "pdi.create userId=%d",
         userId
       );
-      const cycles = await this.prisma.pdiCycle.findMany({ where: { userId, deleted_at: null }, orderBy: { startDate: 'desc' } });
+      const cycles = await this.prisma.pdiCycle.findMany({
+        where: { userId, deleted_at: null },
+        orderBy: { startDate: "desc" },
+      });
       return { ...created, cycles } as any;
     }
     const updated = await this.prisma.pdiPlan.update({
@@ -145,7 +148,10 @@ export class PdiService extends SoftDeleteService {
       "pdi.update userId=%d",
       userId
     );
-    const cycles = await this.prisma.pdiCycle.findMany({ where: { userId, deleted_at: null }, orderBy: { startDate: 'desc' } });
+    const cycles = await this.prisma.pdiCycle.findMany({
+      where: { userId, deleted_at: null },
+      orderBy: { startDate: "desc" },
+    });
     return { ...updated, cycles } as any;
   }
   async patch(userId: number, partial: Partial<PdiPlanDto>) {
@@ -192,7 +198,10 @@ export class PdiService extends SoftDeleteService {
       "pdi.patch userId=%d",
       userId
     );
-    const cycles = await this.prisma.pdiCycle.findMany({ where: { userId, deleted_at: null }, orderBy: { startDate: 'desc' } });
+    const cycles = await this.prisma.pdiCycle.findMany({
+      where: { userId, deleted_at: null },
+      orderBy: { startDate: "desc" },
+    });
     return { ...updated, cycles } as any;
   }
   async delete(userId: number) {

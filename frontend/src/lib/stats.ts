@@ -1,7 +1,7 @@
 import type { PdiPlan } from "../features/pdi";
 
 function computeTemporalProgress(plan: PdiPlan): number {
-  const activeCycle = plan.cycles?.find(c => c.status === 'active');
+  const activeCycle = plan.cycles?.find((c) => c.status === "active");
   if (!activeCycle) return 0;
   const start = new Date(activeCycle.startDate).getTime();
   const end = new Date(activeCycle.endDate).getTime();

@@ -1,4 +1,4 @@
-import { api } from '../../../lib/apiClient';
+import { api } from "../../../lib/apiClient";
 
 export interface ServerPdiCycle {
   id: number;
@@ -7,7 +7,7 @@ export interface ServerPdiCycle {
   description?: string | null;
   startDate: string;
   endDate: string;
-  status: 'PLANNED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ARCHIVED';
+  status: "PLANNED" | "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED";
   competencies: string[];
   krs?: any;
   milestones: any;
@@ -25,7 +25,12 @@ export function mapServerCycle(c: ServerPdiCycle) {
     description: c.description ?? undefined,
     startDate: c.startDate,
     endDate: c.endDate,
-    status: c.status.toLowerCase().replace('planned','planned').replace('active','active').replace('completed','completed').replace('paused','paused') as any,
+    status: c.status
+      .toLowerCase()
+      .replace("planned", "planned")
+      .replace("active", "active")
+      .replace("completed", "completed")
+      .replace("paused", "paused") as any,
     pdi: {
       competencies: c.competencies ?? [],
       milestones: c.milestones ?? [],
@@ -42,6 +47,13 @@ export async function fetchMyCycles() {
   return data.map(mapServerCycle);
 }
 
+export async function fetchMyCycleById(cycleId: string | number) {
+  const data = await api<ServerPdiCycle>(`/pdi/cycles/me/${cycleId}`, {
+    auth: true,
+  });
+  return mapServerCycle(data);
+}
+
 export async function createCycle(payload: {
   title: string;
   description?: string;
@@ -53,7 +65,7 @@ export async function createCycle(payload: {
   records: any;
 }) {
   const data = await api<ServerPdiCycle>(`/pdi/cycles`, {
-    method: 'POST',
+    method: "POST",
     auth: true,
     body: JSON.stringify(payload),
   });
@@ -62,7 +74,7 @@ export async function createCycle(payload: {
 
 export async function updateCycle(id: string | number, partial: any) {
   const data = await api<ServerPdiCycle>(`/pdi/cycles/${id}`, {
-    method: 'PATCH',
+    method: "PATCH",
     auth: true,
     body: JSON.stringify(partial),
   });
@@ -71,7 +83,7 @@ export async function updateCycle(id: string | number, partial: any) {
 
 export async function changeCycleStatus(id: string | number, status: string) {
   const data = await api<ServerPdiCycle>(`/pdi/cycles/${id}/status`, {
-    method: 'PATCH',
+    method: "PATCH",
     auth: true,
     body: JSON.stringify({ status: status.toUpperCase() }),
   });
@@ -79,5 +91,5 @@ export async function changeCycleStatus(id: string | number, status: string) {
 }
 
 export async function deleteCycle(id: string | number) {
-  await api(`/pdi/cycles/${id}`, { method: 'DELETE', auth: true });
+  await api(`/pdi/cycles/${id}`, { method: "DELETE", auth: true });
 }

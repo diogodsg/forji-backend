@@ -66,12 +66,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, new AdminGuard())
   async listUsers() {
     const users = await this.prisma.user.findMany({
-      where: { deletedAt: null },
+      where: { deleted_at: null },
       select: {
         id: true,
         email: true,
         name: true,
-        githubId: true,
+        github_id: true,
         isAdmin: true,
         position: true,
         bio: true,
@@ -104,7 +104,7 @@ export class AuthController {
           password: hash,
           name: body.name,
           isAdmin: body.isAdmin || false,
-          githubId: body.githubId || null,
+          github_id: body.githubId || null,
           position: body.position?.trim() || null,
         },
       });
@@ -123,7 +123,7 @@ export class AuthController {
     // Soft delete do usuário
     await this.prisma.user.update({
       where: { id: body.userId },
-      data: { deletedAt: new Date() },
+      data: { deleted_at: new Date() },
     });
     return { success: true };
   }
@@ -134,7 +134,7 @@ export class AuthController {
     // Restaurar usuário soft deleted
     await this.prisma.user.update({
       where: { id: body.userId },
-      data: { deletedAt: null },
+      data: { deleted_at: null },
     });
     return { success: true };
   }
@@ -154,8 +154,8 @@ export class AuthController {
   async adminSetGithubId(@Body() body: SetGithubIdDto) {
     const updated = await this.prisma.user.update({
       where: { id: body.userId },
-      data: { githubId: body.githubId },
-      select: { id: true, githubId: true },
+      data: { github_id: body.githubId },
+      select: { id: true, github_id: true },
     });
     return updated;
   }
@@ -218,21 +218,21 @@ export class AuthController {
     @Body() body: AdminChangePasswordDto
   ): Promise<{ success: boolean; generatedPassword?: string }> {
     const bcrypt = await import("bcryptjs");
-    
+
     // Se não forneceu senha, gera uma automaticamente
     const newPassword = body.newPassword || this.generateRandomPassword(12);
     const hash = await bcrypt.hash(newPassword, 10);
-    
+
     await this.prisma.user.update({
       where: { id: BigInt(body.userId) },
       data: { password: hash },
     });
-    
+
     // Se gerou automaticamente, retorna a senha para mostrar ao admin
     if (!body.newPassword) {
       return { success: true, generatedPassword: newPassword };
     }
-    
+
     return { success: true };
   }
 }

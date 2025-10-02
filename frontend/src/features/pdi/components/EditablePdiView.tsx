@@ -46,15 +46,13 @@ export const EditablePdiView: React.FC<Props> = ({
     createCycle,
     updateCycle,
     deleteCycle,
+    replaceCycle,
     updateSelectedCyclePdi,
     getCurrentPdiPlan,
   } = useCyclesManagement(initialPlan);
 
   // Use o PDI do ciclo selecionado - memoizado para evitar recriações
-  const currentPlan = useMemo(
-    () => getCurrentPdiPlan(),
-    [getCurrentPdiPlan]
-  );
+  const currentPlan = useMemo(() => getCurrentPdiPlan(), [getCurrentPdiPlan]);
   const { state, dispatch, toggleSection, toggleMilestone } =
     usePdiEditing(currentPlan);
   const working = state.working;
@@ -144,6 +142,8 @@ export const EditablePdiView: React.FC<Props> = ({
     dispatch({ type: "UPDATE_KR", id, patch });
   const removeKr = (id: string) => dispatch({ type: "REMOVE_KR", id });
 
+  const isHistorical = selectedCycle?.status === "completed";
+
   const pdiContent = (
     <div className="space-y-10">
       <CollapsibleSectionCard
@@ -221,27 +221,29 @@ export const EditablePdiView: React.FC<Props> = ({
           )
         }
         action={
-          <button
-            onClick={() => toggleSection("krs")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all ${
-              editingSections.krs
-                ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
-                : "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-            }`}
-          >
-            {editingSections.krs ? (
-              <>
-                <FiCheckSquare className="w-3.5 h-3.5" /> Concluir Edição
-              </>
-            ) : (
-              <>
-                <FiEdit2 className="w-3.5 h-3.5" /> Editar KRs
-              </>
-            )}
-          </button>
+          !isHistorical && (
+            <button
+              onClick={() => toggleSection("krs")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all ${
+                editingSections.krs
+                  ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                  : "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+              }`}
+            >
+              {editingSections.krs ? (
+                <>
+                  <FiCheckSquare className="w-3.5 h-3.5" /> Concluir Edição
+                </>
+              ) : (
+                <>
+                  <FiEdit2 className="w-3.5 h-3.5" /> Editar KRs
+                </>
+              )}
+            </button>
+          )
         }
       >
-        {editingSections.krs ? (
+        {editingSections.krs && !isHistorical ? (
           <KeyResultsEditor
             krs={working.krs || []}
             onAdd={addKr}
@@ -256,7 +258,10 @@ export const EditablePdiView: React.FC<Props> = ({
       <CompetenciesAndResultsSection
         competencies={working.competencies}
         records={working.records}
-        editing={editingSections.competencies || editingSections.results}
+        editing={
+          !isHistorical &&
+          (editingSections.competencies || editingSections.results)
+        }
         preview={
           <div className="space-y-4">
             {/* Badges de estatísticas */}
@@ -373,6 +378,7 @@ export const EditablePdiView: React.FC<Props> = ({
           </div>
         }
         onToggleEdit={() => {
+          if (isHistorical) return;
           // Toggle ambas as seções juntas
           const isAnyEditing =
             editingSections.competencies || editingSections.results;
@@ -399,9 +405,16 @@ export const EditablePdiView: React.FC<Props> = ({
         onRemove={removeMilestone}
         onUpdate={updateMilestone}
         editingIds={editingMilestones}
-        onToggleEdit={toggleMilestone}
-        enableSort={!saving && !pendingSave && editingMilestones.size === 0}
-        editing={editingMilestones.size > 0}
+        onToggleEdit={(id) => {
+          if (!isHistorical) toggleMilestone(id);
+        }}
+        enableSort={
+          !isHistorical &&
+          !saving &&
+          !pendingSave &&
+          editingMilestones.size === 0
+        }
+        editing={!isHistorical && editingMilestones.size > 0}
       />
     </div>
   );
@@ -410,9 +423,9 @@ export const EditablePdiView: React.FC<Props> = ({
     <div className="space-y-4">
       <SaveStatusBar
         updatedAt={working.updatedAt}
-        saving={saving}
-        pending={pendingSave}
-        activeEditing={isAnythingEditing}
+        saving={isHistorical ? false : saving}
+        pending={isHistorical ? false : pendingSave}
+        activeEditing={!isHistorical && isAnythingEditing}
       />
 
       <PdiTabs
@@ -422,6 +435,7 @@ export const EditablePdiView: React.FC<Props> = ({
         onUpdateCycle={updateCycle}
         onDeleteCycle={deleteCycle}
         onSelectCycle={setSelectedCycleId}
+        onReplaceCycle={replaceCycle}
         pdiContent={pdiContent}
       />
     </div>

@@ -17,22 +17,22 @@ export function useRemotePdiForUser(userId?: number) {
       if (data) {
         const planData: PdiPlan = {
           userId: String(data.userId),
-            cycles: (data.cycles || []).map((c: any) => ({
-              id: String(c.id),
-              title: c.title,
-              description: c.description ?? undefined,
-              startDate: c.startDate,
-              endDate: c.endDate,
-              status: (c.status || '').toLowerCase(),
-              pdi: {
-                competencies: c.competencies || [],
-                milestones: c.milestones || [],
-                krs: c.krs || [],
-                records: c.records || [],
-              },
-              createdAt: c.createdAt,
-              updatedAt: c.updatedAt,
-            })),
+          cycles: (data.cycles || []).map((c: any) => ({
+            id: String(c.id),
+            title: c.title,
+            description: c.description ?? undefined,
+            startDate: c.startDate,
+            endDate: c.endDate,
+            status: (c.status || "").toLowerCase(),
+            pdi: {
+              competencies: c.competencies || [],
+              milestones: c.milestones || [],
+              krs: c.krs || [],
+              records: c.records || [],
+            },
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt,
+          })),
           competencies: data.competencies || [],
           milestones: data.milestones || [],
           krs: data.krs || [],
@@ -80,7 +80,7 @@ export function useRemotePdiForUser(userId?: number) {
           description: c.description ?? undefined,
           startDate: c.startDate,
           endDate: c.endDate,
-          status: (c.status || '').toLowerCase(),
+          status: (c.status || "").toLowerCase(),
           pdi: {
             competencies: c.competencies || [],
             milestones: c.milestones || [],

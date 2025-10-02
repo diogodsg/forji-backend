@@ -28,7 +28,7 @@ export class PrsService extends SoftDeleteService {
     if (filter?.ownerUserId) {
       const user = await this.prisma.user.findFirst({
         where: this.addSoftDeleteFilter({ id: filter.ownerUserId as any }),
-        select: { githubId: true },
+        select: { github_id: true },
       });
       const gh = (user as any)?.githubId?.trim?.();
       if (gh) {
@@ -76,27 +76,29 @@ export class PrsService extends SoftDeleteService {
       if (field && allowedSortFields.has(field)) orderBy = { [field]: dir };
     }
     const [rawItems, total, meta] = await Promise.all([
-      this.prisma.pullRequest.findMany({
+      this.prisma.pull_requests.findMany({
         where: this.addSoftDeleteFilter(where),
         orderBy,
         skip,
         take: pageSize,
       }),
-      this.prisma.pullRequest.count({ where: this.addSoftDeleteFilter(where) }),
+      this.prisma.pull_requests.count({
+        where: this.addSoftDeleteFilter(where),
+      }),
       (async () => {
         if (!filter?.includeMeta) return undefined;
         let metaWhere: any = undefined;
         if (filter?.ownerUserId) {
           const user = await this.prisma.user.findFirst({
             where: this.addSoftDeleteFilter({ id: filter.ownerUserId as any }),
-            select: { githubId: true },
+            select: { github_id: true },
           });
           const gh = (user as any)?.githubId?.trim?.();
           metaWhere = gh
             ? { OR: [{ ownerUserId: filter.ownerUserId as any }, { user: gh }] }
             : { ownerUserId: filter.ownerUserId as any };
         }
-        const distinct = await this.prisma.pullRequest.findMany({
+        const distinct = await this.prisma.pull_requests.findMany({
           where: metaWhere,
           select: { repo: true, user: true },
         });
@@ -142,7 +144,7 @@ export class PrsService extends SoftDeleteService {
     return { items, total, page, pageSize, meta };
   }
   get(id: number) {
-    return this.prisma.pullRequest.findFirst({
+    return this.prisma.pull_requests.findFirst({
       where: this.addSoftDeleteFilter({ id }),
     });
   }
@@ -183,7 +185,7 @@ export class PrsService extends SoftDeleteService {
     if (!data?.id) throw new Error("id is required");
     const mapped = this.mapIncoming(data);
     await this.assignOwnerUserId(mapped);
-    const created = await this.prisma.pullRequest.create({ data: mapped });
+    const created = await this.prisma.pull_requests.create({ data: mapped });
     logger.info(
       {
         msg: "prs.create",
@@ -198,14 +200,14 @@ export class PrsService extends SoftDeleteService {
     return created;
   }
   async update(id: number, data: any) {
-    const exists = await this.prisma.pullRequest.findFirst({
+    const exists = await this.prisma.pull_requests.findFirst({
       where: this.addSoftDeleteFilter({ id }),
     });
     if (!exists) throw new NotFoundException("PR not found");
     const mapped = this.mapIncoming(data);
     delete mapped.id;
     await this.assignOwnerUserId(mapped);
-    const updated = await this.prisma.pullRequest.update({
+    const updated = await this.prisma.pull_requests.update({
       where: { id },
       data: mapped,
     });
@@ -213,21 +215,21 @@ export class PrsService extends SoftDeleteService {
     return updated;
   }
   async remove(id: number) {
-    await this.softDelete("pullRequest", id);
+    await this.softDelete("pull_requests", id);
     logger.info({ msg: "prs.softDelete", id }, "prs.softDelete id=%s", id);
     return { deleted: true };
   }
 
   // Método para hard delete (apenas para admin ou casos especiais)
   async hardRemove(id: number) {
-    await this.hardDelete("pullRequest", id);
+    await this.hardDelete("pull_requests", id);
     logger.info({ msg: "prs.hardDelete", id }, "prs.hardDelete id=%s", id);
     return { deleted: true };
   }
 
   // Método para restaurar PR soft deleted
   async restorePr(id: number) {
-    await this.restore("pullRequest", id);
+    await this.restore("pull_requests", id);
     logger.info({ msg: "prs.restore", id }, "prs.restore id=%s", id);
     return { restored: true };
   }
@@ -236,7 +238,7 @@ export class PrsService extends SoftDeleteService {
     const gh = String(mapped.user).trim();
     if (!gh) return;
     const owner = (await this.prisma.user.findFirst({
-      where: this.addSoftDeleteFilter({ githubId: gh }),
+      where: this.addSoftDeleteFilter({ github_id: gh }),
     })) as any;
     if (owner) mapped.ownerUserId = owner.id as any;
   }

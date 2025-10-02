@@ -1,6 +1,15 @@
-import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, Length, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-import { PdiCycleStatus } from '@prisma/client';
+import {
+  IsArray,
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  ValidateNested,
+} from "class-validator";
+import { Type } from "class-transformer";
+import { PdiCycleStatus } from "@prisma/client";
 
 export class CreatePdiCycleDto {
   @IsString()

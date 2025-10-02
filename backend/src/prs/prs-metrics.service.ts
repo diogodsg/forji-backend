@@ -17,7 +17,7 @@ export class PrsMetricsService {
     if (filters.ownerUserId) {
       const user = await this.prisma.user.findFirst({
         where: { id: filters.ownerUserId as any },
-        select: { githubId: true },
+        select: { github_id: true },
       });
       const gh = (user as any)?.githubId?.trim?.();
       if (gh) {
@@ -34,11 +34,11 @@ export class PrsMetricsService {
       if (filters.until) where.createdAt.lte = new Date(filters.until);
     }
     const [total, merged, closed] = await Promise.all([
-      this.prisma.pullRequest.count({ where }),
-      this.prisma.pullRequest.count({
+      this.prisma.pull_requests.count({ where }),
+      this.prisma.pull_requests.count({
         where: { ...where, state: "merged" } as any,
       }),
-      this.prisma.pullRequest.count({
+      this.prisma.pull_requests.count({
         where: { ...where, state: "closed" } as any,
       }),
     ]);
