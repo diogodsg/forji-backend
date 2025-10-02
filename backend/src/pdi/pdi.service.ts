@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { PdiCycleStatus } from "@prisma/client";
 import { logger } from "../common/logger/pino";
 import { PrismaService } from "../core/prisma/prisma.service";
 import { SoftDeleteService } from "../common/prisma/soft-delete.extension";
@@ -70,6 +71,22 @@ export class PdiService extends SoftDeleteService {
           records: (data.records || []) as any,
         },
       });
+      // Se já existir ciclo ACTIVE, atualizar snapshot dele
+      const active = await this.prisma.pdiCycle.findFirst({
+        where: { userId, status: PdiCycleStatus.ACTIVE, deleted_at: null },
+        select: { id: true },
+      });
+      if (active) {
+        await this.prisma.pdiCycle.update({
+          where: { id: active.id },
+          data: {
+            competencies: data.competencies || [],
+            milestones: (data.milestones || []) as any,
+            krs: (data.krs || []) as any,
+            records: (data.records || []) as any,
+          },
+        });
+      }
       logger.info(
         {
           msg: "pdi.create",
@@ -98,6 +115,22 @@ export class PdiService extends SoftDeleteService {
         records: (data.records ?? existing.records) as any,
       },
     });
+    // Sincronizar também ciclo ACTIVE
+    const active = await this.prisma.pdiCycle.findFirst({
+      where: { userId, status: PdiCycleStatus.ACTIVE, deleted_at: null },
+      select: { id: true },
+    });
+    if (active) {
+      await this.prisma.pdiCycle.update({
+        where: { id: active.id },
+        data: {
+          competencies: data.competencies ?? existing.competencies,
+          milestones: (data.milestones ?? existing.milestones) as any,
+          krs: (data.krs ?? existing.krs) as any,
+          records: (data.records ?? existing.records) as any,
+        },
+      });
+    }
     logger.info(
       {
         msg: "pdi.upsert.update",
@@ -129,6 +162,22 @@ export class PdiService extends SoftDeleteService {
         records: (partial.records ?? existing.records) as any,
       },
     });
+    // Sincronizar snapshot no ciclo ACTIVE
+    const active = await this.prisma.pdiCycle.findFirst({
+      where: { userId, status: PdiCycleStatus.ACTIVE, deleted_at: null },
+      select: { id: true },
+    });
+    if (active) {
+      await this.prisma.pdiCycle.update({
+        where: { id: active.id },
+        data: {
+          competencies: partial.competencies ?? existing.competencies,
+          milestones: (partial.milestones ?? existing.milestones) as any,
+          krs: (partial.krs ?? existing.krs) as any,
+          records: (partial.records ?? existing.records) as any,
+        },
+      });
+    }
     logger.debug(
       {
         msg: "pdi.patch",
