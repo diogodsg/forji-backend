@@ -46,13 +46,9 @@ export class ManagementService extends SoftDeleteService {
         subordinateId: rule.subordinateId ? BigInt(rule.subordinateId) : null,
       },
       include: {
-        team: true,
-        subordinate: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
+        Team: true,
+        User_ManagementRule_subordinateIdToUser: {
+          select: { id: true, name: true, email: true },
         },
       },
     });
@@ -79,13 +75,9 @@ export class ManagementService extends SoftDeleteService {
     return this.prisma.managementRule.findMany({
       where: this.addSoftDeleteFilter({ managerId: BigInt(managerId) }),
       include: {
-        team: true,
-        subordinate: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
+        Team: true,
+        User_ManagementRule_subordinateIdToUser: {
+          select: { id: true, name: true, email: true },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -100,58 +92,48 @@ export class ManagementService extends SoftDeleteService {
     const subordinatesMap = new Map<number, SubordinateInfo>();
 
     // Separar regras por tipo para processamento otimizado
-    const individualRules = rules.filter(
-      (r) => r.ruleType === ManagementRuleType.INDIVIDUAL && r.subordinate
+    const individualRules = (rules as any[]).filter(
+      (r) => r.ruleType === ManagementRuleType.INDIVIDUAL && r.User_ManagementRule_subordinateIdToUser
     );
-    const teamRules = rules.filter(
-      (r) => r.ruleType === ManagementRuleType.TEAM && r.team
+    const teamRules = (rules as any[]).filter(
+      (r) => r.ruleType === ManagementRuleType.TEAM && r.Team
     );
 
     // Processar regras individuais (já temos os dados)
-    individualRules.forEach((rule) => {
-      subordinatesMap.set(Number(rule.subordinate!.id), {
-        id: Number(rule.subordinate!.id),
-        name: rule.subordinate!.name,
-        email: rule.subordinate!.email,
+    individualRules.forEach((rule: any) => {
+      const sub = rule.User_ManagementRule_subordinateIdToUser;
+      subordinatesMap.set(Number(sub.id), {
+        id: Number(sub.id),
+        name: sub.name,
+        email: sub.email,
         source: "individual",
       });
     });
 
     // Processar regras de equipe em batch se houver
     if (teamRules.length > 0) {
-      const teamIds = teamRules.map((rule) => rule.team!.id);
+  const teamIds = teamRules.map((rule: any) => rule.Team!.id);
 
       // Buscar todos os membros de todas as equipes em uma única consulta
       const allTeamMembers = await this.prisma.teamMembership.findMany({
         where: this.addSoftDeleteFilter({ teamId: { in: teamIds } }),
         include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          team: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
+          User: { select: { id: true, name: true, email: true } },
+          Team: { select: { id: true, name: true } },
         },
       });
 
       // Processar membros encontrados
-      allTeamMembers.forEach((membership) => {
-        const userId = Number(membership.user.id);
+      allTeamMembers.forEach((membership: any) => {
+        const userId = Number(membership.User.id);
         // Não incluir o próprio gerente como subordinado
         if (userId !== managerId) {
           subordinatesMap.set(userId, {
             id: userId,
-            name: membership.user.name,
-            email: membership.user.email,
+            name: membership.User.name,
+            email: membership.User.email,
             source: "team",
-            teamName: membership.team.name,
+            teamName: membership.Team.name,
           });
         }
       });
@@ -176,17 +158,17 @@ export class ManagementService extends SoftDeleteService {
     for (const rule of rules) {
       if (
         rule.ruleType === ManagementRuleType.INDIVIDUAL &&
-        rule.subordinate &&
-        Number(rule.subordinate.id) === userId
+        rule.User_ManagementRule_subordinateIdToUser &&
+        Number(rule.User_ManagementRule_subordinateIdToUser.id) === userId
       ) {
         sources.push({
           type: "individual",
           rule: rule,
         });
-      } else if (rule.ruleType === ManagementRuleType.TEAM && rule.team) {
+      } else if (rule.ruleType === ManagementRuleType.TEAM && rule.Team) {
         const isMember = await this.prisma.teamMembership.findFirst({
           where: this.addSoftDeleteFilter({
-            teamId: rule.team.id,
+            teamId: rule.Team.id,
             userId: BigInt(userId),
           }),
         });
@@ -195,7 +177,7 @@ export class ManagementService extends SoftDeleteService {
           sources.push({
             type: "team",
             rule: rule,
-            team: rule.team,
+            team: rule.Team,
           });
         }
       }
@@ -237,7 +219,7 @@ export class ManagementService extends SoftDeleteService {
       this.prisma.teamMembership.findMany({
         where: this.addSoftDeleteFilter({ userId: { in: subordinateIds } }),
         include: {
-          team: {
+          Team: {
             select: {
               id: true,
               name: true,
@@ -263,14 +245,14 @@ export class ManagementService extends SoftDeleteService {
     const pdiMap = new Map(pdiPlans.map((pdi) => [Number(pdi.userId), pdi]));
 
     // Agrupar times por usuário
-    teamMemberships.forEach((tm) => {
+    teamMemberships.forEach((tm: any) => {
       const userId = Number(tm.userId);
       if (!teamsMap.has(userId)) {
         teamsMap.set(userId, []);
       }
       teamsMap.get(userId)!.push({
-        id: Number(tm.team.id),
-        name: tm.team.name,
+        id: Number(tm.Team.id),
+        name: tm.Team.name,
       });
     });
 
@@ -324,10 +306,10 @@ export class ManagementService extends SoftDeleteService {
       this.prisma.team.findMany({
         where: this.addSoftDeleteFilter({}),
         include: {
-          memberships: {
+          TeamMembership: {
             where: this.addSoftDeleteFilter({}),
             include: {
-              user: {
+              User: {
                 select: {
                   id: true,
                   name: true,
@@ -341,16 +323,16 @@ export class ManagementService extends SoftDeleteService {
     ]);
 
     // Formatar dados dos times
-    const teams = allTeams.map((team) => ({
+    const teams = allTeams.map((team: any) => ({
       id: Number(team.id),
       name: team.name,
       description: team.description,
       createdAt: team.createdAt,
-      memberships: team.memberships.map((m) => ({
+      memberships: team.TeamMembership.map((m: any) => ({
         user: {
-          id: Number(m.user.id),
-          name: m.user.name,
-          email: m.user.email,
+          id: Number(m.User.id),
+          name: m.User.name,
+          email: m.User.email,
         },
         role: m.role,
       })),
@@ -369,15 +351,15 @@ export class ManagementService extends SoftDeleteService {
     return this.prisma.managementRule.findMany({
       where: this.addSoftDeleteFilter({}),
       include: {
-        manager: {
+        User_ManagementRule_managerIdToUser: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        team: true,
-        subordinate: {
+        Team: true,
+        User_ManagementRule_subordinateIdToUser: {
           select: {
             id: true,
             name: true,
