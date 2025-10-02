@@ -17,6 +17,12 @@ export class PdiCyclesController {
   @Get('me')
   listMine(@Req() req: any) { return this.service.list(req.user.id); }
 
+  // Histórico: obter um ciclo específico do próprio usuário
+  @Get('me/:cycleId')
+  async getMine(@Req() req: any, @Param('cycleId', ParseIntPipe) cycleId: number) {
+    return this.service.getForUser(cycleId, req.user.id);
+  }
+
   @Get(':userId')
   async list(@Req() req: any, @Param('userId', ParseIntPipe) userId: number) {
     if (req.user.id !== userId) {
@@ -24,6 +30,20 @@ export class PdiCyclesController {
       if (!ok) throw new ForbiddenException();
     }
     return this.service.list(userId);
+  }
+
+  // Histórico: obter ciclo específico de outro usuário (se for manager/owner)
+  @Get(':userId/:cycleId')
+  async getForUser(
+    @Req() req: any,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('cycleId', ParseIntPipe) cycleId: number,
+  ) {
+    if (req.user.id !== userId) {
+      const ok = await this.permission.isOwnerOrManager(req.user.id, userId);
+      if (!ok) throw new ForbiddenException();
+    }
+    return this.service.getForUser(cycleId, userId);
   }
 
   @Post()

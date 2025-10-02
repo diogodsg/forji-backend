@@ -16,6 +16,14 @@ export class PdiCyclesService extends SoftDeleteService {
     });
   }
 
+  async getForUser(id: number, userId: number) {
+    const cycle = await (this.prisma as any).pdiCycle.findFirst({
+      where: this.addSoftDeleteFilter({ id, userId }),
+    });
+    if (!cycle) throw new NotFoundException('Cycle not found');
+    return cycle;
+  }
+
   private async findCycle(id: number) {
     const cycle = await (this.prisma as any).pdiCycle.findFirst({
       where: this.addSoftDeleteFilter({ id }),
