@@ -45,9 +45,16 @@ export class PdiService extends SoftDeleteService {
     super(prisma);
   }
   async getByUser(userId: number) {
-    return this.prisma.pdiPlan.findFirst({
+    const plan = await this.prisma.pdiPlan.findFirst({
       where: this.addSoftDeleteFilter({ userId }),
     });
+    if (!plan) return null;
+    // Anexar ciclos do usuário para permitir derivação no frontend
+    const cycles = await this.prisma.pdiCycle.findMany({
+      where: { userId, deleted_at: null },
+      orderBy: { startDate: 'desc' },
+    });
+    return { ...plan, cycles } as any;
   }
   async upsert(userId: number, data: PdiPlanDto) {
     const existing = await this.prisma.pdiPlan.findFirst({
@@ -79,7 +86,8 @@ export class PdiService extends SoftDeleteService {
         "pdi.create userId=%d",
         userId
       );
-      return created;
+      const cycles = await this.prisma.pdiCycle.findMany({ where: { userId, deleted_at: null }, orderBy: { startDate: 'desc' } });
+      return { ...created, cycles } as any;
     }
     const updated = await this.prisma.pdiPlan.update({
       where: { userId },
@@ -104,7 +112,8 @@ export class PdiService extends SoftDeleteService {
       "pdi.update userId=%d",
       userId
     );
-    return updated;
+    const cycles = await this.prisma.pdiCycle.findMany({ where: { userId, deleted_at: null }, orderBy: { startDate: 'desc' } });
+    return { ...updated, cycles } as any;
   }
   async patch(userId: number, partial: Partial<PdiPlanDto>) {
     const existing = await this.prisma.pdiPlan.findFirst({
@@ -134,7 +143,8 @@ export class PdiService extends SoftDeleteService {
       "pdi.patch userId=%d",
       userId
     );
-    return updated;
+    const cycles = await this.prisma.pdiCycle.findMany({ where: { userId, deleted_at: null }, orderBy: { startDate: 'desc' } });
+    return { ...updated, cycles } as any;
   }
   async delete(userId: number) {
     const existing = await this.prisma.pdiPlan.findFirst({
@@ -165,7 +175,7 @@ export class PdiService extends SoftDeleteService {
   // Método para restaurar PDI soft deleted
   async restorePdi(userId: number) {
     const existing = await this.prisma.pdiPlan.findFirst({
-      where: { userId, deletedAt: { not: null } },
+      where: { userId, deleted_at: { not: null } },
     });
     if (!existing) throw new NotFoundException("Deleted PDI plan not found");
 
