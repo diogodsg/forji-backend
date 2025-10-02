@@ -1,14 +1,6 @@
 import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, Length, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-// O enum PdiCycleStatus será gerado pelo Prisma Client após `prisma generate`.
-// Para evitar erro de compilação antes da geração, usamos uma duplicação leve do enum.
-export enum PdiCycleStatusDtoMirror {
-  PLANNED = 'PLANNED',
-  ACTIVE = 'ACTIVE',
-  PAUSED = 'PAUSED',
-  COMPLETED = 'COMPLETED',
-  ARCHIVED = 'ARCHIVED'
-}
+import { PdiCycleStatus } from '@prisma/client';
 
 export class CreatePdiCycleDto {
   @IsString()
@@ -72,14 +64,14 @@ export class UpdatePdiCycleDto {
   records?: any;
 
   @IsOptional()
-  @IsEnum(PdiCycleStatusDtoMirror)
-  status?: PdiCycleStatusDtoMirror;
+  @IsEnum(PdiCycleStatus)
+  status?: PdiCycleStatus;
 
   @IsOptional()
   progressMeta?: any;
 }
 
 export class ChangeStatusDto {
-  @IsEnum(PdiCycleStatusDtoMirror)
-  status!: PdiCycleStatusDtoMirror;
+  @IsEnum(PdiCycleStatus)
+  status!: PdiCycleStatus;
 }

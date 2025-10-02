@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../core/prisma/prisma.service';
 import { SoftDeleteService } from '../common/prisma/soft-delete.extension';
-import { Prisma } from '@prisma/client';
-import { PdiCycleStatusDtoMirror } from './cycle.dto';
+import { Prisma, PdiCycleStatus } from '@prisma/client';
 import { CreatePdiCycleDto, UpdatePdiCycleDto } from './cycle.dto';
 
 @Injectable()
@@ -30,12 +29,12 @@ export class PdiCyclesService extends SoftDeleteService {
     if (end <= start) throw new BadRequestException('endDate must be after startDate');
 
     // Garantir 1 ACTIVE por user
-    const active = await (this.prisma as any).pdiCycle.findFirst({
-      where: { userId, status: 'ACTIVE', deleted_at: null },
+    const active = await this.prisma.pdiCycle.findFirst({
+      where: { userId, status: PdiCycleStatus.ACTIVE, deleted_at: null },
     });
-    const status = active ? 'PLANNED' : 'ACTIVE';
+    const status = active ? PdiCycleStatus.PLANNED : PdiCycleStatus.ACTIVE;
 
-  return (this.prisma as any).pdiCycle.create({
+  return this.prisma.pdiCycle.create({
       data: {
         userId,
         title: dto.title,
@@ -61,13 +60,13 @@ export class PdiCyclesService extends SoftDeleteService {
     }
     if (dto.status && dto.status !== existing.status) {
       if (dto.status === 'ACTIVE') {
-        const other = await (this.prisma as any).pdiCycle.findFirst({
-          where: { userId, status: 'ACTIVE', id: { not: id }, deleted_at: null },
+        const other = await this.prisma.pdiCycle.findFirst({
+          where: { userId, status: PdiCycleStatus.ACTIVE, id: { not: id }, deleted_at: null },
         });
         if (other) throw new BadRequestException('Another ACTIVE cycle exists');
       }
     }
-  return (this.prisma as any).pdiCycle.update({
+  return this.prisma.pdiCycle.update({
       where: { id },
       data: {
         title: dto.title ?? existing.title,
@@ -84,15 +83,15 @@ export class PdiCyclesService extends SoftDeleteService {
     });
   }
 
-  async changeStatus(id: number, userId: number, status: PdiCycleStatusDtoMirror) {
+  async changeStatus(id: number, userId: number, status: PdiCycleStatus) {
     const existing = await this.get(id, userId);
-    if (status === 'ACTIVE') {
-      const other = await (this.prisma as any).pdiCycle.findFirst({
-        where: { userId, status: 'ACTIVE', id: { not: id }, deleted_at: null },
+    if (status === PdiCycleStatus.ACTIVE) {
+      const other = await this.prisma.pdiCycle.findFirst({
+        where: { userId, status: PdiCycleStatus.ACTIVE, id: { not: id }, deleted_at: null },
       });
       if (other) throw new BadRequestException('Another ACTIVE cycle exists');
     }
-    return (this.prisma as any).pdiCycle.update({ where: { id }, data: { status } });
+    return this.prisma.pdiCycle.update({ where: { id }, data: { status } });
   }
 
   async remove(id: number, userId: number) {
