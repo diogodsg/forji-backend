@@ -1,12 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../core/prisma/prisma.service';
 import { SoftDeleteService } from '../common/prisma/soft-delete.extension';
 import { Prisma, PdiCycleStatus } from '@prisma/client';
 import { CreatePdiCycleDto, UpdatePdiCycleDto } from './cycle.dto';
+import { PermissionService } from '../core/permissions/permission.service';
 
 @Injectable()
 export class PdiCyclesService extends SoftDeleteService {
-  constructor(prisma: PrismaService) { super(prisma); }
+  constructor(prisma: PrismaService, private permission: PermissionService) { super(prisma); }
 
   async list(userId: number) {
     return (this.prisma as any).pdiCycle.findMany({
@@ -15,9 +16,9 @@ export class PdiCyclesService extends SoftDeleteService {
     });
   }
 
-  async get(id: number, userId: number) {
+  private async findCycle(id: number) {
     const cycle = await (this.prisma as any).pdiCycle.findFirst({
-      where: this.addSoftDeleteFilter({ id, userId }),
+      where: this.addSoftDeleteFilter({ id }),
     });
     if (!cycle) throw new NotFoundException('Cycle not found');
     return cycle;
@@ -50,8 +51,12 @@ export class PdiCyclesService extends SoftDeleteService {
     });
   }
 
-  async update(id: number, userId: number, dto: UpdatePdiCycleDto) {
-  const existing = await this.get(id, userId);
+  async update(id: number, requesterId: number, dto: UpdatePdiCycleDto) {
+    const existing = await this.findCycle(id);
+    if (existing.userId !== requesterId) {
+      const ok = await this.permission.isOwnerOrManager(requesterId, Number(existing.userId));
+      if (!ok) throw new ForbiddenException();
+    }
 
     if (dto.startDate || dto.endDate) {
       const start = new Date(dto.startDate ?? existing.startDate);
@@ -61,7 +66,7 @@ export class PdiCyclesService extends SoftDeleteService {
     if (dto.status && dto.status !== existing.status) {
       if (dto.status === 'ACTIVE') {
         const other = await this.prisma.pdiCycle.findFirst({
-          where: { userId, status: PdiCycleStatus.ACTIVE, id: { not: id }, deleted_at: null },
+          where: { userId: existing.userId, status: PdiCycleStatus.ACTIVE, id: { not: id }, deleted_at: null },
         });
         if (other) throw new BadRequestException('Another ACTIVE cycle exists');
       }
@@ -83,19 +88,27 @@ export class PdiCyclesService extends SoftDeleteService {
     });
   }
 
-  async changeStatus(id: number, userId: number, status: PdiCycleStatus) {
-    const existing = await this.get(id, userId);
+  async changeStatus(id: number, requesterId: number, status: PdiCycleStatus) {
+    const existing = await this.findCycle(id);
+    if (existing.userId !== requesterId) {
+      const ok = await this.permission.isOwnerOrManager(requesterId, Number(existing.userId));
+      if (!ok) throw new ForbiddenException();
+    }
     if (status === PdiCycleStatus.ACTIVE) {
       const other = await this.prisma.pdiCycle.findFirst({
-        where: { userId, status: PdiCycleStatus.ACTIVE, id: { not: id }, deleted_at: null },
+        where: { userId: existing.userId, status: PdiCycleStatus.ACTIVE, id: { not: id }, deleted_at: null },
       });
       if (other) throw new BadRequestException('Another ACTIVE cycle exists');
     }
     return this.prisma.pdiCycle.update({ where: { id }, data: { status } });
   }
 
-  async remove(id: number, userId: number) {
-    const existing = await this.get(id, userId);
+  async remove(id: number, requesterId: number) {
+    const existing = await this.findCycle(id);
+    if (existing.userId !== requesterId) {
+      const ok = await this.permission.isOwnerOrManager(requesterId, Number(existing.userId));
+      if (!ok) throw new ForbiddenException();
+    }
     await this.softDelete('pdiCycle', existing.id);
     return { deleted: true };
   }
