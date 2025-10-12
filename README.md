@@ -4,22 +4,47 @@ Plataforma gamificada para desenvolvimento de times e evolução de Planos de De
 
 ## 🚨 **CHANGELOG RECENTE** - Outubro 2025
 
+### ✨ **v2.1.1 - Sino de Notificação Funcional**
+
+**🔔 Sistema de Notificações Implementado:**
+
+- **🔔 Sino Interativo**: Botão de notificação totalmente funcional na TopNavbar
+- **📱 Dropdown Inteligente**: Modal com notificações categorizadas e timestamps
+- **🎨 Design System Compliant**: Interface seguindo violet design system v2.1
+- **⚡ Auto-fechamento**: Click fora fecha automaticamente o dropdown
+- **💫 Micro-interactions**: Hover effects e transições suaves
+- **🏆 Tipos de Notificação**: XP ganho, badges conquistados, feedback recebido
+- **📊 Contador Visual**: Badge pulsante indicando novas notificações
+- **🎯 Estrutura Escalável**: Preparado para integração com API real
+
+### ✨ **v2.1 - Sistema de Avatares SVG Profissionais**
+
+**🎨 Avatares SVG Profissionais Implementados:**
+
+- **🎨 26+ Avatares SVG**: Sistema completo com ilustrações vetoriais profissionais
+- **📂 6 Categorias Organizadas**: Profissionais, Abstratos, Minimalistas, Criativos, Geométricos, Natureza
+- **🚫 Remoção Completa de Emojis**: Migração total para ilustrações SVG sofisticadas
+- **🔧 Seletor Unificado**: Interface elegante com tabs de categorias e grid responsivo
+- **🎯 Gradientes Personalizados**: Cada avatar com sua própria paleta harmoniosa
+- **⚡ Renderização Otimizada**: SVGs inline para performance máxima
+
 ### ✨ **v2.0 - Design System Revolution + Team-First**
 
-**� Design System v2.0 Implementado:**
+**🎨 Design System v2.0 Implementado:**
 
 - **🟣 Nova Identidade Visual**: Migração completa para Violet como cor principal
-- **� Tipografia Geist**: Font moderna e otimizada para interfaces
+- **📝 Tipografia Geist**: Font moderna e otimizada para interfaces
 - **🎨 Paleta Expandida**: Sistema completo de cores (50-900) + surface tokens
 - **✨ Micro-interactions**: Hover effects, scales, rotações e transições suaves
 - **🌟 Gradientes Refinados**: Transições suaves eliminando excessos visuais
-- **� Tailwind Avançado**: Configuração personalizada com tokens semânticos
+- **🔧 Tailwind Avançado**: Configuração personalizada com tokens semânticos
 
 **🎯 Interface Modernizada:**
 
 - **📊 Card de Níveis Redesenhado**: Substituiu botão Commands por card interativo de progresso
 - **🗂️ TopNavbar Otimizada**: Hierarquia visual aprimorada com foco na gamificação
-- **� Sidebar Refinada**: Navegação elegante com micro-interactions e tooltips removidos
+- **🔔 Sino de Notificação**: Sistema completo de notificações em tempo real
+- **🎮 Sidebar Refinada**: Navegação elegante com micro-interactions e tooltips removidos
 - **🔄 Componentes Unificados**: Design system consistente em toda aplicação
 
 **🏆 Filosofia Team-First Mantida:**
@@ -36,6 +61,28 @@ Plataforma gamificada para desenvolvimento de times e evolução de Planos de De
 - ✅ Foco aprimorado na progressão do usuário
 - ✅ Consistência visual em toda plataforma
 - ✅ Performance otimizada com transições inteligentes
+- ✅ Avatares profissionais substituindo emojis
+- ✅ Sistema de perfil completo com seleção avançada
+
+**🎨 Sistema de Avatares Profissionais:**
+
+**26+ Ilustrações SVG Categorizadas:**
+
+- **👔 Profissionais (6)**: Executivo, Designer, Desenvolvedor, Analista, Gerente, Consultor
+- **🎨 Abstratos (4)**: Ondas Fluidas, Malha Gradiente, Energia Espiral, Rede Neural
+- **⚪ Minimalistas (4)**: Círculo, Quadrado, Triângulo, Hexágono
+- **✨ Criativos (4)**: Estrela Cósmica, Paleta Artística, Loop Infinito, Explosão Criativa
+- **🔷 Geométricos (4)**: Diamante, Cubo 3D, Tessalação, Estrutura Cristalina
+- **🌿 Natureza (4)**: Folha Orgânica, Pico da Montanha, Onda do Oceano, Galhos de Árvore
+
+**Interface de Seleção Avançada:**
+
+- **🎯 Seletor Unificado**: Modal elegante com categorias em tabs
+- **📱 Grid Responsivo**: Adaptação automática para diferentes telas
+- **🎨 Preview em Tempo Real**: Visualização imediata das escolhas
+- **✨ Micro-interactions**: Hover effects, scaling e transições suaves
+- **🔍 Tooltips Informativos**: Nome dos avatares em hover
+- **⚡ Performance Otimizada**: Renderização SVG inline para velocidade máxima
 
 ---
 
@@ -47,9 +94,20 @@ Sistema completo que combina desenvolvimento profissional com elementos lúdicos
 
 - **⚡ Sistema de XP**: Pontos por ações (completar milestones, feedbacks, colaboração)
 - **🎖️ Badges Inteligentes**: Conquistas automáticas baseadas em progresso
-- **� Team-First Leaderboards**: Rankings focados em equipes, promovendo colaboração
+- **🏆 Team-First Leaderboards**: Rankings focados em equipes, promovendo colaboração
 - **🎯 Levels Profissionais**: 100 níveis de Rookie a Master Professional
-- **🎉 Notificações em Tempo Real**: Feedback imediato
+- **🔔 Notificações em Tempo Real**: Sistema completo de feedback imediato
+
+**🎯 Sistema de Notificações:**
+
+- **🔔 Sino Interativo**: Click no sino abre dropdown com notificações
+- **📱 Interface Moderna**: Design system v2.1 violet com gradientes suaves
+- **🎯 Categorização**: XP ganho, badges, feedback e conquistas organizados
+- **⏰ Timestamps**: "há X minutos/horas" para contexto temporal
+- **🎨 Feedback Visual**: Badge pulsante indicando novas notificações
+- **📊 Preview Inteligente**: Resumo "3 novas" no cabeçalho
+- **🔄 Auto-close**: Fecha automaticamente ao clicar fora
+- **⚡ Performance**: Renderização otimizada com z-index adequado
 
 ### 🎯 **NOVO**: Filosofia Team-First
 
@@ -87,7 +145,8 @@ Sistema completo que combina desenvolvimento profissional com elementos lúdicos
 
 **Interface Components Modernizados:**
 
-- **📊 TopNavbar Redesigned**: Card de níveis interativo substituindo botão Commands
+- **📊 TopNavbar Redesigned**: Card de níveis interativo + sino de notificação funcional
+- **🔔 Sistema de Notificações**: Dropdown completo com feedback em tempo real
 - **🎮 Sidebar Refinada**: Micro-interactions, tooltips limpos, gradientes suaves
 - **👤 User Menus**: Dropdowns elegantes com gradientes de header e hover effects
 - **🎯 Progress Bars**: Animações fluidas com brand colors consistentes
@@ -102,14 +161,16 @@ Sistema completo que combina desenvolvimento profissional com elementos lúdicos
 
 ### 🎨 Design System Modernizado
 
-**Padronização Visual v2.0 (Violet System):**
+**Padronização Visual v2.1 (Violet System + SVG Avatars):**
 
 - **🟣 Paleta Violet Unificada**: Cores consistentes seguindo `brand` tokens (50-900)
-- **� Tipografia Geist**: Font system profissional substituindo Inter
+- **📝 Tipografia Geist**: Font system profissional substituindo Inter
 - **📐 Espaçamento Harmonioso**: Grid system aprimorado com micro-interactions
 - **🎯 Gradientes Brand**: `from-brand-500 to-brand-600` padronizado (suave)
 - **🧱 Cards Sistematizados**: Estrutura base com hover effects e shadows
-- **👤 PlayerCard v2**: Avatar, progresso e stats seguindo design system violet
+- **👤 PlayerCard v2.1**: Avatar SVG profissional, progresso e stats seguindo design system violet
+- **🎨 Sistema de Avatares SVG**: 26+ ilustrações profissionais categorizadas
+- **🔧 Seletor Avançado**: Interface moderna para escolha de avatares com categorias
 
 ### 🏠 Homepage Inteligente para Gestores
 
@@ -135,6 +196,13 @@ Sistema completo que combina desenvolvimento profissional com elementos lúdicos
 - **🎯 Informações Completas**: Badge do nível + progresso XP atual/próximo
 - **✨ Micro-interactions**: Hover effects, gradientes suaves, transições fluidas
 - **🎨 Design System v2.0**: Paleta violet, typography Geist, shadows inteligentes
+
+**👤 Acesso Rápido ao Perfil:**
+
+- **🔗 Avatar Clicável**: Clique direto no avatar do top-right para acessar o perfil
+- **📋 Menu Contextual**: Opção "Meu Perfil" no dropdown do usuário
+- **⚡ Navegação Rápida**: Acesso imediato via `/me` para perfil próprio
+- **🎨 Feedback Visual**: Hover effects e tooltips informativos
 
 ## 📊 Sistema PDI Revolucionário
 
@@ -211,6 +279,10 @@ src/features/
 │   ├── hooks/            # API integration
 │   ├── context/          # Global state
 │   └── types/            # TypeScript definitions
+├── profile/              # Sistema de perfil e avatares
+│   ├── components/       # Avatar, ProfileHeader, Selectors
+│   ├── data/            # SVG avatars, categorias
+│   └── types/           # Profile interfaces
 ├── pdi/                  # Sistema PDI
 ├── admin/                # Administração
 └── shared/              # Shared utilities
@@ -290,7 +362,7 @@ npx prisma migrate reset
 3. **Conquistas**: Badges desbloqueados por comportamentos específicos
 4. **Rankings de Equipe**: Leaderboards colaborativos focados em times
 5. **Página Educativa**: Guia completo sobre XP e filosofia team-first
-6. **Notificações**: Feedback imediato a cada ação realizada
+6. **Notificações Interativas**: Sistema completo de sino com dropdown funcional
 
 **🎯 Filosofia Team-First:**
 
@@ -332,6 +404,13 @@ npx prisma migrate reset
 - **Gestão**: Click em cards para editar perfis
 - **Subordinados**: Configure relações hierárquicas centralizadamente
 
+### Acesso ao Perfil
+
+- **Avatar Clicável**: Clique direto no avatar (top-right) para acesso rápido ao perfil
+- **Menu Dropdown**: Opção "Meu Perfil" no menu do usuário
+- **URLs Diretas**: `/me` (próprio perfil) ou `/profile/:userId` (perfil de outro usuário)
+- **Navegação Contextual**: Links automáticos em dashboards e listagens
+
 ### Dashboard de Manager
 
 - **Visibilidade Total**: Todas as pessoas gerenciadas aparecem
@@ -353,22 +432,29 @@ npx prisma migrate reset
 - 🎯 **Sistema de Desafios**: Challenges automáticos semanais/mensais
 - 🏅 **Leaderboards Múltiplos**: Por equipe, departamento, especialidade
 - 🤝 **Social Features**: Peer recognition, celebrações de conquistas
-- 🎨 **Dark Mode**: Tema escuro seguindo design system v2.0 violet
+- 🎨 **Dark Mode**: Tema escuro seguindo design system v2.1 violet
+- 🖼️ **Avatar Customization**: Editor avançado de avatares SVG
+- 🎭 **Avatar Collections**: Seasonal e themed avatar packs
 
 ### Fase 3 - Integração Total
 
 - 🔗 **Integração Git/PRs**: XP automático por atividade de código
 - 📊 **Business Intelligence**: Métricas de ROI da gamificação
 - 🤖 **Automação IA**: Desafios personalizados, coaching automático
-- 🎮 **Command Palette**: Navegação rápida (⌘K) com design system v2.0
+- 🎮 **Command Palette**: Navegação rápida (⌘K) com design system v2.1
+- 🎨 **Avatar AI Generator**: Geração automática de avatares personalizados
+- 👥 **Team Avatar Themes**: Avatares coordenados por equipe
 
 ### Melhorias Técnicas Priorizadas
 
+- **🔔 Sistema de Notificações Real**: Integração com WebSockets para notificações em tempo real
 - Command Palette completo (Ctrl/⌘+K) com estilo violet
-- Dark mode toggle seguindo tokens do design system
+- Dark mode toggle seguindo tokens do design system v2.1
 - Export/import de PDI com interface modernizada
 - Testes automatizados E2E para componentes redesenhados
 - Performance monitoring para micro-interactions
+- Avatar caching e lazy loading otimizado
+- Accessibility improvements para seletor de avatares
 
 ## 🛠️ Desenvolvimento e Contribuição
 
@@ -486,16 +572,23 @@ const XP_VALUES = {
 
 ## 💡 Próximos Itens Recomendados
 
-### Frontend - Design System v2.0
+### Frontend - Design System v2.1
 
+- **🔔 API de Notificações**: Endpoints para listar, marcar como lida e configurar notificações
+- **📡 WebSocket Integration**: Notificações em tempo real via WebSocket
 - Command Palette com design violet para navegação rápida
-- Dark mode seguindo tokens do design system v2.0
+- Dark mode seguindo tokens do design system v2.1
 - Export/import de PDI com interface modernizada seguindo violet theme
 - Indicators de sincronização granular com micro-interactions
 - Lazy loading otimizado para componentes redesenhados
+- Avatar editor avançado com customização SVG
+- Sistema de caching inteligente para avatares
+- Accessibility melhorado para seletor de avatares
 
 ### Backend
 
+- **🔔 Sistema de Notificações**: API completa para notificações em tempo real
+- **📡 WebSocket Support**: Integração para push notifications
 - DTO + validation pipes para todas as APIs
 - Endpoints granulares de PDI (patch por seção)
 - Métricas agregadas de PR (/prs/metrics)
@@ -503,17 +596,20 @@ const XP_VALUES = {
 
 ### Qualidade
 
-- Testes E2E automatizados para novos componentes v2.0
+- **🔔 Testes de Notificação**: E2E tests para sistema de notificações
+- Testes E2E automatizados para novos componentes v2.1
 - Performance monitoring para micro-interactions
 - Cache inteligente para hierarquias
 - Sanitização markdown robusta
 - Accessibility audit para design system violet
+- Avatar performance optimization
+- SVG rendering benchmarks
 
 ---
 
-**MVP evoluído para Team-First Platform com Design System v2.0.**
+**MVP evoluído para Team-First Platform com Design System v2.1.1, Avatares SVG Profissionais e Sistema de Notificações Completo.**
 
-O Forge evoluiu de uma simples plataforma de PDI para uma **plataforma gamificada de gestão de times** completa, revolucionando tanto a abordagem tradicional de gamificação corporativa ao adotar uma **filosofia team-first** quanto o design visual com um **sistema v2.0 baseado em Violet**. Esta combinação única prioriza colaboração sobre competição individual enquanto oferece uma interface moderna, profissional e altamente interativa, criando um ambiente mais saudável, engajante e visualmente sofisticado para o desenvolvimento profissional.
+O Forge evoluiu de uma simples plataforma de PDI para uma **plataforma gamificada de gestão de times** completa, revolucionando tanto a abordagem tradicional de gamificação corporativa ao adotar uma **filosofia team-first** quanto o design visual com um **sistema v2.1.1 baseado em Violet e avatares SVG profissionais**, agora incluindo um **sistema de notificações em tempo real totalmente funcional**. Esta combinação única prioriza colaboração sobre competição individual enquanto oferece uma interface moderna, profissional e altamente interativa com **sistema de avatares ilustrados e notificações inteligentes**, criando um ambiente mais saudável, engajante e visualmente sofisticado para o desenvolvimento profissional.
 
 ## 📞 Contato e Suporte
 

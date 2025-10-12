@@ -38,7 +38,9 @@ export function ManagerTeamOverview() {
     return (
       <div className="bg-white rounded-xl border border-surface-200 p-6">
         <div className="text-center py-8">
-          <div className="text-rose-600 mb-2">Erro ao carregar dados da equipe</div>
+          <div className="text-rose-600 mb-2">
+            Erro ao carregar dados da equipe
+          </div>
           <div className="text-sm text-surface-600">{error}</div>
         </div>
       </div>
@@ -46,14 +48,17 @@ export function ManagerTeamOverview() {
   }
 
   const reports = data?.reports || [];
-  const totalPdisActive = reports.filter(r => r.pdi.exists).length;
-  const averageProgress = reports.length > 0 
-    ? Math.round(reports.reduce((sum, r) => sum + r.pdi.progress, 0) / reports.length)
-    : 0;
+  const totalPdisActive = reports.filter((r) => r.pdi.exists).length;
+  const averageProgress =
+    reports.length > 0
+      ? Math.round(
+          reports.reduce((sum, r) => sum + r.pdi.progress, 0) / reports.length
+        )
+      : 0;
 
   // Top 3 performers baseado no progresso de PDI
   const topPerformers = [...reports]
-    .filter(r => r.pdi.exists)
+    .filter((r) => r.pdi.exists)
     .sort((a, b) => b.pdi.progress - a.pdi.progress)
     .slice(0, 3);
 
@@ -99,7 +104,8 @@ export function ManagerTeamOverview() {
                   {reports.length}
                 </div>
                 <div className="text-sm text-blue-700">
-                  Pessoa{reports.length !== 1 ? "s" : ""} gerenciada{reports.length !== 1 ? "s" : ""}
+                  Pessoa{reports.length !== 1 ? "s" : ""} gerenciada
+                  {reports.length !== 1 ? "s" : ""}
                 </div>
               </div>
             </div>
@@ -116,7 +122,8 @@ export function ManagerTeamOverview() {
                   {totalPdisActive}
                 </div>
                 <div className="text-sm text-emerald-700">
-                  PDI{totalPdisActive !== 1 ? "s" : ""} ativo{totalPdisActive !== 1 ? "s" : ""}
+                  PDI{totalPdisActive !== 1 ? "s" : ""} ativo
+                  {totalPdisActive !== 1 ? "s" : ""}
                 </div>
               </div>
             </div>
@@ -132,9 +139,7 @@ export function ManagerTeamOverview() {
                 <div className="text-2xl font-bold text-amber-900">
                   {averageProgress}%
                 </div>
-                <div className="text-sm text-amber-700">
-                  Progresso médio
-                </div>
+                <div className="text-sm text-amber-700">Progresso médio</div>
               </div>
             </div>
           </div>

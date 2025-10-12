@@ -8,9 +8,7 @@ import {
   FiTrendingUp,
   FiAward,
   FiStar,
-  FiCalendar,
   FiInfo,
-  FiSearch,
 } from "react-icons/fi";
 import { usePlayerProfile } from "@/features/gamification/hooks/useGamification";
 
@@ -63,23 +61,13 @@ export function GamifiedNavbar({
     const items: NavItemDef[] = [
       {
         to: "/",
-        label: "Dashboard",
+        label: "ínicio",
         icon: <FiHome className="w-5 h-5" />,
       },
       {
         to: "/me/pdi",
-        label: "Meu PDI",
+        label: "Meu Desenvolvimento",
         icon: <FiTarget className="w-5 h-5" />,
-      },
-      {
-        to: "/users/search",
-        label: "Buscar Pessoas",
-        icon: <FiSearch className="w-5 h-5" />,
-      },
-      {
-        to: "/pdi/timeline",
-        label: "Timeline",
-        icon: <FiCalendar className="w-5 h-5" />,
       },
       {
         to: "/leaderboard",

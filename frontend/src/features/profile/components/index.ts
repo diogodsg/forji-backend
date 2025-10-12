@@ -1,0 +1,13 @@
+export { ProfilePage } from "./ProfilePage";
+export { ProfileHeader } from "./ProfileHeader";
+export { StatsGrid } from "./StatsGrid";
+export { TimelineSection } from "./TimelineSection";
+export { ProfileTabNavigation } from "./ProfileTabNavigation";
+export { GamificationTab } from "./GamificationTab";
+export { PDITab } from "./PDITab";
+export { ConfigurationTab } from "./ConfigurationTab";
+export { Avatar, ClickableAvatar } from "./Avatar";
+export { AvatarSelector } from "./AvatarSelector";
+export { UnifiedAvatarSelector } from "./UnifiedAvatarSelector";
+export { SVGAvatar } from "./SVGAvatar";
+export { SVGAvatarSelector } from "./SVGAvatarSelector";

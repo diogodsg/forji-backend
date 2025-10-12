@@ -34,10 +34,12 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // Get gamification data
@@ -68,6 +70,13 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
         !userMenuRef.current.contains(event.target as Node)
       ) {
         setUserMenuOpen(false);
+      }
+
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target as Node)
+      ) {
+        setNotificationsOpen(false);
       }
     }
 
@@ -376,10 +385,104 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
               {/* Notifications & User Menu - Design System v2 */}
               <div className="flex items-center gap-2">
                 {/* Notifications */}
-                <button className="relative p-3 text-gray-500 hover:text-brand-600 hover:bg-surface-100 rounded-xl transition-all duration-150 hover:scale-105 group">
-                  <FiBell className="w-5 h-5 transition-transform duration-150 group-hover:scale-110" />
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-surface-0 animate-pulse-soft"></span>
-                </button>
+                <div className="relative" ref={notificationsRef}>
+                  <button
+                    onClick={() => setNotificationsOpen(!notificationsOpen)}
+                    className="relative p-3 text-gray-500 hover:text-brand-600 hover:bg-surface-100 rounded-xl transition-all duration-150 hover:scale-105 group"
+                  >
+                    <FiBell className="w-5 h-5 transition-transform duration-150 group-hover:scale-110" />
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-surface-0 animate-pulse-soft"></span>
+                  </button>
+
+                  {notificationsOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-80 bg-surface-0 border border-surface-300 rounded-2xl shadow-xl z-50 overflow-hidden">
+                      {/* Header */}
+                      <div className="p-4 bg-gradient-to-r from-brand-50 to-brand-100 border-b border-surface-200">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-gray-900">
+                            Notificações
+                          </h3>
+                          <span className="text-xs font-medium text-brand-600 bg-brand-100 px-2 py-1 rounded-full">
+                            3 novas
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Notifications List */}
+                      <div className="max-h-80 overflow-y-auto">
+                        {/* Sample notifications */}
+                        <div className="p-4 border-b border-surface-200 hover:bg-surface-50 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                              <span className="text-emerald-600 font-semibold text-sm">
+                                XP
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                Você ganhou 100 XP!
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Milestone PDI completada: "Estudar React Hooks"
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                há 5 minutos
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 border-b border-surface-200 hover:bg-surface-50 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-brand-100 rounded-lg flex items-center justify-center">
+                              <span className="text-brand-600 font-semibold text-sm">
+                                🏆
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                Nova conquista desbloqueada!
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Badge "First Steps" - Complete sua primeira
+                                milestone
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                há 1 hora
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 border-b border-surface-200 hover:bg-surface-50 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <FiUser className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                Feedback recebido
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                João Silva deixou um feedback no seu PDI
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                há 2 horas
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="p-3 bg-surface-50 border-t border-surface-200">
+                        <button className="w-full text-center text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors">
+                          Ver todas as notificações
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Enhanced User Menu */}
                 <div className="relative" ref={userMenuRef}>
@@ -387,8 +490,17 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-3 px-3 py-2 hover:bg-surface-100 rounded-xl transition-all duration-150 hover:scale-105 group"
                   >
-                    <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center text-white font-semibold text-sm shadow-md transition-transform duration-150 group-hover:scale-110">
+                    <div
+                      className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center text-white font-semibold text-sm shadow-md transition-all duration-150 hover:scale-110 hover:shadow-lg hover:from-brand-600 hover:to-brand-700 cursor-pointer relative group/avatar"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate("/me");
+                        setUserMenuOpen(false);
+                      }}
+                      title="Clique para ver seu perfil"
+                    >
                       {getInitials(userName)}
+                      <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-150 pointer-events-none" />
                     </div>
                     <div className="hidden md:block text-left">
                       <div className="text-sm font-semibold text-gray-900 truncate max-w-32 tracking-tight">
@@ -425,6 +537,18 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
                       )}
 
                       <div className="p-2">
+                        <button
+                          onClick={() => {
+                            navigate("/me");
+                            setUserMenuOpen(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:text-brand-600 hover:bg-gradient-to-r hover:from-brand-50 hover:to-surface-50 rounded-xl transition-all duration-150 hover:scale-[1.02] group"
+                        >
+                          <FiUser className="w-5 h-5 transition-transform duration-150 group-hover:scale-110" />
+                          <span className="font-medium tracking-tight">
+                            Meu Perfil
+                          </span>
+                        </button>
                         <button
                           onClick={() => {
                             navigate("/settings");

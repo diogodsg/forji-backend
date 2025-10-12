@@ -12,12 +12,23 @@ interface WelcomeHeaderProps {
 export function WelcomeHeader({ user }: WelcomeHeaderProps) {
   const now = new Date();
   const hour = now.getHours();
-  
+
   // Determinar saudação baseada no horário
   const getGreeting = () => {
-    if (hour < 12) return { text: "Bom dia", icon: <FiSun className="w-5 h-5 text-yellow-500" /> };
-    if (hour < 18) return { text: "Boa tarde", icon: <FiSun className="w-5 h-5 text-orange-500" /> };
-    return { text: "Boa noite", icon: <FiMoon className="w-5 h-5 text-blue-500" /> };
+    if (hour < 12)
+      return {
+        text: "Bom dia",
+        icon: <FiSun className="w-5 h-5 text-yellow-500" />,
+      };
+    if (hour < 18)
+      return {
+        text: "Boa tarde",
+        icon: <FiSun className="w-5 h-5 text-orange-500" />,
+      };
+    return {
+      text: "Boa noite",
+      icon: <FiMoon className="w-5 h-5 text-blue-500" />,
+    };
   };
 
   const greeting = getGreeting();
@@ -28,15 +39,16 @@ export function WelcomeHeader({ user }: WelcomeHeaderProps) {
     if (user.isManager) {
       return {
         primary: "Acompanhe o desenvolvimento da sua equipe",
-        secondary: "Visualize métricas, progresso de PDI e conquistas dos seus subordinados",
-        icon: <FiUsers className="w-5 h-5 text-brand-600" />
+        secondary:
+          "Visualize métricas, progresso de PDI e conquistas dos seus subordinados",
+        icon: <FiUsers className="w-5 h-5 text-brand-600" />,
       };
     }
-    
+
     return {
       primary: "Continue sua jornada de desenvolvimento",
       secondary: "Acompanhe seu progresso, conquistas e evolução profissional",
-      icon: <FiTarget className="w-5 h-5 text-brand-600" />
+      icon: <FiTarget className="w-5 h-5 text-brand-600" />,
     };
   };
 
@@ -45,7 +57,7 @@ export function WelcomeHeader({ user }: WelcomeHeaderProps) {
     weekday: "long",
     year: "numeric",
     month: "long",
-    day: "numeric"
+    day: "numeric",
   });
 
   return (
@@ -53,12 +65,19 @@ export function WelcomeHeader({ user }: WelcomeHeaderProps) {
       {/* Background decorativo */}
       <div className="absolute inset-0 bg-gradient-to-br from-brand-50 via-brand-100/50 to-surface-50 rounded-2xl"></div>
       <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/60 to-transparent rounded-2xl"></div>
-      
+
       {/* Padrão de background sutil */}
-      <div className="absolute inset-0 opacity-30" style={{
-        backgroundImage: `radial-gradient(circle at 25% 25%, ${user.isManager ? '#7c3aed' : '#6366f1'} 0%, transparent 50%),
-                         radial-gradient(circle at 75% 75%, ${user.isManager ? '#a855f7' : '#8b5cf6'} 0%, transparent 50%)`
-      }}></div>
+      <div
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, ${
+            user.isManager ? "#7c3aed" : "#6366f1"
+          } 0%, transparent 50%),
+                         radial-gradient(circle at 75% 75%, ${
+                           user.isManager ? "#a855f7" : "#8b5cf6"
+                         } 0%, transparent 50%)`,
+        }}
+      ></div>
 
       {/* Conteúdo */}
       <div className="relative p-8">
@@ -87,19 +106,19 @@ export function WelcomeHeader({ user }: WelcomeHeaderProps) {
                 <p className="text-lg font-medium text-surface-800 mb-1">
                   {message.primary}
                 </p>
-                <p className="text-surface-600 max-w-lg">
-                  {message.secondary}
-                </p>
+                <p className="text-surface-600 max-w-lg">{message.secondary}</p>
               </div>
             </div>
 
             {/* Badge de perfil */}
             <div className="mt-6">
-              <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
-                user.isManager 
-                  ? "bg-purple-100 text-purple-800 border border-purple-200" 
-                  : "bg-blue-100 text-blue-800 border border-blue-200"
-              }`}>
+              <span
+                className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
+                  user.isManager
+                    ? "bg-purple-100 text-purple-800 border border-purple-200"
+                    : "bg-blue-100 text-blue-800 border border-blue-200"
+                }`}
+              >
                 {user.isManager ? (
                   <>
                     <FiUsers className="w-4 h-4 mr-2" />

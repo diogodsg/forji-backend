@@ -2,33 +2,33 @@ import { FiInfo, FiCheckCircle } from "react-icons/fi";
 
 export function XpCategoriesExplanation() {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+    <div className="bg-white rounded-xl shadow-sm border border-surface-300 p-5">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center">
           <FiInfo className="w-4 h-4 text-white" />
         </div>
-        <h3 className="text-xl font-bold text-gray-900">
+        <h3 className="text-xl font-semibold text-gray-900">
           Por que Organizamos o XP em Categorias?
         </h3>
       </div>
 
       {/* Esclarecimento Importante */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-6">
+      <div className="bg-gradient-to-r from-emerald-50 to-emerald-50 border border-emerald-200 rounded-xl p-4 mb-5">
         <div className="flex items-start gap-3">
-          <div className="w-6 h-6 mt-0.5 rounded-lg bg-green-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-6 h-6 mt-0.5 rounded-lg bg-emerald-600 flex items-center justify-center flex-shrink-0">
             <FiCheckCircle className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h4 className="font-bold text-green-800 mb-2">
+            <h4 className="font-semibold text-emerald-800 mb-2">
               💡 Importante: Você Recebe TODOS os Pontos!
             </h4>
-            <p className="text-green-700 text-sm mb-2">
+            <p className="text-emerald-700 text-sm mb-2">
               <strong>As porcentagens NÃO reduzem seu XP!</strong> Milestone de
               100 XP = você ganha 100 XP completos. As categorias são apenas
               para <strong>organização e balanceamento</strong>, não descontos.
             </p>
-            <div className="bg-white rounded-lg p-3 border border-green-200">
-              <p className="text-xs text-green-600">
+            <div className="bg-white rounded-lg p-3 border border-emerald-200">
+              <p className="text-xs text-emerald-600">
                 <strong>Exemplo:</strong> Milestone (100 XP) + Mentoria (60 XP)
                 + Melhoria de Processo (80 XP) ={" "}
                 <strong>240 XP total no seu perfil!</strong>
@@ -38,8 +38,8 @@ export function XpCategoriesExplanation() {
         </div>
       </div>
 
-      <div className="space-y-4 mb-6">
-        <h4 className="font-semibold text-gray-900">
+      <div className="space-y-4 mb-5">
+        <h4 className="font-medium text-gray-900">
           🎯 Propósito Real das Categorias:
         </h4>
         <p className="text-gray-700">

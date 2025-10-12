@@ -64,9 +64,9 @@ const UserSearchPage = lazy(() =>
     default: m.UserSearchPage,
   }))
 );
-const UserProfilePage = lazy(() =>
-  import("./pages/UserProfilePage").then((m) => ({
-    default: m.UserProfilePage,
+const ProfilePage = lazy(() =>
+  import("./features/profile").then((m) => ({
+    default: m.ProfilePage,
   }))
 );
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -152,9 +152,15 @@ function InnerApp() {
 
             {/* User Search & Feedback */}
             <Route path="/users/search" element={<UserSearchPage />} />
+            <Route path="/users/:userId/profile" element={<ProfilePage />} />
+
+            {/* New Profile System */}
+            <Route path="/me" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route
-              path="/users/:userId/profile"
-              element={<UserProfilePage />}
+              path="/users/:userId/profile-new"
+              element={<ProfilePage />}
             />
 
             {/* Management routes */}

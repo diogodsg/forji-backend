@@ -1,5 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { FiTarget, FiUsers, FiTrendingUp, FiSettings, FiBookOpen } from "react-icons/fi";
+import {
+  FiTarget,
+  FiUsers,
+  FiTrendingUp,
+  FiSettings,
+  FiBookOpen,
+} from "react-icons/fi";
 import type { AuthUser } from "@/features/auth";
 
 interface QuickActionsProps {
@@ -62,14 +68,19 @@ export function QuickActions({ user }: QuickActionsProps) {
   ];
 
   // Combinar ações baseado no perfil
-  const allActions = user.isManager ? [...managerActions, ...commonActions] : commonActions;
+  const allActions = user.isManager
+    ? [...managerActions, ...commonActions]
+    : commonActions;
 
   // Cores para os gradientes
   const colorClasses = {
-    emerald: "from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700",
+    emerald:
+      "from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700",
     blue: "from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
-    purple: "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700",
-    orange: "from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700",
+    purple:
+      "from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700",
+    orange:
+      "from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700",
     gray: "from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700",
   };
 
@@ -101,7 +112,9 @@ export function QuickActions({ user }: QuickActionsProps) {
               key={action.id}
               onClick={action.onClick}
               className={`group relative p-6 rounded-lg border transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${
-                backgroundClasses[action.color as keyof typeof backgroundClasses]
+                backgroundClasses[
+                  action.color as keyof typeof backgroundClasses
+                ]
               }`}
             >
               {/* Ícone */}
@@ -143,8 +156,9 @@ export function QuickActions({ user }: QuickActionsProps) {
                   Funcionalidades de Gestor
                 </div>
                 <p className="text-sm text-brand-700">
-                  Como gestor, você tem acesso ao dashboard de equipe para acompanhar 
-                  o desenvolvimento dos seus subordinados e métricas de performance.
+                  Como gestor, você tem acesso ao dashboard de equipe para
+                  acompanhar o desenvolvimento dos seus subordinados e métricas
+                  de performance.
                 </p>
               </div>
             </div>

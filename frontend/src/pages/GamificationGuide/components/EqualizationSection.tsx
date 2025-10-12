@@ -8,7 +8,7 @@ export function EqualizationSection() {
           <FiCheckCircle className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-semibold text-gray-900">
             Equalização IC vs Manager: Como Garantimos Justiça
           </h2>
           <p className="text-gray-600">
@@ -33,14 +33,14 @@ export function EqualizationSection() {
               <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
                 <FiTarget className="w-4 h-4 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900">
                 Individual Contributors (ICs)
               </h3>
             </div>
 
             <div className="space-y-3">
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-bold text-blue-900 mb-2">
+                <h4 className="font-semibold text-brand-900 mb-2">
                   Multiplicador de Liderança por Influência
                 </h4>
                 <p className="text-blue-700 text-sm mb-2">
@@ -62,7 +62,7 @@ export function EqualizationSection() {
               </div>
 
               <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4">
-                <h4 className="font-bold text-indigo-900 mb-2">
+                <h4 className="font-semibold text-brand-900 mb-2">
                   Bônus de Excelência Técnica
                 </h4>
                 <p className="text-indigo-700 text-sm mb-2">
@@ -88,12 +88,12 @@ export function EqualizationSection() {
               <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center">
                 <FiUsers className="w-4 h-4 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Managers</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Managers</h3>
             </div>
 
             <div className="space-y-3">
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-bold text-green-900 mb-2">
+                <h4 className="font-semibold text-emerald-900 mb-2">
                   Multiplicador de Impacto
                 </h4>
                 <p className="text-green-700 text-sm mb-2">
@@ -114,7 +114,7 @@ export function EqualizationSection() {
               </div>
 
               <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4">
-                <h4 className="font-bold text-emerald-900 mb-2">
+                <h4 className="font-semibold text-emerald-900 mb-2">
                   Foco em Desenvolvimento de Pessoas
                 </h4>
                 <p className="text-emerald-700 text-sm mb-2">
@@ -142,7 +142,7 @@ export function EqualizationSection() {
             <div className="w-6 h-6 rounded-lg bg-amber-600 flex items-center justify-center">
               <FiStar className="w-4 h-4 text-white" />
             </div>
-            <h3 className="font-bold text-gray-900">
+            <h3 className="font-semibold text-gray-900">
               Limitações que Equilibram o Sistema
             </h3>
           </div>
@@ -197,78 +197,78 @@ export function EqualizationSection() {
             <div className="w-6 h-6 rounded-lg bg-purple-600 flex items-center justify-center">
               <FiStar className="w-4 h-4 text-white" />
             </div>
-            <h3 className="font-bold text-gray-900">
+            <h3 className="font-semibold text-gray-900">
               Potencial de XP por Perfil (Mensal)
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+              <h4 className="font-semibold text-brand-900 mb-3 flex items-center gap-2">
                 <FiTarget className="w-4 h-4" />
                 IC Senior Ativo
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-blue-700">PDI + multiplicador:</span>
-                  <span className="font-bold text-blue-900">130 XP</span>
+                  <span className="font-semibold text-brand-900">130 XP</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-700">Mentoria (4x):</span>
-                  <span className="font-bold text-blue-900">208 XP</span>
+                  <span className="font-semibold text-brand-900">208 XP</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-700">
                     Facilitation + tech talks:
                   </span>
-                  <span className="font-bold text-blue-900">92 XP</span>
+                  <span className="font-semibold text-brand-900">92 XP</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-700">Inovação técnica:</span>
-                  <span className="font-bold text-blue-900">100 XP</span>
+                  <span className="font-semibold text-brand-900">100 XP</span>
                 </div>
                 <hr className="border-blue-200" />
                 <div className="flex justify-between text-base">
-                  <span className="font-bold text-blue-800">Total Mensal:</span>
-                  <span className="font-bold text-blue-900">530 XP</span>
+                  <span className="font-semibold text-brand-800">Total Mensal:</span>
+                  <span className="font-semibold text-brand-900">530 XP</span>
                 </div>
               </div>
             </div>
 
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-              <h4 className="font-bold text-green-900 mb-3 flex items-center gap-2">
+              <h4 className="font-semibold text-emerald-900 mb-3 flex items-center gap-2">
                 <FiUsers className="w-4 h-4" />
                 Manager Engajado
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-green-700">PDI pessoal:</span>
-                  <span className="font-bold text-green-900">100 XP</span>
+                  <span className="font-semibold text-emerald-900">100 XP</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-green-700">
                     Desenvolvimento de pessoas:
                   </span>
-                  <span className="font-bold text-green-900">240 XP</span>
+                  <span className="font-semibold text-emerald-900">240 XP</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-green-700">
                     Processo + multiplicador:
                   </span>
-                  <span className="font-bold text-green-900">160 XP</span>
+                  <span className="font-semibold text-emerald-900">160 XP</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-green-700">
                     Colaboração cross-team:
                   </span>
-                  <span className="font-bold text-green-900">90 XP</span>
+                  <span className="font-semibold text-emerald-900">90 XP</span>
                 </div>
                 <hr className="border-green-200" />
                 <div className="flex justify-between text-base">
-                  <span className="font-bold text-green-800">
+                  <span className="font-semibold text-emerald-800">
                     Total Mensal:
                   </span>
-                  <span className="font-bold text-green-900">590 XP</span>
+                  <span className="font-semibold text-emerald-900">590 XP</span>
                 </div>
               </div>
             </div>
@@ -276,7 +276,7 @@ export function EqualizationSection() {
         </div>
 
         <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
-          <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-green-600 flex items-center justify-center">
               <FiCheckCircle className="w-4 h-4 text-white" />
             </div>

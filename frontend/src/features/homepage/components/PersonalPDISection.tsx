@@ -1,5 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { FiTarget, FiArrowRight, FiCalendar, FiTrendingUp, FiCheckCircle } from "react-icons/fi";
+import {
+  FiTarget,
+  FiArrowRight,
+  FiCalendar,
+  FiTrendingUp,
+  FiCheckCircle,
+} from "react-icons/fi";
 import { useRemotePdi } from "@/features/pdi";
 
 /**
@@ -53,9 +59,9 @@ export function PersonalPDISection() {
   // Calcular progresso geral das competências (baseado em records)
   const records = plan?.records || [];
   const competencyProgress = new Map<string, number>();
-  
+
   // Agrupar records por área e pegar o nível mais alto
-  records.forEach(record => {
+  records.forEach((record) => {
     const currentLevel = competencyProgress.get(record.area) || 0;
     const recordLevel = record.levelAfter || record.levelBefore || 0;
     if (recordLevel > currentLevel) {
@@ -63,15 +69,19 @@ export function PersonalPDISection() {
     }
   });
 
-  const totalCompetencyProgress = competencies.length > 0 && competencyProgress.size > 0
-    ? Math.round(
-        Array.from(competencyProgress.values()).reduce((sum, level) => sum + (level / 3) * 100, 0) / competencyProgress.size
-      )
-    : 0;
+  const totalCompetencyProgress =
+    competencies.length > 0 && competencyProgress.size > 0
+      ? Math.round(
+          Array.from(competencyProgress.values()).reduce(
+            (sum, level) => sum + (level / 3) * 100,
+            0
+          ) / competencyProgress.size
+        )
+      : 0;
 
   // Milestones próximas (próximas 3) - usando 'date' em vez de 'targetDate'
   const upcomingMilestones = milestones
-    .filter(milestone => {
+    .filter((milestone) => {
       const targetDate = new Date(milestone.date);
       const now = new Date();
       return targetDate >= now;
@@ -80,10 +90,16 @@ export function PersonalPDISection() {
     .slice(0, 3);
 
   // KRs com status não "completado" (baseado no currentStatus)
-  const activeKRs = krs.filter(kr => {
-    const status = kr.currentStatus?.toLowerCase() || "";
-    return !status.includes("completado") && !status.includes("concluído") && !status.includes("100%");
-  }).slice(0, 2);
+  const activeKRs = krs
+    .filter((kr) => {
+      const status = kr.currentStatus?.toLowerCase() || "";
+      return (
+        !status.includes("completado") &&
+        !status.includes("concluído") &&
+        !status.includes("100%")
+      );
+    })
+    .slice(0, 2);
 
   return (
     <div className="bg-white rounded-xl border border-surface-200 shadow-sm">
@@ -137,7 +153,8 @@ export function PersonalPDISection() {
                 />
               </div>
               <div className="text-sm text-emerald-700 mt-2">
-                {competencies.length} competência{competencies.length !== 1 ? "s" : ""} em desenvolvimento
+                {competencies.length} competência
+                {competencies.length !== 1 ? "s" : ""} em desenvolvimento
               </div>
             </div>
 
@@ -156,21 +173,33 @@ export function PersonalPDISection() {
                     {upcomingMilestones.map((milestone, index) => {
                       const targetDate = new Date(milestone.date);
                       const isOverdue = targetDate < new Date();
-                      const daysUntil = Math.ceil((targetDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                      
+                      const daysUntil = Math.ceil(
+                        (targetDate.getTime() - new Date().getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      );
+
                       return (
-                        <div key={index} className="flex items-center justify-between">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between"
+                        >
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-surface-900 truncate">
                               {milestone.title}
                             </div>
-                            <div className={`text-xs ${isOverdue ? 'text-rose-600' : 'text-surface-600'}`}>
-                              {isOverdue ? 'Atrasada' : `Em ${daysUntil} dias`}
+                            <div
+                              className={`text-xs ${
+                                isOverdue ? "text-rose-600" : "text-surface-600"
+                              }`}
+                            >
+                              {isOverdue ? "Atrasada" : `Em ${daysUntil} dias`}
                             </div>
                           </div>
-                          <div className={`w-2 h-2 rounded-full ${
-                            isOverdue ? 'bg-rose-400' : 'bg-blue-400'
-                          }`}></div>
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              isOverdue ? "bg-rose-400" : "bg-blue-400"
+                            }`}
+                          ></div>
                         </div>
                       );
                     })}
@@ -196,7 +225,7 @@ export function PersonalPDISection() {
                       // Calcular progresso estimado baseado no currentStatus
                       const status = kr.currentStatus || "";
                       let estimatedProgress = 0;
-                      
+
                       // Tentar extrair percentual do status
                       const percentMatch = status.match(/(\d+)%/);
                       if (percentMatch) {
@@ -243,25 +272,19 @@ export function PersonalPDISection() {
                 <div className="text-2xl font-bold text-surface-900">
                   {competencies.length}
                 </div>
-                <div className="text-sm text-surface-600">
-                  Competências
-                </div>
+                <div className="text-sm text-surface-600">Competências</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-surface-900">
                   {milestones.length}
                 </div>
-                <div className="text-sm text-surface-600">
-                  Milestones
-                </div>
+                <div className="text-sm text-surface-600">Milestones</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-surface-900">
                   {krs.length}
                 </div>
-                <div className="text-sm text-surface-600">
-                  Key Results
-                </div>
+                <div className="text-sm text-surface-600">Key Results</div>
               </div>
             </div>
           </div>
@@ -275,7 +298,8 @@ export function PersonalPDISection() {
               Crie seu primeiro PDI
             </div>
             <div className="text-sm text-surface-600 mb-4">
-              Defina competências, milestones e key results para sua evolução profissional
+              Defina competências, milestones e key results para sua evolução
+              profissional
             </div>
             <button
               onClick={() => navigate("/me/pdi")}
