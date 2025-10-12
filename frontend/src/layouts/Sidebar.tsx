@@ -8,6 +8,7 @@ import {
   FiSettings,
 } from "react-icons/fi";
 import { HiOutlineHashtag } from "react-icons/hi2";
+import XPIndicator from "@/features/gamification/components/XPIndicator";
 
 // Sidebar sem colapso (feature removida a pedido)
 
@@ -98,6 +99,12 @@ export function Sidebar({
           </div>
         </div>
       </div>
+
+      {/* XP Indicator */}
+      <div className="px-3 py-2 border-b border-surface-300/40">
+        <XPIndicator size="sm" />
+      </div>
+
       {/* Navegação */}
       <nav className="flex-1 py-3 px-2 space-y-1 overflow-y-auto min-h-0 relative scrollbar-thin scrollbar-track-transparent scrollbar-thumb-surface-300/40">
         {navItems.map((item) => {

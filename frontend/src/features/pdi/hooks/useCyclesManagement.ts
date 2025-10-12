@@ -1,15 +1,48 @@
 import { useState, useCallback, useEffect } from "react";
 import type { PdiCycle, PdiPlan } from "../types/pdi";
+import {
+  createCycle as apiCreateCycle,
+  createCycleForUser,
+  updateCycle as apiUpdateCycle,
+  deleteCycle as apiDeleteCycle,
+  fetchMyCycles,
+  fetchCyclesForUser,
+} from "../api/cycles";
 
-export function useCyclesManagement(initialPlan: PdiPlan) {
-  // Se o plano já tem ciclos, use-os; senão, crie um ciclo padrão com o PDI atual
+export function useCyclesManagement(
+  initialPlan: PdiPlan,
+  targetUserId?: number
+) {
+  // Se o plano já tem ciclos, use-os; senão, comece com array vazio
   const [cycles, setCycles] = useState<PdiCycle[]>(
     () => initialPlan.cycles || []
   );
+  const [loading, setLoading] = useState(false);
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>("");
 
-  // Inicializar o selectedCycleId quando cycles estiver pronto
+  // Carregar ciclos do backend se não houver ciclos iniciais
+  useEffect(() => {
+    async function loadCyclesFromBackend() {
+      if (cycles.length > 0) return; // Já tem ciclos
+
+      try {
+        setLoading(true);
+        // Se targetUserId for fornecido, carregar ciclos desse usuário; senão carregar próprios
+        const remoteCycles = targetUserId
+          ? await fetchCyclesForUser(targetUserId)
+          : await fetchMyCycles();
+        setCycles(remoteCycles);
+      } catch (error) {
+        console.error("Erro ao carregar ciclos:", error);
+        // Se falhar, manter array vazio para permitir criação
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCyclesFromBackend();
+  }, [targetUserId, cycles.length]); // Recarregar se targetUserId mudar ou se cycles for atualizado  // Inicializar o selectedCycleId quando cycles estiver pronto
   useEffect(() => {
     if (cycles.length > 0) {
       // Sempre priorizar ciclo ativo vindo do backend
@@ -30,29 +63,65 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
     cycles.find((c) => c.status === "active");
 
   const createCycle = useCallback(
-    (cycleData: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">) => {
-      const newCycle: PdiCycle = {
-        ...cycleData,
-        id: `cycle-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+    async (cycleData: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">) => {
+      try {
+        // Mapear estrutura para payload do server
+        const payload = {
+          title: cycleData.title,
+          description: cycleData.description,
+          startDate: cycleData.startDate,
+          endDate: cycleData.endDate,
+          competencies: cycleData.pdi?.competencies || [],
+          krs: cycleData.pdi?.krs || [],
+          milestones: cycleData.pdi?.milestones || [],
+          records: cycleData.pdi?.records || [],
+        };
 
-      setCycles((prev) => [...prev, newCycle]);
-      setSelectedCycleId(newCycle.id);
+        // Se targetUserId for fornecido, criar para esse usuário; senão para o usuário logado
+        const newCycle = targetUserId
+          ? await createCycleForUser(targetUserId, payload)
+          : await apiCreateCycle(payload);
+
+        setCycles((prev) => [...prev, newCycle]);
+        setSelectedCycleId(newCycle.id);
+      } catch (error) {
+        console.error("Erro ao criar ciclo:", error);
+        throw error;
+      }
     },
-    []
+    [targetUserId]
   );
 
   const updateCycle = useCallback(
-    (cycleId: string, updates: Partial<PdiCycle>) => {
-      setCycles((prev) =>
-        prev.map((cycle) =>
-          cycle.id === cycleId
-            ? { ...cycle, ...updates, updatedAt: new Date().toISOString() }
-            : cycle
-        )
-      );
+    async (cycleId: string, updates: Partial<PdiCycle>) => {
+      try {
+        // Mapear atualizações para payload do server
+        const payload: Record<string, unknown> = {};
+        if (updates.title !== undefined) payload.title = updates.title;
+        if (updates.description !== undefined)
+          payload.description = updates.description;
+        if (updates.startDate !== undefined)
+          payload.startDate = updates.startDate;
+        if (updates.endDate !== undefined) payload.endDate = updates.endDate;
+        if (updates.status !== undefined)
+          payload.status = updates.status.toUpperCase();
+        if (updates.pdi) {
+          if (updates.pdi.competencies)
+            payload.competencies = updates.pdi.competencies;
+          if (updates.pdi.krs) payload.krs = updates.pdi.krs;
+          if (updates.pdi.milestones)
+            payload.milestones = updates.pdi.milestones;
+          if (updates.pdi.records) payload.records = updates.pdi.records;
+        }
+
+        const updatedCycle = await apiUpdateCycle(cycleId, payload);
+        setCycles((prev) =>
+          prev.map((cycle) => (cycle.id === cycleId ? updatedCycle : cycle))
+        );
+      } catch (error) {
+        console.error("Erro ao atualizar ciclo:", error);
+        throw error;
+      }
     },
     []
   );
@@ -67,18 +136,24 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
   }, []);
 
   const deleteCycle = useCallback(
-    (cycleId: string) => {
-      setCycles((prev) => {
-        const filtered = prev.filter((c) => c.id !== cycleId);
+    async (cycleId: string) => {
+      try {
+        await apiDeleteCycle(cycleId);
+        setCycles((prev) => {
+          const filtered = prev.filter((c) => c.id !== cycleId);
 
-        // Se o ciclo selecionado foi deletado, selecionar outro
-        if (cycleId === selectedCycleId && filtered.length > 0) {
-          const activeCycle = filtered.find((c) => c.status === "active");
-          setSelectedCycleId(activeCycle?.id || filtered[0].id);
-        }
+          // Se o ciclo selecionado foi deletado, selecionar outro
+          if (cycleId === selectedCycleId && filtered.length > 0) {
+            const activeCycle = filtered.find((c) => c.status === "active");
+            setSelectedCycleId(activeCycle?.id || filtered[0].id);
+          }
 
-        return filtered;
-      });
+          return filtered;
+        });
+      } catch (error) {
+        console.error("Erro ao deletar ciclo:", error);
+        throw error;
+      }
     },
     [selectedCycleId]
   );
@@ -127,6 +202,7 @@ export function useCyclesManagement(initialPlan: PdiPlan) {
     cycles,
     selectedCycleId,
     selectedCycle,
+    loading,
     setSelectedCycleId,
     setCycles, // expõe para integração controlada
     createCycle,

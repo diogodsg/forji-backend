@@ -1,21 +1,25 @@
 import { useState, useEffect } from "react";
-import { FiTarget, FiCalendar, FiBarChart } from "react-icons/fi";
+import { FiTarget, FiCalendar } from "react-icons/fi";
 import { CyclesManager } from "./cycles/CyclesManager";
-import { ActiveCycleBadge } from "./ActiveCycleBadge";
+import { CycleSelector } from "./CycleSelector";
 import type { PdiCycle } from "../types/pdi";
 
 interface PdiTabsProps {
   pdiContent: React.ReactNode;
-  statisticsContent?: React.ReactNode;
+  // Para manager mode
+  targetUserId?: number;
   // Controlled cycles API (opcional). Se fornecido, componente não faz fetch inicial.
   cycles?: PdiCycle[];
   selectedCycleId?: string;
   onSelectCycle?: (id: string) => void;
   onCreateCycle?: (
     cycle: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">
-  ) => void;
-  onUpdateCycle?: (id: string, updates: Partial<PdiCycle>) => void;
-  onDeleteCycle?: (id: string) => void;
+  ) => void | Promise<void>;
+  onUpdateCycle?: (
+    id: string,
+    updates: Partial<PdiCycle>
+  ) => void | Promise<void>;
+  onDeleteCycle?: (id: string) => void | Promise<void>;
   onReplaceCycle?: (cycle: PdiCycle) => void; // usado quando buscamos snapshot histórico
 }
 
@@ -29,7 +33,6 @@ import {
 
 export function PdiTabs({
   pdiContent,
-  statisticsContent,
   cycles: controlledCycles,
   selectedCycleId: controlledSelectedId,
   onSelectCycle,
@@ -38,7 +41,7 @@ export function PdiTabs({
   onDeleteCycle,
   onReplaceCycle,
 }: PdiTabsProps) {
-  const [activeTab, setActiveTab] = useState<"cycles" | "pdi" | "stats">("pdi");
+  const [activeTab, setActiveTab] = useState<"cycles" | "pdi">("pdi");
   const [cycleLoading, setCycleLoading] = useState(false);
   const isControlled = Array.isArray(controlledCycles);
   const [uncontrolledCycles, setUncontrolledCycles] = useState<PdiCycle[]>([]);
@@ -64,8 +67,10 @@ export function PdiTabs({
         const active = data.find((c) => c.status === "active") || data[0];
         setUncontrolledSelectedId(active.id);
       }
-    } catch (e: any) {
-      setError(e.message || "Falha ao carregar ciclos");
+    } catch (e: unknown) {
+      const errorMessage =
+        e instanceof Error ? e.message : "Falha ao carregar ciclos";
+      setError(errorMessage);
     } finally {
       setLoadingCycles(false);
     }
@@ -73,7 +78,7 @@ export function PdiTabs({
 
   useEffect(() => {
     if (!isControlled) load();
-  }, []);
+  }, [isControlled, load]);
 
   // Sincronizar mudança de cycles controlados para garantir seleção válida
   useEffect(() => {
@@ -97,7 +102,7 @@ export function PdiTabs({
     cyclePartial: Omit<PdiCycle, "id" | "createdAt" | "updatedAt">
   ) {
     if (isControlled) {
-      onCreateCycle?.(cyclePartial);
+      await onCreateCycle?.(cyclePartial);
       return;
     }
     // Mapear estrutura inversa para payload server
@@ -117,10 +122,10 @@ export function PdiTabs({
 
   async function handleUpdateCycle(id: string, updates: Partial<PdiCycle>) {
     if (isControlled) {
-      onUpdateCycle?.(id, updates);
+      await onUpdateCycle?.(id, updates);
       return;
     }
-    const payload: any = {};
+    const payload: Record<string, unknown> = {};
     if (updates.title !== undefined) payload.title = updates.title;
     if (updates.description !== undefined)
       payload.description = updates.description;
@@ -143,7 +148,7 @@ export function PdiTabs({
 
   async function handleDeleteCycle(id: string) {
     if (isControlled) {
-      onDeleteCycle?.(id);
+      await onDeleteCycle?.(id);
       return;
     }
     await deleteCycle(id);
@@ -179,7 +184,7 @@ export function PdiTabs({
               : [...prev, fresh];
           });
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
@@ -189,41 +194,54 @@ export function PdiTabs({
   const baseTabs = [
     {
       id: "pdi" as const,
-      label: "PDI",
+      label: "PDI Atual",
       icon: FiTarget,
       content: (
         <div className="space-y-4">
-          {cycles.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-medium text-gray-600">Ciclo:</span>
-              {cycles.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => handleSelectCycle(c.id)}
-                  className={`px-2.5 py-1 rounded-md border transition-colors ${
-                    c.id === selectedCycleId
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600"
-                  }`}
-                >
-                  {c.title}
-                </button>
-              ))}
-            </div>
-          )}
-          {(!cycleLoading || activeTab !== "pdi") && pdiContent}
-          {cycleLoading && activeTab === "pdi" && (
-            <div className="p-4 rounded-md border border-gray-200 bg-gray-50 animate-pulse text-xs text-gray-600">
-              Carregando ciclo...
+          {cycles.length > 0 ? (
+            <>
+              <CycleSelector
+                cycles={cycles}
+                selectedCycleId={selectedCycleId}
+                onSelectCycle={handleSelectCycle}
+                showStatus={true}
+              />
+              {(!cycleLoading || activeTab !== "pdi") && pdiContent}
+              {cycleLoading && activeTab === "pdi" && (
+                <div className="p-4 rounded-md border border-gray-200 bg-gray-50 animate-pulse text-xs text-gray-600">
+                  Carregando ciclo...
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border-2 border-dashed border-indigo-200">
+              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FiCalendar className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Nenhum Ciclo de PDI
+              </h3>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                Para começar seu desenvolvimento, você precisa criar um ciclo de
+                PDI. Vá para a aba "Gestão de Ciclos" para criar seu primeiro
+                ciclo.
+              </p>
+              <button
+                onClick={() => setActiveTab("cycles")}
+                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <FiCalendar className="w-4 h-4 mr-2" />
+                Criar Primeiro Ciclo
+              </button>
             </div>
           )}
         </div>
       ),
-      description: "Competências, objetivos e marcos",
+      description: "Competências, objetivos e marcos do ciclo atual",
     },
     {
       id: "cycles" as const,
-      label: "Ciclos",
+      label: "Gestão de Ciclos",
       icon: FiCalendar,
       content: (
         <CyclesManager
@@ -236,22 +254,11 @@ export function PdiTabs({
           editing={true}
         />
       ),
-      description: "Gerencie ciclos de desenvolvimento",
+      description: "Criar, editar e organizar seus ciclos de desenvolvimento",
     },
   ];
 
-  const tabs = statisticsContent
-    ? [
-        ...baseTabs,
-        {
-          id: "stats" as const,
-          label: "Estatísticas",
-          icon: FiBarChart,
-          content: statisticsContent,
-          description: "Progresso e métricas",
-        },
-      ]
-    : baseTabs;
+  const tabs = baseTabs;
 
   const currentTab = tabs.find((tab) => tab.id === activeTab);
   const activeCycle = cycles.find((c) => c.status === "active");
@@ -302,8 +309,37 @@ export function PdiTabs({
               <p className="text-sm text-gray-600">{currentTab.description}</p>
             </div>
           </div>
-          <div className="ml-auto">
-            <ActiveCycleBadge cycle={currentCycle} />
+
+          <div className="ml-auto flex items-center gap-4">
+            {/* Badge do ciclo atual */}
+            {currentCycle && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">
+                  Ciclo Ativo:
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {currentCycle.title}
+                </span>
+                {isHistorical && (
+                  <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+                    Histórico
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Status geral */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-500">
+                {cycles.length} ciclo{cycles.length !== 1 ? "s" : ""}
+              </span>
+              {cycles.filter((c) => c.status === "active").length > 0 && (
+                <span
+                  className="w-2 h-2 bg-green-400 rounded-full"
+                  title="Tem ciclo ativo"
+                ></span>
+              )}
+            </div>
           </div>
         </div>
       )}

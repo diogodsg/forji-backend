@@ -86,6 +86,13 @@ model User {
   User_A                                            User[]           @relation("UserManagers")
   User_B                                            User[]           @relation("UserManagers")
   pdiCycles                                         PdiCycle[]
+  gamificationProfile                               GamificationProfile?
+  
+  // Gamification - Action System
+  actionSubmissions                                 ActionSubmission[] @relation("ActionSubmissionUser")
+  validatedSubmissions                              ActionSubmission[] @relation("ActionSubmissionValidator")
+  actionCooldowns                                   ActionCooldown[]
+  weeklyCaps                                        WeeklyCap[]
 }
 
 model file_changes {
@@ -159,6 +166,13 @@ enum PdiCycleStatus {
   ARCHIVED
 }
 
+enum ActionSubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REQUIRES_EVIDENCE
+}
+
 model PdiCycle {
   id           BigInt         @id @default(autoincrement())
   userId       BigInt
@@ -180,4 +194,124 @@ model PdiCycle {
   @@index([userId, status])
   @@index([startDate])
   @@index([endDate])
+}
+
+// Gamificação - Perfil do jogador
+model GamificationProfile {
+  id               BigInt      @id @default(autoincrement())
+  userId           BigInt      @unique
+  totalXP          Int         @default(0)
+  weeklyXP         Int         @default(0)
+  lastActivityDate DateTime    @default(now())
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  User             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badges           UserBadge[]
+  xpHistory        XpHistory[]
+
+  @@index([totalXP])
+  @@index([weeklyXP])
+}
+
+// Badges dos usuários
+model UserBadge {
+  id          BigInt               @id @default(autoincrement())
+  userId      BigInt
+  badgeId     String
+  name        String
+  description String
+  icon        String
+  rarity      String // 'common', 'rare', 'epic', 'legendary'
+  category    String
+  progress    Int?
+  maxProgress Int?
+  unlockedAt  DateTime             @default(now())
+  profile     GamificationProfile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+  @@index([category])
+  @@index([rarity])
+}
+
+// Histórico de XP
+model XpHistory {
+  id          BigInt              @id @default(autoincrement())
+  userId      BigInt
+  action      String
+  points      Int
+  category    String
+  description String?
+  createdAt   DateTime            @default(now())
+  profile     GamificationProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([category])
+  @@index([createdAt])
+}
+
+// Submissões de ações manuais
+model ActionSubmission {
+  id           BigInt   @id @default(autoincrement())
+  userId       BigInt
+  action       String   // meaningful_feedback_given, mentoring_session, etc.
+  points       Int
+  evidence     String?  // URL, texto, ou arquivo de evidência
+  rating       Float?   // Rating de 1-5 para validação
+  validatedBy  BigInt?  // ID do usuário que validou
+  status       ActionSubmissionStatus @default(PENDING)
+  metadata     Json?    // Dados específicos da ação (ex: quem recebeu feedback)
+  description  String?  // Descrição opcional da ação
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relacionamentos
+  user         User     @relation("ActionSubmissionUser", fields: [userId], references: [id], onDelete: Cascade)
+  validator    User?    @relation("ActionSubmissionValidator", fields: [validatedBy], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([status])
+  @@index([createdAt])
+  @@index([validatedBy])
+}
+
+// Cooldowns para evitar spam de ações
+model ActionCooldown {
+  id             BigInt   @id @default(autoincrement())
+  userId         BigInt
+  action         String   // Tipo de ação em cooldown
+  lastSubmission DateTime
+  expiresAt      DateTime // Quando o cooldown expira
+  createdAt      DateTime @default(now())
+  
+  // Relacionamentos
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, action])
+  @@index([userId])
+  @@index([action])
+  @@index([expiresAt])
+}
+
+// Caps semanais para controle de XP
+model WeeklyCap {
+  id           BigInt   @id @default(autoincrement())
+  userId       BigInt
+  action       String   // Tipo de ação com cap
+  weekStart    DateTime // Início da semana (Monday)
+  count        Int      @default(0) // Quantas vezes a ação foi executada na semana
+  maxCount     Int      // Máximo permitido por semana
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relacionamentos
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, action, weekStart])
+  @@index([userId])
+  @@index([action])
+  @@index([weekStart])
 }

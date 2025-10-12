@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
 import { useAdminUpdateProfile } from "../hooks/useAdminUpdateProfile";
+import { useAuth } from "@/features/auth";
+import { GamificationFeedbackPanel } from "@/features/gamification/components/GamificationFeedbackPanel";
 import type { UpdateProfileDto, UserProfile } from "../types/settings";
 
 interface Props {
@@ -16,6 +18,7 @@ export function UserProfileEditor({
   onSuccess,
   onClose,
 }: Props) {
+  const { user: currentUser } = useAuth();
   const {
     updateProfile,
     loading: selfLoading,
@@ -39,6 +42,11 @@ export function UserProfileEditor({
 
   const [isEditing, setIsEditing] = useState(isAdminMode); // Admin mode starts in editing mode
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showFeedbackPanel, setShowFeedbackPanel] = useState(false);
+
+  // Show feedback panel only in admin mode and for different users
+  const canGiveFeedback =
+    isAdminMode && currentUser && currentUser.id !== user.id;
 
   useEffect(() => {
     setFormData({
@@ -246,6 +254,36 @@ export function UserProfileEditor({
           </div>
         )}
       </form>
+
+      {/* Gamification Feedback Panel - Only for admins viewing other users */}
+      {canGiveFeedback && (
+        <div className="border-t border-gray-200 pt-6">
+          {!showFeedbackPanel ? (
+            <button
+              onClick={() => setShowFeedbackPanel(true)}
+              className="w-full bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-4 text-left hover:from-indigo-100 hover:to-blue-100 transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-indigo-900">
+                    Registrar Ação de Desenvolvimento
+                  </div>
+                  <div className="text-sm text-indigo-700">
+                    Registre feedback, mentoria ou outras ações para {user.name}
+                  </div>
+                </div>
+                <div className="text-indigo-600">→</div>
+              </div>
+            </button>
+          ) : (
+            <GamificationFeedbackPanel
+              targetUserId={user.id}
+              targetUserName={user.name}
+              onClose={() => setShowFeedbackPanel(false)}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

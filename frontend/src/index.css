@@ -16,6 +16,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Animações para o TaskEditor */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* When side panel is open, neutralize background gradient artifacts behind overlay */
 /* Removed sidepanel-open CSS rule for previous SidePanel implementation */
 
@@ -28,4 +40,63 @@ body {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: #9ca3af; /* gray-400 */
   border-radius: 9999px;
+}
+
+/* Homepage animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out;
+  animation-fill-mode: both;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.animation-delay-600 {
+  animation-delay: 0.6s;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+/* Backdrop blur fallback for older browsers */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+@supports not (backdrop-filter: blur(4px)) {
+  .backdrop-blur-sm {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
 }

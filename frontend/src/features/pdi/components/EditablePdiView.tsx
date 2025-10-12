@@ -1,30 +1,83 @@
 // MOVED from src/components/EditablePdiView.tsx
 // Adjusted import paths for feature module structure
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiEdit2,
-  FiCheckSquare,
   FiTarget,
-  FiBarChart,
-  FiTrendingUp,
+  FiPercent,
+  FiTrendingDown,
+  FiCalendar,
+  FiType,
+  FiTrash2,
 } from "react-icons/fi";
-import { HiLightBulb } from "react-icons/hi";
-import type {
-  PdiMilestone,
-  PdiPlan,
-  PdiKeyResult,
-  PdiCompetencyRecord,
-} from "..";
+import type { PdiMilestone, PdiPlan, PdiKeyResult } from "../types/pdi";
 import { MilestonesSection } from "./sections/MilestonesSection";
-import { CompetenciesAndResultsSection } from "./sections/CompetenciesAndResultsSection";
-import { KeyResultsEditor } from "./editors/KeyResultsEditor";
+import { NewCompetenciesSection } from "./sections/NewCompetenciesSection";
+// import { ImprovedKeyResultsEditor } from "./editors/ImprovedKeyResultsEditor"; // legado (mantido comentado caso queira voltar)
+import { MinimalKrEditor } from "./editors/MinimalKrEditor";
+import { Modal } from "../../../shared/ui/Modal";
 import { SaveStatusBar } from "./structure/structure";
 import { CollapsibleSectionCard } from "../../../shared";
-import { KeyResultsView } from "./structure/views";
+import { KeyResultsView, KeyResultsPreview } from "./structure/views";
 import { usePdiEditing } from "../hooks/usePdiEditing";
 import { useAutoSave } from "../hooks/useAutoSave";
 import { useCyclesManagement } from "../hooks/useCyclesManagement";
 import { PdiTabs } from "./PdiTabs";
+import { PdiGamificationIntegration } from "@/features/gamification/components/PdiGamificationIntegration";
+
+// Função para calcular progresso (copiada do MinimalKrEditor para consistência)
+const calculateProgress = (
+  criteriaType: string,
+  criteria: string,
+  status: string
+): number => {
+  if (!criteria || !status) return 0;
+
+  switch (criteriaType) {
+    case "percentage":
+      const target = parseFloat(criteria);
+      const current = parseFloat(status);
+      if (isNaN(target) || isNaN(current) || target === 0) return 0;
+      return Math.min((current / target) * 100, 100);
+
+    case "increase":
+      const incParts = criteria.split("|");
+      if (incParts.length !== 2) return 0;
+      const [initialInc, targetInc] = incParts.map((v) => parseFloat(v));
+      const currentInc = parseFloat(status);
+      if (isNaN(initialInc) || isNaN(targetInc) || isNaN(currentInc)) return 0;
+      const totalIncNeeded = targetInc - initialInc;
+      const currentIncProgress = currentInc - initialInc;
+      if (totalIncNeeded <= 0) return 0;
+      return Math.min(
+        Math.max((currentIncProgress / totalIncNeeded) * 100, 0),
+        100
+      );
+
+    case "decrease":
+      const decParts = criteria.split("|");
+      if (decParts.length !== 2) return 0;
+      const [initialDec, targetDec] = decParts.map((v) => parseFloat(v));
+      const currentDec = parseFloat(status);
+      if (isNaN(initialDec) || isNaN(targetDec) || isNaN(currentDec)) return 0;
+      const totalDecNeeded = initialDec - targetDec;
+      const currentDecProgress = initialDec - currentDec;
+      if (totalDecNeeded <= 0) return 0;
+      return Math.min(
+        Math.max((currentDecProgress / totalDecNeeded) * 100, 0),
+        100
+      );
+
+    default:
+      return 0;
+  }
+};
+
+interface SelectedCompetency {
+  competencyId: string;
+  targetLevel: number;
+  currentLevel?: number;
+}
 
 interface Props {
   initialPlan: PdiPlan;
@@ -36,6 +89,27 @@ export const EditablePdiView: React.FC<Props> = ({
   saveForUserId,
 }) => {
   const hasTarget = saveForUserId != null;
+
+  // Estado das competências selecionadas (mockado para demonstração)
+  const [selectedCompetencies, setSelectedCompetencies] = useState<
+    SelectedCompetency[]
+  >([
+    {
+      competencyId: "react-frontend",
+      targetLevel: 3,
+      currentLevel: 2,
+    },
+    {
+      competencyId: "backend-apis",
+      targetLevel: 2,
+      currentLevel: 1,
+    },
+    {
+      competencyId: "communication",
+      targetLevel: 2,
+      currentLevel: 1,
+    },
+  ]);
 
   // Gestão de ciclos
   const {
@@ -49,7 +123,7 @@ export const EditablePdiView: React.FC<Props> = ({
     replaceCycle,
     updateSelectedCyclePdi,
     getCurrentPdiPlan,
-  } = useCyclesManagement(initialPlan);
+  } = useCyclesManagement(initialPlan, saveForUserId);
 
   // Use o PDI do ciclo selecionado - memoizado para evitar recriações
   const currentPlan = useMemo(() => getCurrentPdiPlan(), [getCurrentPdiPlan]);
@@ -71,6 +145,17 @@ export const EditablePdiView: React.FC<Props> = ({
   // Sincronizar mudanças do PDI com o ciclo selecionado (com debounce para evitar loops)
   useEffect(() => {
     if (selectedCycle && !saving && !pendingSave) {
+      // Não atualizar se alguma seção crítica estiver sendo editada
+      if (
+        editingSections.krs ||
+        editingSections.competencies ||
+        editingSections.results ||
+        editingMilestones.size > 0
+      ) {
+        console.log("Atualização de ciclo pausada: seções em edição");
+        return;
+      }
+
       // Limpar timeout anterior
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
@@ -116,31 +201,70 @@ export const EditablePdiView: React.FC<Props> = ({
     dispatch,
   });
 
-  const addCompetency = (c: string) =>
-    dispatch({ type: "ADD_COMPETENCY", value: c });
-  const removeCompetency = (c: string) =>
-    dispatch({ type: "REMOVE_COMPETENCY", value: c });
+  // Competency functions - keeping for future integration
+  // const addCompetency = (c: string) =>
+  //   dispatch({ type: "ADD_COMPETENCY", value: c });
+  // const removeCompetency = (c: string) =>
+  //   dispatch({ type: "REMOVE_COMPETENCY", value: c });
+
   const updateMilestone = (id: string, patch: Partial<PdiMilestone>) =>
     dispatch({ type: "UPDATE_MILESTONE", id, patch });
   const removeMilestone = (id: string) =>
     dispatch({ type: "REMOVE_MILESTONE", id });
   const addMilestone = () => dispatch({ type: "ADD_MILESTONE" });
-  const updateRecord = (area: string, patch: Partial<PdiCompetencyRecord>) =>
-    dispatch({ type: "UPDATE_RECORD", area, patch });
-  const addRecord = (area?: string) => {
-    const name = (area || "").trim();
-    if (!name) return;
-    dispatch({
-      type: "ADD_RECORD",
-      record: { area: name, evidence: "" } as any,
-    });
-  };
-  const removeRecord = (area: string) =>
-    dispatch({ type: "REMOVE_RECORD", area });
+
+  // Record functions - keeping for future integration
+  // const updateRecord = (area: string, patch: Partial<PdiCompetencyRecord>) =>
+  //   dispatch({ type: "UPDATE_RECORD", area, patch });
+  // const addRecord = (area?: string) => {
+  //   const name = (area || "").trim();
+  //   if (!name) return;
+  //   dispatch({
+  //     type: "ADD_RECORD",
+  //     record: { area: name, evidence: "" } as any,
+  //   });
+  // };
+  // const removeRecord = (area: string) =>
+  //   dispatch({ type: "REMOVE_RECORD", area });
+
   const addKr = () => dispatch({ type: "ADD_KR" });
   const updateKr = (id: string, patch: Partial<PdiKeyResult>) =>
     dispatch({ type: "UPDATE_KR", id, patch });
   const removeKr = (id: string) => dispatch({ type: "REMOVE_KR", id });
+
+  // --- Modal de edição minimalista ---
+  const [krModalOpen, setKrModalOpen] = useState(false);
+  const [editingKrId, setEditingKrId] = useState<string | null>(null);
+
+  const openCreateKr = () => {
+    addKr();
+    // Esperar flush do estado síncrono: pegar último KR
+    const newId =
+      state.working.krs?.[state.working.krs.length - 1]?.id || undefined;
+    setEditingKrId(newId || null);
+    setKrModalOpen(true);
+  };
+  const openEditKr = (id: string) => {
+    setEditingKrId(id);
+    setKrModalOpen(true);
+  };
+  const closeKrModal = () => {
+    setKrModalOpen(false);
+    setEditingKrId(null);
+  };
+
+  // Sincronizar estado do modal com proteção de edição
+  useEffect(() => {
+    if (krModalOpen && !editingSections.krs) {
+      dispatch({ type: "TOGGLE_SECTION", section: "krs" });
+    } else if (!krModalOpen && editingSections.krs) {
+      dispatch({ type: "TOGGLE_SECTION", section: "krs" });
+    }
+  }, [krModalOpen, editingSections.krs, dispatch]);
+
+  const currentEditingKr = editingKrId
+    ? (working.krs || []).find((k) => k.id === editingKrId)
+    : null;
 
   const isHistorical = selectedCycle?.status === "completed";
 
@@ -152,230 +276,233 @@ export const EditablePdiView: React.FC<Props> = ({
         )}
         title="Key Results"
         defaultExpanded={false}
-        forceExpanded={editingSections.krs}
-        preview={
-          working.krs && working.krs.length > 0 ? (
-            <div className="space-y-3">
-              {/* Badge de estatística */}
-              <div className="flex items-center gap-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-100 text-indigo-800 rounded-full text-xs font-medium border border-indigo-200">
-                  <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
-                  {working.krs.length} Objetivo
-                  {working.krs.length !== 1 ? "s" : ""}
-                </div>
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <FiBarChart className="w-3 h-3" />
-                  {
-                    working.krs.filter((kr) => kr.description?.trim()).length
-                  }{" "}
-                  com descrição
-                </div>
-              </div>
-
-              {/* Preview dos primeiros KRs */}
-              <div className="space-y-2">
-                {working.krs.slice(0, 2).map((kr, index) => (
-                  <div
-                    key={kr.id}
-                    className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <div className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {kr.description || "Objetivo sem descrição"}
-                      </p>
-                      {kr.successCriteria && (
-                        <p className="text-xs text-gray-600 mt-1 truncate flex items-center gap-1">
-                          <FiTarget className="w-3 h-3 shrink-0" />
-                          {kr.successCriteria}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {working.krs.length > 2 && (
-                  <div className="text-center py-2 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-500 font-medium">
-                      +{working.krs.length - 2} objetivo
-                      {working.krs.length - 2 !== 1 ? "s" : ""} adicional
-                      {working.krs.length - 2 !== 1 ? "is" : ""}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center">
-                <span className="text-xs font-bold text-gray-500">KR</span>
-              </div>
-              <p className="text-xs text-gray-500">
-                Nenhum Key Result definido ainda
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Clique em "Editar" para começar
-              </p>
-            </div>
-          )
-        }
+        forceExpanded={false}
+        preview={<KeyResultsPreview krs={working.krs || []} />}
         action={
           !isHistorical && (
-            <button
-              onClick={() => toggleSection("krs")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all ${
-                editingSections.krs
-                  ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
-                  : "border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-              }`}
-            >
-              {editingSections.krs ? (
-                <>
-                  <FiCheckSquare className="w-3.5 h-3.5" /> Concluir Edição
-                </>
-              ) : (
-                <>
-                  <FiEdit2 className="w-3.5 h-3.5" /> Editar KRs
-                </>
-              )}
-            </button>
+            <div className="flex gap-2">
+              <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+                {(working.krs || []).length} KR
+                {(working.krs || []).length !== 1 ? "s" : ""}
+              </span>
+            </div>
           )
         }
       >
-        {editingSections.krs && !isHistorical ? (
-          <KeyResultsEditor
-            krs={working.krs || []}
-            onAdd={addKr}
-            onRemove={removeKr}
-            onUpdate={updateKr}
-          />
-        ) : (
-          <KeyResultsView krs={working.krs || []} />
-        )}
+        <KeyResultsView
+          krs={working.krs || []}
+          onEditKr={(krId) => openEditKr(krId)}
+          onCreateKr={openCreateKr}
+        />
       </CollapsibleSectionCard>
 
-      <CompetenciesAndResultsSection
-        competencies={working.competencies}
-        records={working.records}
+      {/* Modal principal de gerenciamento */}
+      <Modal
+        open={krModalOpen && !!currentEditingKr}
+        onClose={closeKrModal}
+        title="Editar Key Result"
+        size="xl"
+        footer={
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                if (currentEditingKr) removeKr(currentEditingKr.id);
+                closeKrModal();
+              }}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 text-red-700 bg-white hover:bg-red-50 transition-colors duration-200"
+            >
+              Excluir
+            </button>
+            <button
+              onClick={closeKrModal}
+              className="px-6 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200"
+            >
+              Salvar & Concluir
+            </button>
+          </div>
+        }
+      >
+        {currentEditingKr ? (
+          <MinimalKrEditor
+            kr={currentEditingKr}
+            onChange={(patch: any) => updateKr(currentEditingKr.id, patch)}
+          />
+        ) : (
+          <div className="space-y-6">
+            {(working.krs || []).length === 0 && (
+              <div className="text-center py-12">
+                <div className="mx-auto w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                  <FiTarget className="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  Nenhuma Key Result ainda
+                </h3>
+                <p className="text-sm text-slate-500 mb-6">
+                  Comece criando sua primeira Key Result para este PDI.
+                </p>
+                <button
+                  onClick={openCreateKr}
+                  className="px-6 py-2.5 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200"
+                >
+                  Criar Primera Key Result
+                </button>
+              </div>
+            )}
+
+            {(working.krs || []).length > 0 && (
+              <>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    Suas Key Results
+                  </h3>
+                  <span className="text-sm text-slate-500">
+                    {(working.krs || []).length} KR
+                    {(working.krs || []).length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+
+                <div className="grid gap-4">
+                  {(working.krs || []).map((kr) => {
+                    const criteriaType = kr.successCriteria?.includes("|")
+                      ? kr.successCriteria?.split("|").length === 2 &&
+                        parseFloat(kr.successCriteria.split("|")[0]) >
+                          parseFloat(kr.successCriteria.split("|")[1])
+                        ? "decrease"
+                        : "increase"
+                      : /^\d{4}-\d{2}-\d{2}$/.test(kr.successCriteria || "")
+                      ? "date"
+                      : /^\d+$/.test(kr.successCriteria || "")
+                      ? "percentage"
+                      : "text";
+                    const progress = calculateProgress(
+                      criteriaType,
+                      kr.successCriteria || "",
+                      kr.currentStatus || ""
+                    );
+
+                    return (
+                      <div
+                        key={kr.id}
+                        className="group p-4 border-2 border-slate-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200"
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Ícone do tipo */}
+                          <div
+                            className={`p-2 rounded-lg ${
+                              criteriaType === "percentage"
+                                ? "bg-blue-100 text-blue-600"
+                                : criteriaType === "increase"
+                                ? "bg-green-100 text-green-600"
+                                : criteriaType === "decrease"
+                                ? "bg-orange-100 text-orange-600"
+                                : criteriaType === "date"
+                                ? "bg-purple-100 text-purple-600"
+                                : "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {criteriaType === "percentage" && (
+                              <FiPercent className="w-4 h-4" />
+                            )}
+                            {criteriaType === "increase" && (
+                              <FiTarget className="w-4 h-4" />
+                            )}
+                            {criteriaType === "decrease" && (
+                              <FiTrendingDown className="w-4 h-4" />
+                            )}
+                            {criteriaType === "date" && (
+                              <FiCalendar className="w-4 h-4" />
+                            )}
+                            {criteriaType === "text" && (
+                              <FiType className="w-4 h-4" />
+                            )}
+                          </div>
+
+                          {/* Conteúdo */}
+                          <div className="flex-1 min-w-0">
+                            <button
+                              onClick={() => openEditKr(kr.id)}
+                              className="text-left w-full group-hover:text-indigo-700 transition-colors"
+                            >
+                              <h4 className="font-semibold text-slate-900 group-hover:text-indigo-900 mb-1">
+                                {kr.description || "Key Result sem título"}
+                              </h4>
+                              {kr.successCriteria && (
+                                <p className="text-sm text-slate-600 mb-2">
+                                  Meta: {kr.successCriteria}
+                                </p>
+                              )}
+
+                              {/* Barra de progresso para tipos numéricos */}
+                              {["percentage", "increase", "decrease"].includes(
+                                criteriaType
+                              ) &&
+                                progress >= 0 && (
+                                  <div className="mb-2">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="text-xs font-medium text-slate-600">
+                                        Progresso
+                                      </span>
+                                      <span className="text-xs font-bold text-slate-800">
+                                        {Math.round(progress)}%
+                                      </span>
+                                    </div>
+                                    <div className="w-full bg-slate-200 rounded-full h-1.5">
+                                      <div
+                                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                                          criteriaType === "percentage"
+                                            ? "bg-gradient-to-r from-blue-500 to-blue-600"
+                                            : criteriaType === "increase"
+                                            ? "bg-gradient-to-r from-green-500 to-green-600"
+                                            : "bg-gradient-to-r from-orange-500 to-orange-600"
+                                        }`}
+                                        style={{
+                                          width: `${Math.min(progress, 100)}%`,
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+
+                              {kr.currentStatus && (
+                                <p className="text-xs text-slate-500">
+                                  Status: {kr.currentStatus}
+                                </p>
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Ações */}
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => openEditKr(kr.id)}
+                              className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"
+                              title="Editar"
+                            >
+                              <FiEdit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => removeKr(kr.id)}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                              title="Remover"
+                            >
+                              <FiTrash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      <NewCompetenciesSection
         editing={
           !isHistorical &&
           (editingSections.competencies || editingSections.results)
-        }
-        preview={
-          <div className="space-y-4">
-            {/* Badges de estatísticas */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <div
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${
-                  working.competencies.length > 0
-                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                    : "bg-gray-100 text-gray-600 border-gray-200"
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    working.competencies.length > 0
-                      ? "bg-emerald-500"
-                      : "bg-gray-400"
-                  }`}
-                ></span>
-                <HiLightBulb className="w-3 h-3" />{" "}
-                {working.competencies.length} Competência
-                {working.competencies.length !== 1 ? "s" : ""}
-              </div>
-
-              <div
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${
-                  working.records.length > 0
-                    ? "bg-blue-100 text-blue-800 border-blue-200"
-                    : "bg-gray-100 text-gray-600 border-gray-200"
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    working.records.length > 0 ? "bg-blue-500" : "bg-gray-400"
-                  }`}
-                ></span>
-                <FiBarChart className="w-3 h-3" /> {working.records.length} Área
-                {working.records.length !== 1 ? "s" : ""} Avaliada
-                {working.records.length !== 1 ? "s" : ""}
-              </div>
-            </div>
-
-            {/* Preview do conteúdo */}
-            {working.competencies.length > 0 || working.records.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-3">
-                {/* Preview das competências */}
-                {working.competencies.length > 0 && (
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-                    <h4 className="text-xs font-semibold text-emerald-800 mb-2 flex items-center gap-1">
-                      <HiLightBulb className="w-3 h-3" /> Competências Técnicas
-                    </h4>
-                    <div className="space-y-1">
-                      {working.competencies.slice(0, 2).map((comp, index) => (
-                        <p
-                          key={index}
-                          className="text-xs text-emerald-700 truncate"
-                        >
-                          • {comp}
-                        </p>
-                      ))}
-                      {working.competencies.length > 2 && (
-                        <p className="text-xs text-emerald-600 font-medium">
-                          +{working.competencies.length - 2} mais...
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Preview dos registros */}
-                {working.records.length > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <h4 className="text-xs font-semibold text-blue-800 mb-2 flex items-center gap-1">
-                      <FiTrendingUp className="w-3 h-3" /> Progresso Avaliado
-                    </h4>
-                    <div className="space-y-1">
-                      {working.records.slice(0, 2).map((record, index) => (
-                        <p
-                          key={index}
-                          className="text-xs text-blue-700 truncate"
-                        >
-                          • {record.area}:{" "}
-                          {record.levelAfter
-                            ? `${record.levelAfter}/5`
-                            : "Em avaliação"}
-                        </p>
-                      ))}
-                      {working.records.length > 2 && (
-                        <p className="text-xs text-blue-600 font-medium">
-                          +{working.records.length - 2} mais...
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-6 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                    <HiLightBulb className="w-3 h-3 text-gray-500" />
-                  </div>
-                  <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                    <FiTrendingUp className="w-3 h-3 text-gray-500" />
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500">
-                  Nenhuma competência ou progresso definido
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Clique em "Editar" para começar
-                </p>
-              </div>
-            )}
-          </div>
         }
         onToggleEdit={() => {
           if (isHistorical) return;
@@ -392,11 +519,13 @@ export const EditablePdiView: React.FC<Props> = ({
             toggleSection("results");
           }
         }}
-        onAddCompetency={addCompetency}
-        onRemoveCompetency={removeCompetency}
-        onUpdateRecord={updateRecord}
-        onAddRecord={addRecord}
-        onRemoveRecord={removeRecord}
+        userId={saveForUserId}
+        selectedCompetencies={selectedCompetencies}
+        onUpdateCompetencies={(competencies) => {
+          setSelectedCompetencies(competencies);
+          console.log("Competências atualizadas:", competencies);
+          // TODO: Integrar com salvamento do PDI
+        }}
       />
 
       <MilestonesSection
@@ -421,6 +550,14 @@ export const EditablePdiView: React.FC<Props> = ({
 
   return (
     <div className="space-y-4">
+      {/* Gamification Integration - Only for current user's PDI */}
+      {!saveForUserId && (
+        <PdiGamificationIntegration
+          cycleId={selectedCycle?.id}
+          competencies={working.competencies}
+        />
+      )}
+
       <SaveStatusBar
         updatedAt={working.updatedAt}
         saving={isHistorical ? false : saving}

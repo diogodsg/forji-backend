@@ -12,3 +12,4 @@ export { CyclesManager } from "./components/cycles/CyclesManager";
 export { CycleCard } from "./components/cycles/CycleCard";
 export { CreateCycleModal } from "./components/cycles/CreateCycleModal";
 export { DeleteCycleModal } from "./components/cycles/DeleteCycleModal";
+export { PdiSummary } from "./components/PdiSummary";

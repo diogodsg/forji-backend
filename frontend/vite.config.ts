@@ -13,4 +13,13 @@ export default defineConfig({
       "@/features": path.join(rootDir, "src/features"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

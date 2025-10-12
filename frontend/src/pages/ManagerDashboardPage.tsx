@@ -2,6 +2,7 @@
 // Manter esta página apenas como orquestradora de rota.
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiInfo } from "react-icons/fi";
 import { useMyReports } from "../features/admin";
 import {
   ReportCard,
@@ -497,7 +498,8 @@ export function ManagerDashboardPage() {
               </p>
               <div className="mt-6 pt-6 border-t border-amber-200/40">
                 <p className="text-sm text-amber-600">
-                  💡 <span className="font-medium">Dica:</span> Quando você for
+                  <FiInfo className="w-4 h-4 text-blue-600" />{" "}
+                  <span className="font-medium">Dica:</span> Quando você for
                   designado como manager, as pessoas aparecerão organizadas por
                   times aqui.
                 </p>

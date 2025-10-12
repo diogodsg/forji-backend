@@ -53,6 +53,10 @@ export class PdiMilestoneDto {
   summary!: string;
 
   @IsOptional()
+  @IsString()
+  workActivities?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   improvements?: string[];
@@ -89,6 +93,10 @@ export class CreateMilestoneDto {
   summary!: string;
 
   @IsOptional()
+  @IsString()
+  workActivities?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   improvements?: string[];
@@ -116,6 +124,10 @@ export class UpdateMilestoneDto {
   @IsOptional()
   @IsString()
   summary?: string;
+
+  @IsOptional()
+  @IsString()
+  workActivities?: string;
 
   @IsOptional()
   @IsArray()

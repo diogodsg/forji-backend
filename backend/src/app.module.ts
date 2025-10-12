@@ -6,6 +6,7 @@ import { PrismaModule } from "./core/prisma/prisma.module";
 import { PermissionsModule } from "./core/permissions/permissions.module";
 import { TeamsModule } from "./teams/teams.module";
 import { ManagementModule } from "./management/management.module"; // Temporarily disabled
+import { GamificationModule } from "./gamification/gamification.module";
 
 @Module({
   // PrismaModule é global; ainda assim manter import explícito para clareza.
@@ -17,6 +18,7 @@ import { ManagementModule } from "./management/management.module"; // Temporaril
     PdiModule,
     TeamsModule,
     ManagementModule, // Keep disabled until deadlock issue is resolved
+    GamificationModule,
   ],
 })
 export class AppModule {}

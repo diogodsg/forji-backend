@@ -72,6 +72,19 @@ export class PdiCyclesController {
     return this.service.create(req.user.id, body);
   }
 
+  @Post(":userId")
+  async createForUser(
+    @Req() req: any,
+    @Param("userId", ParseIntPipe) userId: number,
+    @Body() body: CreatePdiCycleDto
+  ) {
+    if (req.user.id !== userId) {
+      const ok = await this.permission.isOwnerOrManager(req.user.id, userId);
+      if (!ok) throw new ForbiddenException();
+    }
+    return this.service.create(userId, body);
+  }
+
   @Patch(":id")
   async update(
     @Req() req: any,

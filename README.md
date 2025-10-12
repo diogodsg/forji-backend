@@ -1,1515 +1,520 @@
 # Forge
 
-Plataforma (MVP) para acompanhar Pull Requests e evolução de Planos de Desenvolvimento Individual (PDI). Stack: **NestJS + Prisma/PostgreSQL** (backend) e **React 19 + Vite + TailwindCSS** (frontend). Inclui:
+Plataforma gamificada para desenvolvimento de times e evolução de Planos de Desenvolvimento Individual (PDI). Stack: **NestJS + Prisma/PostgreSQL** (backend) e **React 19 + Vite + TailwindCSS** (frontend).
 
-- Área do desenvolvedor (PRs e PDI próprio)
-- Dashboard de manager (PRs + PDI dos subordinados)
-- Área administrativa (gestão de contas, relacionamentos e permissões)
+## 🚨 **CHANGELOG RECENTE** - Outubro 2025
 
-Arquitetura frontend migrou recentemente de um modelo "global components + global types" para **feature‑first** (cada domínio isola `types`, `hooks`, `components`).
+### ✨ **v2.0 - Design System Revolution + Team-First**
 
-## 🚀 Atualizações Mais Recentes (2025-09-29)
+**� Design System v2.0 Implementado:**
 
-### 🔐 **SISTEMA DE SENHAS ADMINISTRATIVO COMPLETO**
+- **🟣 Nova Identidade Visual**: Migração completa para Violet como cor principal
+- **� Tipografia Geist**: Font moderna e otimizada para interfaces
+- **🎨 Paleta Expandida**: Sistema completo de cores (50-900) + surface tokens
+- **✨ Micro-interactions**: Hover effects, scales, rotações e transições suaves
+- **🌟 Gradientes Refinados**: Transições suaves eliminando excessos visuais
+- **� Tailwind Avançado**: Configuração personalizada com tokens semânticos
 
-**Gerenciamento de Senhas pelo Admin:**
+**🎯 Interface Modernizada:**
 
-- **🔑 Alteração de Senha**: Admin pode alterar senha de qualquer usuário
-- **🎯 Localização Estratégica**: Funcionalidade na aba "Conta" da página `/admin/users/:id`
-- **⚡ Geração Automática**: Senhas seguras de 12 caracteres com símbolos especiais
-- **🎨 Interface Consistente**: Mesmo componente da página de configurações do usuário
-- **🔒 Validação Robusta**: Mínimo 6 caracteres com confirmação obrigatória
-- **✨ Feedback Visual**: Mensagens de sucesso/erro e botões mostrar/ocultar senha
+- **📊 Card de Níveis Redesenhado**: Substituiu botão Commands por card interativo de progresso
+- **🗂️ TopNavbar Otimizada**: Hierarquia visual aprimorada com foco na gamificação
+- **� Sidebar Refinada**: Navegação elegante com micro-interactions e tooltips removidos
+- **🔄 Componentes Unificados**: Design system consistente em toda aplicação
 
-**Endpoints de Backend Implementados:**
+**🏆 Filosofia Team-First Mantida:**
 
-```typescript
-// Novo endpoint para admin alterar senha
-POST /auth/admin/change-password
-{
-  "userId": number,
-  "newPassword"?: string  // Opcional - gera automaticamente se não fornecido
-}
+- **👥 Rankings de Equipe**: Sistema focado exclusivamente em colaboração
+- **📚 Página Educativa**: Guia completo sobre XP e filosofia team-first
+- **🤝 Badges Colaborativos**: Conquistas que incentivam trabalho conjunto
+- **🎨 Interface Team-Centric**: Design priorizando sucesso coletivo
 
-// Resposta com senha gerada (se aplicável)
-{
-  "success": true,
-  "generatedPassword"?: string
-}
-```
+**💡 Melhorias na Experiência:**
 
-**Segurança Implementada:**
-
-- **AdminGuard**: Apenas administradores podem alterar senhas
-- **Hash bcrypt**: Senhas criptografadas com salt seguro
-- **Sem senha atual**: Admin não precisa da senha atual (diferente do usuário comum)
-- **Log de auditoria**: Registros de alterações para rastreabilidade
-
-### 🎨 **REDESIGN CARDS DE USUÁRIOS - MODERNO E COMPACTO**
-
-**Layout Revolucionário:**
-
-- **📱 Grid Ultra-Responsivo**: `1→2→3→4` colunas (mobile→tablet→desktop→wide)
-- **🎯 Navegação Direta**: Clique no card = página de edição (sem modal intermediário)
-- **✨ Visual Moderno**: Gradientes azul-indigo, sombras suaves, bordas arredondadas
-- **🔘 Badge Admin**: Posicionado elegantemente no canto do avatar
-- **📧 Ícones Informativos**: Email, GitHub, hierarquia com ícones React Icons
-- **🗑️ Botão Delete**: Aparece apenas no hover para interface limpa
-
-**Melhorias de UX:**
-
-- **⚡ Menos Cliques**: Eliminado modal "Detalhes do Usuário" desnecessário
-- **🧹 Interface Limpa**: Botões de ação ocultos até hover
-- **📊 Informações Densas**: Máximo de informação em espaço mínimo
-- **🎭 Efeitos Visuais**: Gradiente sutil no hover indica interatividade
-- **📱 Mobile-First**: Design otimizado para todos os tamanhos de tela
-
-**Layout Antes vs Depois:**
-
-```
-❌ ANTES: Modal → Página de Edição (2 passos)
-✅ DEPOIS: Clique → Página de Edição (1 passo)
-
-❌ ANTES: 3 colunas máximo
-✅ DEPOIS: 4 colunas em telas wide
-
-❌ ANTES: Botões sempre visíveis
-✅ DEPOIS: Botões apenas no hover
-```
-
-### 🛠️ **CORREÇÃO CRÍTICA: Endpoint Admin Update Profile**
-
-**Problema Resolvido:**
-
-- **❌ Erro 404**: `PATCH /auth/admin/update-profile/:userId` não existia
-- **🔧 Endpoint Criado**: Admin pode atualizar perfil de qualquer usuário
-- **🔗 Integração**: Usa `AuthService.updateProfile` existente com `userId` específico
-- **🛡️ Segurança**: Protegido por `JwtAuthGuard` + `AdminGuard`
-
-**Implementação Backend:**
-
-```typescript
-@Patch("admin/update-profile/:userId")
-@UseGuards(JwtAuthGuard, new AdminGuard())
-async adminUpdateProfile(
-  @Param("userId") userId: string,
-  @Body() body: UpdateProfileDto
-): Promise<UserProfileDto> {
-  return this.authService.updateProfile(BigInt(userId), body);
-}
-```
-
-**AdminApi Frontend:**
-
-```typescript
-async updateProfile(
-  userId: number,
-  data: UpdateProfileDto
-): Promise<UserProfile> {
-  return api<UserProfile>(`/auth/admin/update-profile/${userId}`, {
-    method: "PATCH",
-    body: JSON.stringify(data),
-    auth: true,
-  });
-}
-```
-
-### ⚡ **OTIMIZAÇÃO CRÍTICA**: Manager Dashboard - De 10s para <1s
-
-**Performance Revolucionária:**
-
-- **Problema Resolvido**: `/management/dashboard/complete` demorava 10+ segundos
-- **Causa**: N+1 queries com consultas sequenciais para cada subordinado
-- **Solução**: Consultas bulk paralelas com maps para lookup O(1)
-
-**Melhorias Implementadas:**
-
-- **Consultas Bulk**: 3 consultas paralelas para todos os dados necessários
-- **Eliminação N+1**: `findMany` com `{ id: { in: subordinateIds } }`
-- **Estruturas Eficientes**: Maps para lookup rápido (`usersMap`, `teamsMap`, `pdiMap`)
-- **Paralelização**: `Promise.all` para dashboard + teams simultâneos
-- **Early Return**: Verificação rápida para listas vazias
-
-**Impacto de Performance:**
-
-| Métrica          | Antes              | Depois         | Melhoria                  |
-| ---------------- | ------------------ | -------------- | ------------------------- |
-| **Latência**     | ~10 segundos       | ~500ms-1s      | **90-95% redução**        |
-| **Consultas DB** | 1 + 3×N queries    | 4 queries bulk | **Escalabilidade linear** |
-| **Experiência**  | Múltiplos loadings | Loading único  | **UX unificada**          |
-
-### 🎯 **FUNCIONALIDADES APRIMORADAS**
-
-**Colapso Flexível de Teams:**
-
-- **Comportamento Anterior**: Forçava sempre um time aberto
-- **Novo Comportamento**: Permite colapsar todos os times se desejado
-- **UX Melhorada**: Usuário tem controle total sobre visualização
-
-**Layout e Footer Corrigidos:**
-
-- **Footer Elevado**: Problema de posicionamento resolvido com flexbox adequado
-- **Layout Responsivo**: AppLayout otimizado com `flex flex-col` e `flex-1`
-- **Densidade Visual**: Espaçamentos otimizados na página admin
-
-### 🔧 **MELHORIAS TÉCNICAS DE BACKEND**
-
-**Queries Otimizadas:**
-
-- **Batch Loading**: Membros de múltiplas equipes em consulta única
-- **Processamento Inteligente**: Separação de regras individuais vs. equipe
-- **Memory Optimization**: Maps para agrupamento eficiente de dados
-- **Type Safety**: Correções de BigInt vs Number casting
-
-**Endpoints Robustos:**
-
-- **Error Handling**: Tratamento adequado de listas vazias
-- **Validation**: Parâmetros opcionais com parsing seguro
-- **Performance**: Includes Prisma específicos para reduzir over-fetching
-
-### 🎯 NOVA FUNCIONALIDADE PRINCIPAL: Sistema de Ciclos de PDI
-
-**Interface Revolucionária com Abas Organizadas:**
-
-- ✨ **Sistema de Ciclos Temporais** - Organize PDIs em períodos específicos com progresso automático
-- 🔖 **Interface por Abas** - Navegação limpa separando Ciclos e PDI para reduzir sobrecarga visual
-- ⚡ **Templates Rápidos** - Criação instantânea de ciclos (trimestres, semestres, sprints)
-- 🎨 **Design Compacto** - Modais otimizados e interface mais eficiente
-- 🚫 **Remoção de Duplicações** - Interface limpa sem botões redundantes
+- ✅ Visual mais profissional e maduro
+- ✅ Redução de elementos chamativos desnecessários
+- ✅ Foco aprimorado na progressão do usuário
+- ✅ Consistência visual em toda plataforma
+- ✅ Performance otimizada com transições inteligentes
 
 ---
 
-### �️ Sistema Administrativo Revolucionário
+## 🎮 Plataforma Gamificada de Gestão de Times
 
-**Interface Admin Completamente Redesenhada:**
+Sistema completo que combina desenvolvimento profissional com elementos lúdicos para maximizar engajamento e crescimento.
 
-- **Navegação por Abas Moderna**: Interface com gradientes, animações e atalhos de teclado (Alt+1/2/3)
-- **Tabs Temáticas**: Cores distintas para cada seção (Indigo/Usuários, Emerald/Equipes, Purple/Subordinados)
-- **Loading States**: Transições suaves entre abas com indicadores visuais
-- **Layout Padronizado**: Estrutura consistente com métricas no topo e containers glassmorphism
-- **Breadcrumbs Contextuais**: Navegação clara mostrando seção ativa
-- **Hover Effects**: Feedback visual aprimorado com sombras temáticas
+### 🏆 Sistema de Gamificação
 
-### 🔐 Sistema de Subordinados Admin-Only
+- **⚡ Sistema de XP**: Pontos por ações (completar milestones, feedbacks, colaboração)
+- **🎖️ Badges Inteligentes**: Conquistas automáticas baseadas em progresso
+- **� Team-First Leaderboards**: Rankings focados em equipes, promovendo colaboração
+- **🎯 Levels Profissionais**: 100 níveis de Rookie a Master Professional
+- **🎉 Notificações em Tempo Real**: Feedback imediato
 
-**Migração de Segurança Arquitetural:**
+### 🎯 **NOVO**: Filosofia Team-First
 
-- **Acesso Restrito**: Gerenciamento de subordinados movido para área administrativa
-- **Seletor de Usuários**: Interface para admins gerenciarem subordinados de qualquer usuário
-- **Controle Centralizado**: Todas as regras hierárquicas em uma interface consolidada
-- **Endpoints Protegidos**: Novos endpoints `/management/admin/*` com AdminGuard
-- **Remoção de Rota**: `/management` removido da navegação geral por segurança
+**Mudanças Revolucionárias Implementadas:**
 
-### 🐛 Correções Críticas de Backend
+- **🏆 Apenas Rankings de Equipe**: Removido ranking individual para promover colaboração
+- **📊 Leaderboards Colaborativos**: Foco total em sucesso coletivo
+- **👥 Badges Team-Oriented**: Conquistas que incentivam trabalho em equipe
+- **� Interface Team-Centric**: Design que prioriza equipes sobre indivíduos
+- **📚 Página Educativa**: Guia explicativo sobre XP e filosofia team-first
 
-**Validação de Parâmetros Opcional:**
+**Benefícios da Abordagem Team-First:**
 
-- **Erro Resolvido**: "Validation failed (numeric string is expected)" em `GET /management/admin/rules`
-- **ParseIntPipe Opcional**: Correção da validação de query parameters opcionais
-- **Tratamento de Erros**: BadRequestException apropriado para parâmetros inválidos
-- **Compatibilidade**: Suporte tanto para busca específica (`?managerId=123`) quanto geral (sem parâmetros)
+- Reduz competição tóxica entre colegas
+- Incentiva mentoria e ajuda mútua
+- Promove crescimento conjunto
+- Valoriza diferentes tipos de contribuição
+- Cria ambiente de trabalho mais saudável
 
-### �🔧 Sistema de Gerenciamento Aprimorado
+### 🎨 Design System v2.0 - Violet Revolution
 
-**ManagementModule Totalmente Funcional:**
+**Identidade Visual Completamente Renovada:**
 
-- **Reativado e Corrigido**: ManagementModule estava desabilitado devido a deadlocks de inicialização - agora totalmente funcional
-- **Endpoint `/management/dashboard`**: Novo endpoint que retorna dados completos de subordinados (PRs + PDI + métricas)
-- **Detecção Automática de Manager**: Campo `isManager` agora é calculado dinamicamente baseado em regras de gerenciamento existentes
-- **Correção do Hook useMyReports**: Migrado de endpoint inexistente `/auth/my-reports` para `/management/subordinates`
-- **PermissionService Integrado**: Correção da validação de acesso usando ManagementService
+- **🟣 Paleta Violet**: Cor principal mudou para `violet-600` (#7c3aed) - mais profissional
+- **🔤 Tipografia Geist**: Font system moderna, otimizada para legibilidade em interfaces
+- **🎨 Tokens Sistematizados**:
+  - **Brand Colors**: 50-900 scale completa baseada em violet
+  - **Surface System**: 0-400 para backgrounds e layers
+  - **Semantic Colors**: success, warning, error padronizados
+- **✨ Micro-interactions Engine**:
+  - Hover effects inteligentes (scale, rotate, translate)
+  - Transições suaves (150-500ms)
+  - Shadow system (soft, glow) contextual
+- **🌟 Gradientes Refinados**: Eliminação de excessos visuais, transições suaves
 
-### 🎨 Interface de Criação de Regras Revolucionária
+**Interface Components Modernizados:**
 
-**Modal de Criação de Regras Completamente Redesenhado:**
+- **📊 TopNavbar Redesigned**: Card de níveis interativo substituindo botão Commands
+- **🎮 Sidebar Refinada**: Micro-interactions, tooltips limpos, gradientes suaves
+- **👤 User Menus**: Dropdowns elegantes com gradientes de header e hover effects
+- **🎯 Progress Bars**: Animações fluidas com brand colors consistentes
 
-- **Seleção Múltipla**: Criar regras para múltiplas equipes/usuários simultaneamente
-- **Sistema Anti-Duplicação**:
-  - Detecta automaticamente equipes/usuários já em regras existentes
-  - Indicadores visuais (verde + "Já gerenciada/o") para itens existentes
-  - Checkboxes desabilitados para prevenir duplicação
-- **Busca Inteligente**: Campo de busca para filtrar equipes e usuários
-- **Ações em Lote**:
-  - "Selecionar Disponíveis" (só itens não duplicados)
-  - "Limpar Seleção"
-  - Contadores dinâmicos de disponibilidade
-- **Resumo de Regras**: Painel informativo mostra regras existentes no topo do modal
-- **Criação Paralela**: Múltiplas regras criadas simultaneamente com Promise.all
+**Benefícios da Nova Abordagem:**
 
-### 👥 Dashboard Manager Person-Centric Aprimorado
+- Visual mais maduro e profissional
+- Redução significativa de elementos chamativos
+- Consistência absoluta em toda plataforma
+- Performance otimizada com transições inteligentes
+- Hierarquia visual clara priorizando gamificação
 
-**Visibilidade Total de Pessoas Gerenciadas:**
+### 🎨 Design System Modernizado
 
-- **Problema Resolvido**: Pessoas gerenciadas agora aparecem SEMPRE, mesmo sem organização em times
-- **Nova Seção**: "Pessoas que Gerencio" com interface moderna e informativa
-- **Cards Interativos**:
-  - Avatar com iniciais personalizadas
-  - Estatísticas de PRs com badges coloridos (merged/open/closed)
-  - Status visual do PDI (existe/não existe + progresso %)
-  - Click direto para página de detalhes
-- **Interface Limpa**: Removido alerta redundante, foco na funcionalidade útil
-- **Contexto Claro**: Subtítulo indica "Aguardando organização em times"
+**Padronização Visual v2.0 (Violet System):**
 
-### �️ Gerenciamento de Subordinados Movido para Admin (2025-09-28)
+- **🟣 Paleta Violet Unificada**: Cores consistentes seguindo `brand` tokens (50-900)
+- **� Tipografia Geist**: Font system profissional substituindo Inter
+- **📐 Espaçamento Harmonioso**: Grid system aprimorado com micro-interactions
+- **🎯 Gradientes Brand**: `from-brand-500 to-brand-600` padronizado (suave)
+- **🧱 Cards Sistematizados**: Estrutura base com hover effects e shadows
+- **👤 PlayerCard v2**: Avatar, progresso e stats seguindo design system violet
 
-**Mudança Arquitetural de Segurança:**
+### 🏠 Homepage Inteligente para Gestores
 
-- **Migração Completa**: Gerenciamento de subordinados movido de `/management` para `/admin`
-- **Acesso Restrito**: Apenas administradores podem configurar relações hierárquicas
-- **Nova Aba Admin**: "🔗 Subordinados" integrada no painel administrativo
-- **Endpoints Admin**: Novos endpoints `/management/admin/*` para operações privilegiadas
-- **Segurança Aprimorada**: Admins podem gerenciar subordinados de qualquer usuário
-- **Interface Consolidada**: Todas as regras do sistema visíveis em uma interface única
-- **Rota Removida**: `/management` removida da navegação geral
+**Experiência Personalizada por Perfil:**
 
-**Benefícios de Segurança:**
+- **Homepage = Dashboard Adaptativo**: Interface que se adapta ao perfil do usuário
+- **Para Colaboradores**: Dashboard gamificado com card de níveis em destaque
+- **Para Gestores**: Dashboard ampliado com visão da equipe + card de progresso interativo
+- **Design Unificado v2.0**: Base visual violet com informações contextuais
+- **Responsive & Accessible**: Otimizado para todos os dispositivos com micro-interactions
 
-- Centralização do controle hierárquico
-- Prevenção de auto-atribuição de subordinados
-- Auditoria completa das relações de gerenciamento
-- Controle granular sobre estruturas organizacionais
+**Seção de Gestão de Equipe (Apenas para Gestores):**
 
-### �🔄 Correções de Backend Críticas
+- **📊 Métricas da Equipe**: Total de pessoas, PDIs ativos, progresso médio
+- **👥 Destaque da Equipe**: Top 3 pessoas com melhor progresso de PDI
+- **🎯 Acesso Rápido**: Navegação direta para detalhes de cada subordinado
+- **⚡ Performance**: Carregamento condicional apenas para gestores
+- **📈 Dados em Tempo Real**: Sincronização com sistema de management
 
-**Problemas de Conectividade Resolvidos:**
+**🎮 Card de Níveis Interativo (Nova Feature):**
 
-- **Configuração de Banco**: Corrigida string de conexão para ambiente local (localhost vs remoto)
-- **Endpoints Funcionais**: `/management/*` agora totalmente operacionais
-- **Dados Completos**: Endpoint `/management/dashboard` retorna informações completas de subordinados
-- **Performance**: Queries otimizadas para cálculo de métricas de PRs e PDI
-- **Correção de Permissões**: PermissionService agora usa ManagementService para validar acesso de managers
+- **📊 Posicionamento Estratégico**: Lado esquerdo da TopNavbar para máxima visibilidade
+- **🎯 Informações Completas**: Badge do nível + progresso XP atual/próximo
+- **✨ Micro-interactions**: Hover effects, gradientes suaves, transições fluidas
+- **🎨 Design System v2.0**: Paleta violet, typography Geist, shadows inteligentes
 
-**Novos Endpoints Implementados:**
+## 📊 Sistema PDI Revolucionário
+
+### 🎯 Key Results Inteligentes
+
+**5 Tipos de Critérios Específicos:**
+
+- **Porcentagem** (0-100%): Campos numéricos com validação
+- **Aumento** (valor inicial → meta): Campos separados para cálculo preciso
+- **Diminuição** (valor inicial → meta): Cálculo de redução automático
+- **Data** (prazo): Campo de data + dropdown de status
+- **Texto** (qualitativo): Textarea livre para critérios descritivos
+
+**Visualização de Progresso Automática:**
+
+- Barra de progresso visual com cores dinâmicas
+- Cálculo inteligente baseado no tipo de critério
+- Validação robusta contra dados incompletos
+
+### 🎮 Integração PDI + Gamificação
+
+**XP Automático por Ações PDI:**
 
 ```typescript
-// Endpoints Gerais de Management
-GET /management/dashboard        // Dados completos do manager (PRs + PDI + métricas)
-GET /management/subordinates     // Lista subordinados efetivos
-POST /management/rules           // Criar regra de gerenciamento
-GET /management/rules            // Listar regras do manager atual
-DELETE /management/rules/:id     // Remover regra específica
-
-// Endpoints Admin (protegidos por AdminGuard)
-POST /management/admin/rules                    // Criar regra para qualquer usuário
-GET /management/admin/rules[?managerId=X]      // Listar regras específicas ou todas (corrigido)
-DELETE /management/admin/rules/:id             // Remover qualquer regra
-GET /management/admin/subordinates?managerId=X // Subordinados de qualquer usuário
-GET /management/admin/dashboard?managerId=X    // Dashboard de qualquer manager
+XP_SYSTEM = {
+  pdi_milestone_completed: 100,
+  pdi_first_milestone: 50,
+  pdi_competency_improved: 50,
+  pdi_cycle_completed: 300,
+  key_result_achieved: 150,
+  pdi_updated: 25,
+};
 ```
 
-**Melhorias Técnicas:**
+**Badges Automáticos:**
 
-- **Validação Robusta**: Query parameters opcionais com parsing manual e BadRequestException
-- **Circular Dependencies**: ForwardRef entre PermissionService e ManagementService
-- **Type Safety**: Correção de comparações BigInt vs Number com casting apropriado
-- **Dynamic Calculations**: `isManager` calculado em tempo real baseado em regras existentes
-- **Optimized Queries**: Includes Prisma específicos para performance
-- **Parallel Operations**: Promise.all para criação simultânea de múltiplas regras
-- **Real-time Validation**: Verificação de duplicatas no frontend durante seleção
-- **Modern UI Patterns**: CSS transitions, backdrop-blur, gradient shadows e animations
+- 🏃 First Steps: Primeira milestone PDI completada
+- 📈 Growth Mindset: 5 competências desenvolvidas
+- 🎯 Goal Crusher: 10 key results alcançados
+- 🔥 Consistent: 7 dias consecutivos de atividade
 
-### 📋 Sistema PDI Revolucionário - Interface Colapsável (2025-09-28)
-
-**Redesign Completo da Experiência PDI:**
-
-**Seções Colapsáveis Implementadas:**
-
-- **🎯 Key Results**: Seção totalmente colapsável com preview inteligente
-
-  - Badge numerado com contador de objetivos
-  - Preview visual dos primeiros KRs com critérios de sucesso
-  - Cards com gradientes e numeração circular
-  - Estado vazio informativo com call-to-action claro
-
-- **💡 Competências & Resultados**: Seção unificada e colapsável
-
-  - Badges coloridos para competências (verde) e avaliações (azul)
-  - Layout em grid com seções distintas para cada tipo
-  - Preview do conteúdo mostrando primeiras competências e níveis
-  - Estados inteligentes baseados na existência de dados
-
-- **📅 Acompanhamentos & Marcos**: Totalmente colapsável com estatísticas
-  - Badge principal com contador de acompanhamentos
-  - Badges secundários para tarefas (azul) e melhorias (âmbar)
-  - Badge de "recentes" para marcos dos últimos 30 dias
-  - Preview com cards mostrando título, data e estatísticas
-  - Contador visual de tarefas e melhorias por marco
-
-**Milestones com Subseções Colapsáveis:**
-
-- **📝 Notas / Registro**: Área principal de markdown colapsável
-- **🤖 Sugestões da IA**: Recomendações automáticas colapsáveis
-- **✅ Tarefas / Próximos passos**: Lista de tasks colapsável
-- **👍 Pontos Positivos**: Aspectos destacados colapsáveis
-- **⚠️ Pontos de Melhoria**: Áreas para desenvolvimento colapsáveis
-- **🔗 Referências**: Links e recursos externos colapsáveis
-
-**Comportamentos Inteligentes:**
-
-- **Estado Inicial Inteligente**: Seções abrem automaticamente se contêm dados
-- **Modo Edição**: Todas as seções forçadamente abertas durante edição
-- **Modo Visualização**: Seções livremente colapsáveis pelo usuário
-- **Memória de Estado**: Sistema lembra preferências do usuário
-- **Animações Suaves**: Transições de 300ms para melhor UX
-
-**Design System Modernizado:**
-
-- **Ícones React Icons**: Substituição completa de emojis por ícones profissionais
-
-  - `FiTarget` para objetivos, `FiBarChart` para estatísticas
-  - `HiLightBulb` para competências, `FiTrendingUp` para progresso
-  - `FiCalendar` para datas, `FiCheckSquare` para tarefas
-  - `FiClock` para tempo, `FiPlus` para adicionar, `FiTrash2` para remover
-
-- **Paleta Temática Consistente**:
-
-  - Indigo para KRs, Verde para competências, Azul para avaliações
-  - Roxo para acompanhamentos, Âmbar para melhorias, Esmeralda para positivos
-
-- **Componentes Visuais Aprimorados**:
-  - Cards com gradientes suaves e bordas arredondadas
-  - Badges numerados circulares para identificação
-  - Seções coloridas para categorização visual
-  - Preview informativos com estatísticas em tempo real
-
-**Melhorias de UX:**
-
-- **Interface mais limpa**: Seções vazias ficam colapsadas por padrão
-- **Foco no conteúdo**: Usuário vê apenas o que importa
-- **Navegação eficiente**: Menos scroll, mais organização
-- **Edição completa**: Todos os campos acessíveis quando editando
-- **Feedback visual**: Estados claros de carregamento e expansão
-- **Responsividade**: Layout adapta-se a diferentes tamanhos de tela
-
-### 📅 Sistema de Ciclos de PDI (2025-09-28)
+### 📅 Sistema de Ciclos de PDI
 
 **Gestão Temporal de Desenvolvimento:**
 
-**Funcionalidades dos Ciclos:**
+- **🗓️ Ciclos Temporais**: Organize PDIs em períodos específicos
+- **📊 Progresso Temporal**: Visualização automática baseada em datas
+- **🎯 Foco Direcionado**: Cada ciclo mantém suas próprias competências
+- **🔄 Transições Inteligentes**: Estados (Planejado → Ativo → Pausado → Concluído)
 
-- **🗓️ Ciclos Temporais**: Organize PDIs em períodos específicos (trimestres, semestres, sprints mensais)
-- **📊 Progresso Temporal**: Visualização automática de progresso baseada em datas
-- **🎯 Foco Direcionado**: Cada ciclo mantém suas próprias competências, KRs e marcos
-- **🔄 Transições Inteligentes**: Estados de ciclo (Planejado → Ativo → Pausado → Concluído)
-- **📈 Continuidade**: Migração automática de PDI existente para ciclo padrão
+## 🏗️ Arquitetura e Stack Tecnológico
 
-**Interface de Gerenciamento:**
+### Frontend
 
-- **✨ Criação Rápida**: Templates predefinidos (Trimestre, Semestre, Sprint Mensal)
-- **⚡ Atalhos de Teclado**: Ctrl+N (novo ciclo), Esc (fechar), Ctrl+Enter (salvar)
-- **🎨 Modal Compacto**: Interface otimizada ocupando menos espaço vertical
-- **🔧 Edição Completa**: Modificação de título, descrição, datas e status
-- **⚠️ Confirmação de Exclusão**: Modal de confirmação com aviso de perda de dados
-- **📋 Estatísticas em Tempo Real**: Visualização de competências, KRs, marcos e registros por ciclo
+- **React 19** + **TypeScript** + **Vite**
+- **TailwindCSS v2.0** com design system violet personalizado
+- **Geist Font** para tipografia profissional otimizada
+- **React Router v7** para navegação
+- **Arquitetura Feature-First**: Organização modular por domínio
 
-**Estados e Transições de Ciclo:**
+### Backend
 
-```
-Planejado → Ativo → Pausado ↔ Concluído
-     ↓         ↓       ↓
-   Ativo → Concluído  Ativo
-```
+- **NestJS**: Framework Node.js modular
+- **Prisma**: ORM type-safe com PostgreSQL
+- **PostgreSQL**: Database relacional robusto
+- **JWT Authentication**: Sistema de autenticação seguro
 
-**Layout Visual:**
-
-- **📋 Cards de Ciclo**: Design moderno com badges de status coloridos
-- **⏰ Progresso Temporal**: Barra de progresso baseada em tempo decorrido
-- **📊 Estatísticas PDI**: Contadores visuais de elementos em cada ciclo
-- **🎨 Indicadores de Status**:
-  - 🟢 Ativo (Em Andamento)
-  - 🔵 Planejado (Agendado)
-  - 🟡 Pausado
-  - ✅ Concluído
-  - 🔴 Atrasado
-
-### 🔖 Interface por Abas - Organização Limpa (2025-09-28)
-
-**Solução para Sobrecarga de Interface:**
-
-**Problemas Resolvidos:**
-
-- ❌ **Dois botões "Voltar"**: Duplicação removida para navegação limpa
-- ❌ **Informações misturadas**: Ciclos e PDI competindo por atenção
-- ❌ **Interface sobrecarregada**: Muitos elementos na tela simultaneamente
-
-**Nova Arquitetura com Abas:**
-
-- **🎯 Aba PDI**: Competências, Key Results, Marcos e Registros organizados
-- **📅 Aba Ciclos**: Gerenciamento completo de ciclos de desenvolvimento
-- **📊 Aba Estatísticas** (extensível): Para futuras métricas e relatórios
-
-**Benefícios da Reorganização:**
-
-- **🧠 Foco Cognitivo**: Uma funcionalidade principal por vez
-- **🎨 Visual Clean**: Menos saturação, mais clareza
-- **🧭 Navegação Intuitiva**: Ícones e descrições contextuais
-- **⚡ Performance**: Renderização otimizada por contexto
-- **🔄 Estado Preservado**: Alterações mantidas entre abas
-
-**Design de Abas:**
-
-```typescript
-// Estrutura das Abas
-📋 PDI          → Competências, objetivos e marcos
-📅 Ciclos       → Gerencie ciclos de desenvolvimento
-📊 Estatísticas → Progresso e métricas (futuro)
-```
-
-**Funcionalidades Mantidas:**
-
-- ✅ Todas as funcionalidades de PDI preservadas
-- ✅ Sistema de ciclos completamente funcional
-- ✅ Auto-save e sincronização entre abas
-- ✅ Estados de edição mantidos
-- ✅ Atalhos de teclado funcionais
-
-## 🚀 Melhorias Anteriores (2025-09-26)
-
-### Refatoração Completa da Interface de Administração
-
-**Interface Modernizada com UX Aprimorada:**
-
-- **Métricas Cards**: Das4. Planejado: impedir edição até seleção## 🚀 Dicas de Desenvolvimento
-
-**Para Administradores:**
-
-- **Interface Moderna**: Acesse `/admin` para usar a nova interface com navegação por abas aprimorada
-- **Atalhos de Teclado**: Use Alt+1 (Usuários), Alt+2 (Equipes), Alt+3 (Subordinados) para navegação rápida
-- **Gerenciamento Centralizado**: Configure relações hierárquicas de qualquer usuário na aba Subordinados
-- **Seletor de Usuários**: Interface intuitiva para escolher qual usuário gerenciar
-- **Layout Consistente**: Design padronizado com glassmorphism e cores temáticas por seção
-
-**Para Managers:**
-
-- **Dashboard Totalmente Funcional**: Veja TODAS as pessoas que você gerencia, com ou sem times
-- **Interface Person-Centric**: Cards interativos com dados em tempo real de PRs e PDI
-- **Acesso Direto**: Click em qualquer pessoa para gerenciar seus detalhes
-- **Seleção Múltipla**: Crie regras de gerenciamento para várias pessoas/equipes de uma vez
-- **Anti-Duplicação**: Sistema inteligente previne criação de regras duplicadas
-
-**Para Usuários PDI:**
-
-- **Interface por Abas**: Navigate entre PDI e Ciclos usando a nova interface organizada
-- **Gestão de Ciclos**: Organize desenvolvimento em períodos (trimestres, semestres, sprints)
-- **Templates Rápidos**: Use templates predefinidos para criar ciclos rapidamente
-- **Interface Colapsável**: Navigate entre seções colapsáveis para focar no que importa
-- **KRs Modernos**: Use os novos Key Results com design aprimorado e badges numerados
-- **Acompanhamentos Inteligentes**: Milestones com subseções colapsáveis para melhor organização
-- **Estados Inteligentes**: Seções abrem automaticamente se contêm dados, permanecem fechadas se vazias
-- **Edição Eficiente**: Modo edição mantém todas as seções abertas para acesso completo
-- **Navegação Visual**: Use os ícones React Icons profissionais para identificação rápida
-- **Atalhos de Ciclos**: Ctrl+N (novo ciclo), Ctrl+Enter (salvar), Esc (fechar modal)
-
-**Para Desenvolvedores:**
-
-- Arquitetura feature-first consolidada para novos componentes
-- Backend com injeção de dependências corrigida e performance otimizada
-- Hot reload funcional para desenvolvimento ágil
-- Sistema colapsável reutilizável via `CollapsibleSectionCard` (shared component)
-- Design system consistente com paleta temática por funcionalidade
-
-**Teste das Funcionalidades:**
-
-- **Admin Interface**: Login como admin → `/admin` → Use Alt+1/2/3 para navegar entre abas
-- **Subordinados Admin**: Aba "Subordinados" → Selecione usuário → Gerencie suas relações hierárquicas
-- **PDI com Abas**: Acesse `/me/pdi` → Navigate entre abas "PDI" e "Ciclos" → Interface organizada
-- **Sistema de Ciclos**: Aba "Ciclos" → Crie ciclo (Ctrl+N) → Teste templates → Edite ciclos existentes
-- **PDI Colapsável**: Aba "PDI" → Teste colapso/expansão das seções → Edite e veja comportamento
-- **Milestones Organizados**: Crie acompanhamentos → Teste subseções colapsáveis (Notas, Tarefas, etc.)
-- **KRs Modernizados**: Adicione Key Results → Veja badges numerados e previews informativos
-- **Progresso Temporal**: Crie ciclos com datas → Veja barras de progresso automáticas
-- **Estados de Ciclo**: Teste transições (Planejado → Ativo → Concluído)
-- **Manager Dashboard**: `/manager` mostra pessoas gerenciadas mesmo sem organização em times
-- **PDI Access**: Teste acesso a PDIs de subordinados (bug 403 Forbidden resolvido)
-- **Criação de Regras**: Modal com seleção múltipla e prevenção de duplicatas
-- **Keyboard Navigation**: Teste atalhos Alt+1/2/3 (admin) e Ctrl+N/Enter/Esc (ciclos)
-
-### 🔮 Próximas Funcionalidades Planejadas
-
-**Melhorias do Sistema de Ciclos:**
-
-- **📊 Analytics de Ciclos**: Métricas de produtividade e conclusão por período
-- **🔄 Ciclos Recorrentes**: Templates automáticos para ciclos repetitivos
-- **📈 Comparação de Ciclos**: Visualizar evolução entre diferentes períodos
-- **🎯 Metas por Ciclo**: Objetivos quantificáveis e tracking de alcance
-- **📋 Relatórios de Ciclo**: Exportação de progresso e resultados em PDF/Excel
-
-**Melhorias de Interface e UX:**
-
-- **📊 Aba Estatísticas**: Dashboard completo com métricas visuais de desenvolvimento
-- **🔍 Busca Global**: Pesquisa unificada entre ciclos, competências e marcos
-- **🏷️ Tags e Categorias**: Sistema de classificação para organização avançada
-- **📱 Interface Mobile**: Otimização completa para dispositivos móveis
-- **🌙 Modo Escuro**: Tema alternativo para uso prolongado
-
-**Melhorias de Performance e Escalabilidade:**
-
-- Implementar lazy loading na interface administrativa para grandes bases de usuários
-- Cache inteligente para queries de subordinados e hierarquias
-- Paginação automática nas listagens de usuários e times
-- Otimização de queries de ciclos com índices temporais
-
-**Sistema de Notificações:**
-
-- Notificações em tempo real para mudanças de PDI e aprovações
-- Dashboard de notificações para managers e administradores
-- Alertas automáticos de proximidade de fim de ciclo
-- Integração com webhooks para sistemas externos
-
-**Relatórios e Analytics:**
-
-- Dashboard executivo com métricas de desenvolvimento de equipes
-- Relatórios de progresso de PDI exportáveis (PDF/Excel)
-- Análise de tendências de Pull Requests por equipe/pessoa
-- Comparativo de performance entre ciclos e equipes
-
-**Integração e Automação:**
-
-- Sincronização automática com GitHub/GitLab para dados de PR
-- API webhooks para integração com sistemas de RH
-- Automação de regras de gerenciamento baseadas em estrutura organizacional
-
-### Próximos Itens Técnicos Recomendados
-
-**Backend API:**
-
-- Mover filtros de PR (repo/state/author) para o backend (where condicional + índices)
-- Sort configurável (`sort=createdAt:desc|lines:asc`)
-- DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON
-
-**Frontend Avançado:**
-
-- ✅ ~~Debounced auto-save PDI com status visual~~ (Implementado)
-- ✅ ~~Sistema colapsável para PDI~~ (Implementado)
-- ✅ ~~Substituição de emojis por ícones React Icons~~ (Implementado)
-- Command Palette (Ctrl/⌘+K) para navegação rápida
-- Dark mode toggle com persistência
-- Export/import de PDI (JSON/Markdown)
-
-**Performance e Qualidade:**
-
-- ✅ ~~Reativação do ManagementModule~~ (Concluído)
-- Testes automatizados E2E para funcionalidades críticas
-- Lazy loading para grandes datasets administrativos
-- Cache inteligente para hierarquias organizacionais
-- **Tabela Simplificada**: Interface mais limpa com cards clicáveis para usuários
-- **Filtros Avançados**: Busca por nome/email, filtro por status admin, ordenação por nome/data
-- **Breadcrumb Navigation**: Navegação contextual clara
-- **Quick View Modal**: Visualização rápida de detalhes do usuário com informações de hierarquia
-
-**Melhorias de Usabilidade:**
-
-- Cards de usuários totalmente clicáveis (removidos ícones de hover desnecessários)
-- Click direto abre detalhes do usuário para edição
-- Interface responsiva e moderna com TailwindCSS
-- Feedback visual aprimorado para todas as ações
-
-### Sistema de Gerenciamento de Subordinados Flexível
-
-**Nova Arquitetura de Gestão:**
-
-- **Regras de Gerenciamento Flexíveis**: Sistema baseado em regras individuais ou por equipe
-- **ManagementRule Model**: Suporte a `TEAM` (gerenciar toda equipe) e `INDIVIDUAL` (gerenciar pessoa específica)
-- **APIs RESTful**: Endpoints completos para criação, listagem e remoção de regras
-- **Interface Administrativa**: Tela dedicada para configurar subordinados de forma intuitiva
-
-**Funcionalidades Avançadas:**
-
-- Verificação eficiente de relacionamentos hierárquicos
-- Busca de subordinados efetivos (diretos + via equipe)
-- Detalhamento da origem do relacionamento (individual vs. equipe)
-- Sistema preparado para escalabilidade e governança empresarial
-
-### Correções Críticas de Backend
-
-**Problemas Resolvidos:**
-
-- **Deadlock de Inicialização**: Corrigido problema de travamento durante boot do NestJS
-- **Injeção de Dependências**: Migrado para padrão adequado do Nest.js com PrismaService
-- **Campos de Perfil**: Adicionados campos `position` e `bio` na API de usuários
-- **Comparação de IDs**: Corrigida inconsistência entre string/number IDs na edição de usuários
-- **Compilação**: Removidas dependências problemáticas temporariamente até resolução de relações
-
-**Melhorias de Performance:**
-
-- API `/auth/users` otimizada com campos completos de perfil
-- Queries Prisma simplificadas e eficientes
-- Hot reload funcional para desenvolvimento ágil
-
-### Tecnologias e Componentes Atualizados
-
-**Frontend:**
-
-- React 19 + Vite com hot reload otimizado
-- TailwindCSS para design system consistente
-- @headlessui/react para componentes acessíveis (modais, dropdowns)
-- React Router v7 para navegação
-- Arquitetura feature-first consolidada
-
-**Backend:**
-
-- NestJS com injeção de dependências corrigida
-- Prisma ORM com schema estendido (ManagementRule, campos de perfil)
-- PostgreSQL com migrações automatizadas
-- JWT authentication com guards modulares
-- Logging estruturado com contexto de requisições
-
-**DevOps:**
-
-- Docker multi-stage builds
-- npm workspaces para monorepo
-- TypeScript strict mode
-- ESLint + Prettier configurados
-
-### Dashboard de Manager - Refatoração Person-Centric (2025-09-26)
-
-#### Mudanças Arquiteturais Principais
-
-**Filosofia de Gestão Revisada:**
-
-- **Antes**: Foco em times gerenciados → pessoas aparecem como membros de times
-- **Depois**: Foco em pessoas gerenciadas → times aparecem apenas se contém pessoas gerenciadas
-
-**Performance API Drasticamente Melhorada:**
-
-```
-Antes:  1 requisição (/teams) + N requisições (/teams/:id)
-Depois: 1 requisição única (/teams?details=true)
-Resultado: ~85% redução de chamadas de API
-```
-
-**Novo Endpoint Backend:**
-
-- `GET /teams?details=true` - Retorna times completos com memberships
-- Retrocompatível com `GET /teams` (sumário apenas)
-
-#### Melhorias de UX/UI
-
-**Header Modernizado:**
-
-- Ícone com badge de contagem (verde: times organizados, âmbar: aguardando organização)
-- Contextualização inteligente: "Gerenciando X pessoas em Y times" vs "Gerenciando X pessoas (aguardando organização em times)"
-- Gradientes e micro-interações modernas
-
-**Estados Visuais Refinados:**
-
-- Loading sem interferência de alertas prematuros
-- Alerta específico para pessoas sem times organizados com instruções detalhadas
-- Distinção clara entre "Pessoas que gerencio" e "Outros membros do time"
-
-**Navegação Aprimorada:**
-
-- Cards clicáveis levam a páginas dedicadas (`/manager/users/:id`)
-- Melhor aproveitamento de espaço comparado ao painel inline anterior
-
-#### Limpeza Técnica Completa
-
-**6 Arquivos Removidos (Código Morto):**
-
-- `useAllTeams.ts`, `useMyTeams.ts`, `useDeferredLoading.ts`
-- `TeamOverviewBar.tsx`, `ManagerHeader.tsx`, `ReportsSidebar.tsx`
-
-**Impacto Mensurado:**
-
-- ManagerDashboardPage: -6.9% bundle size (16.89kB → 15.73kB)
-- ManagerUserEditPage: -9.7% bundle size (7.19kB → 6.49kB)
-- Arquitetura 100% focada: apenas componentes e hooks ativamente usados
-
-**Hook Unificado:**
-
-```typescript
-// Múltiplos hooks complexos → Hook único otimizado
-const allTeams = useAllTeamsWithDetails(); // Uma call, dados completos
-```
-
-### Próximos Itens Recomendados
-
-- Mover filtros de PR (repo/state/author) para o backend (where condicional + índices).
-- Sort configurável (`sort=createdAt:desc|lines:asc`).
-- Debounced auto-save PDI (PATCH incremental) com status visual (badge "Sincronizado / Pendente").
-- DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON.
-- ~~Reativação do ManagementModule com correção dos guards JWT~~ ✅ **CONCLUÍDO**
-- ~~Implementação de endpoint para dados completos de manager dashboard~~ ✅ **CONCLUÍDO**
-- ~~Sistema anti-duplicação para regras de gerenciamento~~ ✅ **CONCLUÍDO**
-
-## 📋 Guia de Funcionalidades
-
-### Interface de Administração Modernizada
-
-- **Acesso**: Faça login com usuário admin e navegue para `/admin`
-- **Métricas**: Dashboard com estatísticas em tempo real na parte superior
-- **Gestão de Usuários**: Clique diretamente nos cards para abrir detalhes e editar perfis
-- **Filtros**: Use a barra de busca e filtros para encontrar usuários rapidamente
-- **Quick View**: Visualize hierarquias e informações detalhadas em modal
-
-### Sistema de Gerenciamento de Subordinados (Admin Only)
-
-- **Acesso Restrito**: `/admin` > Aba "🔗 Subordinados" (apenas administradores)
-- **Controle Centralizado**: Configure relações hierárquicas para qualquer usuário
-- **Seleção Múltipla**: Crie regras para várias equipes/usuários simultaneamente
-- **Anti-Duplicação**: Sistema inteligente previne regras duplicadas com indicadores visuais
-- **Busca Inteligente**: Filtre equipes e usuários em tempo real
-- **Regras por Equipe**: Gerencie todos os membros de uma equipe automaticamente
-- **Regras Individuais**: Adicione pessoas específicas como subordinados
-- **Auditoria Completa**: Veja todas as regras do sistema com informações do manager responsável
-
-### Edição de PDI e Perfis
-
-- **Meu PDI**: Navegue para `/me/pdi` e clique em "Editar PDI" para modificar resultados
-- **Perfis de Usuários**: Campos `position` e `bio` agora totalmente funcionais
-- **Detalhes**: Informações completas de perfil disponíveis na edição
-
-### Dashboard de Manager Person-Centric
-
-- **Visibilidade Total**: Todas as pessoas gerenciadas aparecem, com ou sem organização em times
-- **Seção "Pessoas que Gerencio"**: Interface moderna com cards interativos
-- **Dados em Tempo Real**: PRs (merged/open/closed) e status de PDI atualizados
-- **Navegação Direta**: Click em qualquer pessoa para acessar detalhes completos
-- **Avatars Personalizados**: Iniciais com cores gradiente para cada pessoa
-- **Foco em Pessoas**: Dashboard reorganizado para priorizar pessoas gerenciadas
-- **Performance**: Carregamento 85% mais rápido com API otimizada (`/management/dashboard`)ervices`). Pastas legadas (`src/components`, `src/hooks`, `src/types`, `src/utils`) foram eliminadas ou migradas; novas implementações devem sempre residir em `src/features/<domínio>`.
-
-## Visão Geral
-
-### Frontend (Feature‑First)
-
-Estrutura principal (exemplo abreviado):
+### Arquitetura Feature-First
 
 ```
 src/features/
-  pdi/
-    types/pdi.ts
-    hooks/... (usePdiEditing, useRemotePdi, etc)
-    components/ (EditablePdiView, sections, editors, structure)
-    lib/pdi.ts
-  prs/
-    types/pr.ts
-    hooks/useRemotePrs.ts
-    components/(PrList, PrDetailDrawer, PrStats, ...)
-  auth/
-    types/auth.ts
-    hooks/useAuth.tsx
-    components/LoginForm.tsx
-  admin/
-    types/user.ts (+ types.ts agregador)
-    hooks/(useAdminUsers, useMyReports)
-    components/(AdminGate, CreateUserModal, ManagerDrawer, ...)
+├── gamification/          # Sistema de gamificação
+│   ├── components/        # UI components
+│   ├── hooks/            # API integration
+│   ├── context/          # Global state
+│   └── types/            # TypeScript definitions
+├── pdi/                  # Sistema PDI
+├── admin/                # Administração
+└── shared/              # Shared utilities
 ```
 
-Principais pontos:
+## 🚀 Getting Started
 
-- Hooks remotos: `useRemotePrs`, `useRemotePdi`, `useRemotePdiForUser`, `useMyReports`
-- Estado de edição de PDI: `usePdiEditing` (reducer + ações) + `useAutoSave` (debounce / optimistic)
-- Componentes de PDI segmentados em: `sections/`, `editors/`, `structure/` (responsabilidade clara)
-- Navegação: React Router v7; layout base (`AppLayout`) com Sidebar; TopBar mobile
-- Barrel `index.ts` em cada feature para exports públicos e isolamento interno
+### 📋 Pré-requisitos
 
-### Backend
+- Node.js 18+
+- PostgreSQL 14+
+- npm ou yarn
 
-1. Autenticação JWT (7d) + guards.
-2. Modelos Prisma simples (User, PullRequest, PdiPlan) usando JSON para campos dinâmicos (milestones, krs, records) visando iteração rápida.
-3. Permissões: acesso a PRs e PDI de subordinados apenas para managers listados ou próprio dono.
-
-### Arquitetura Backend Atualizada (Set/2025)
-
-Desde a refatoração recente o backend passou a ser estruturado em módulos de domínio desacoplados e serviços injetáveis:
-
-- `PrismaModule` + `PrismaService`: provê um único client Prisma via DI (eliminado arquivo antigo `prisma.ts`). Facilita testes/mocks e centraliza lifecycle (hook `beforeExit`).
-- Módulos de domínio: `AuthModule`, `PrsModule`, `PdiModule`, `TeamsModule`, além de `PermissionsModule` para regras de acesso.
-- `PermissionService`: concentra lógica de "sou dono ou manager" e demais verificações, reduzindo repetição em controllers.
-- Guard reutilizável `OwnerOrManagerGuard`: aplicado nas rotas que referenciam recursos de outro usuário, decide acesso (self / relação de manager) e loga allow/deny.
-- `JwtAuthGuard` ajustado para usar DI de `PrismaService` (evitando import direto do client).
-- Interceptores globais: `LoggingInterceptor` (tempo de execução, status, método, rota) + `BigIntSerializationInterceptor` (padroniza serialização de BigInt em JSON strings).
-- Observabilidade: logs estruturados (Pino) agora também em serviços (`AuthService`, `PrsService`, `PdiService`) e no guard, com filtros, contagens e ids relevantes.
-- Tratamento consistente de erros de unicidade: util `handlePrismaUniqueError` converte código `P2002` em `409 Conflict` com mensagem amigável (email, githubId).
-- Removidas conversões manuais de BigInt para number em listagens de PR (delegado ao interceptor de serialização).
-
-Benefícios principais: menor acoplamento entre controllers e infraestrutura, pontos únicos para autorização e logging, rastreabilidade das operações (cada ação relevante gera um log). Novo trabalho deve seguir o padrão: criar módulo de domínio e injetar `PrismaService` em vez de importar o client.
-
-### Funcionalidades
-
-- Registro / login / sessão (`/auth/*`).
-- Administração: criar usuários, gerir managers, definir/remover `githubId`, promover a admin, remover usuário (PRs ficam órfãos).
-- PRs: CRUD + filtro por dono (`?ownerUserId=`) + paginação server‑side.
-- Dashboard usuário: PRs próprios + PDI.
-- Dashboard manager: seleção de subordinado + abas PRs | PDI.
-- PDI: competências, milestones (listas: melhorias, positivos, recursos, tarefas), key results, registros de evolução, sugestões (placeholder IA).
-- Edição por seção independente; auto‑save com feedback visual (salvando / pendente / tudo salvo).
-
-## Stack
-
-Frontend
-
-- React 19 + TypeScript (Vite)
-- React Router DOM v7
-- TailwindCSS + @tailwindcss/typography
-- date-fns
-- Vitest (testes iniciais)
-
-Backend
-
-- NestJS + @nestjs/jwt
-- Prisma ORM + PostgreSQL (Docker)
-- bcryptjs
-
-Infra / Dev
-
-- Docker Compose (Postgres em 5433)
-- Prisma Migrations
-- Script de seed (`script.sh`)
-
-## Estrutura Atual (Resumo)
-
-```
-frontend/src/
-  features/
-    pdi/ ...
-    prs/ ...
-    auth/ ...
-    admin/ ...
-  pages/              -> Rotas (MyPdiPage, ManagerDashboardPage, etc.) consumindo apenas barrels de features
-  layouts/            -> AppLayout, Sidebar, TopBar
-  lib/                -> apiClient, helpers transversais
-  mocks/              -> Dados mock (em processo de realocação gradual para dentro de cada feature)
-  index.css / main.tsx
-
-backend/
-  prisma/             -> schema.prisma + migrations
-  src/                -> módulos Nest (auth, prs, pdi, etc.)
-  docker-compose.yml  -> Postgres
-```
-
-## Rotas Frontend
-
-| Rota            | Descrição                                                  |
-| --------------- | ---------------------------------------------------------- |
-| `/` / `/me/prs` | Lista de PRs (autenticado)                                 |
-| `/me/pdi`       | Página de acompanhamento do PDI                            |
-| `/manager`      | Dashboard do manager (seleciona subordinado; abas PRs/PDI) |
-| `/admin`        | Gestão de contas e relações (apenas para usuários admin)   |
-
-## Endpoints Backend (principais)
-
-- Auth: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`,
-  `GET /auth/my-reports`, `POST /auth/set-manager`, `POST /auth/remove-manager`
-
-  Admin (somente admin):
-
-  - `GET /auth/users` (lista usuários com managers/reports)
-  - `POST /auth/admin/create-user` (cria usuário; aceita `isAdmin` opcional)
-  - `POST /auth/admin/set-admin` (promove ou remove privilégio admin)
-  - `POST /auth/admin/set-manager` (define um manager para um usuário)
-  - `POST /auth/admin/remove-manager` (remove relação de manager)
-  - `POST /auth/admin/set-github-id` (define ou remove githubId de um usuário; 409 em caso de duplicidade)
-  - `POST /auth/admin/delete-user` (remove usuário; PRs ficam órfãos; PDI removido; relações gerenciais desconectadas)
-
-- PRs (JWT): `GET /prs` (aceita `?ownerUserId=` com checagem de permissão), `GET /prs/:id`, `POST /prs`, `PUT /prs/:id`, `DELETE /prs/:id`
-- PDI (JWT):
-  - `GET /pdi/me` (404 se não existir)
-  - `POST /pdi` (cria/substitui plano do usuário logado)
-  - `PATCH /pdi/me` (atualização parcial)
-  - `GET /pdi/:userId`, `PUT /pdi/:userId`, `DELETE /pdi/:userId` (somente dono ou manager)
-- Teams (JWT):
-  - `GET /teams` (lista sumário de times com contadores)
-  - `GET /teams?details=true` (lista completa com memberships - otimizado para manager dashboard)
-  - `GET /teams/mine` (times onde sou manager)
-  - `GET /teams/:id` (detalhes de um time específico)
-  - `POST /teams`, `PUT /teams/:id`, `DELETE /teams/:id` (CRUD - admin)
-
-Permissões
-
-- PRs filtrados por `ownerUserId` e PDI de outro usuário só podem ser acessados pelo próprio dono ou por alguém que esteja listado como seu manager.
-
-Administração
-
-- Campo `isAdmin` no modelo de usuário (Prisma) habilita acesso administrativo.
-- Campo opcional `githubId` (login do GitHub) permite vincular automaticamente PRs importados: se o campo `user` do payload do PR (login GitHub) casar com `githubId` de um usuário, o `ownerUserId` é preenchido automaticamente.
-- O primeiro usuário registrado no sistema é promovido automaticamente a admin.
-- A página `/admin` permite criar contas e gerenciar relações de gestão.
-- Atalho de teclado: `g` seguido de `a` navega para a página de administração (se o usuário for admin).
-- Erros de unicidade (email ou githubId) retornam 409 com mensagem amigável.
-
-## Tipagens
-
-Agora vivem dentro de cada feature (`features/<domínio>/types/*.ts`). Exemplos: `features/prs/types/pr.ts`, `features/pdi/types/pdi.ts`, `features/admin/types/user.ts`.
-
-Diretriz: nunca criar novo arquivo em `src/types`. Use o escopo da feature ou uma pasta `shared/` futura (ainda não necessária).
-
-## Mocks
-
-- `mockPrs` em `src/mocks/prs.ts`
-- `mockPdi` em `src/mocks/pdi.ts`
-
-Para adicionar mais PRs basta inserir novos objetos no array `mockPrs` respeitando a interface `PullRequest`.
-
-## Componentes Chave (Exemplos)
-
-**PDI (Sistema Colapsável Completo):**
-
-- `EditablePdiView` - Orquestração principal com seções colapsáveis
-- `CollapsibleSectionCard` - Componente base para seções colapsáveis (shared)
-- `MilestonesSection` - Acompanhamentos com preview e estatísticas
-- `MilestoneCard` - Cards individuais com subseções colapsáveis
-- `KeyResultsEditor`/`KeyResultsView` - KRs com design modernizado
-- `CompetenciesAndResultsSection` - Seção unificada colapsável
-- `SaveStatusBar` - Indicador de sincronização
-
-**PRs:**
-
-- `PrList`, `PrDetailDrawer`, `PrStats`, `ProgressCharts`, `SummaryCards`
-
-**Admin:**
-
-- `AdminUserRow`, `ManagerDrawer`, `CreateUserModal`, `AdminGate`
-
-**Auth:**
-
-- `LoginForm`
-
-## Decisões de Design / UI
-
-**Layout e Navegação:**
-
-- Light mode padrão; paleta `surface` minimalista
-- Sidebar persistente desktop; TopBar só em mobile
-- Redução de excesso de cores nas métricas (cards neutros com pontos de cor)
-- PR stats com distribuição de linhas adicionadas/deletadas (barra empilhada)
-
-**Sistema PDI Colapsável:**
-
-- Interface colapsável para todas as seções principais (KRs, Competências, Acompanhamentos)
-- Estado inicial inteligente: seções abrem automaticamente se contêm dados
-- Modo edição força todas as seções abertas; modo visualização permite colapso livre
-- Animações suaves de 300ms para transições de expansão/colapso
-- Preview informativos com estatísticas em tempo real para seções colapsadas
-- Milestones com subseções colapsáveis (Notas, Sugestões, Tarefas, Pontos Positivos/Melhoria, Referências)
-
-**Design System:**
-
-- Substituição completa de emojis por ícones `react-icons` profissionais
-- Paleta temática consistente: Indigo (KRs), Verde (competências), Azul (avaliações), Roxo (acompanhamentos)
-- Cards com gradientes suaves e bordas arredondadas
-- Badges numerados circulares para identificação visual
-- Componente `CollapsibleSectionCard` reutilizável para consistência
-
-**Backend e Persistência:**
-
-- AuthContext gerencia token + user
-- PDI persiste no backend; UI desativou localStorage para PDI
-- Debounced auto-save para melhor performance
-
-**Área Administrativa:**
-
-- Emojis removidos de ações/tabelas; padronizado com `react-icons`
-- Cabeçalhos da tabela de equipes sem ícones (texto simples para legibilidade)
-- Picker de gerentes via portal fixo no `document.body` (evita scrollbars indesejados)
-- Botão de alternar admin desativado para o próprio usuário logado (prevenção de auto-remoção)
-
-## Próximos Passos Sugeridos
-
-Backend/API
-
-1. DTO + validation pipes (auth, prs, pdi)
-2. Endpoints granulares de PDI (patch por bloco/milestone)
-3. `/prs/metrics` agregadas (tempo merge, churn, distribuição estados)
-4. (Concluído) Observabilidade básica: logging estruturado + request id + logs de domínio
-5. Métricas de desempenho simples (latências agregadas /p95) via sumarização de logs (futuro)
-
-Frontend 6. Command Palette (Ctrl/⌘+K) 7. Dark mode toggle 8. Persistência de checklist / notas de review de PR 9. Export / import de PDI (JSON / Markdown) 10. Indicators de sincronização por seção (granular)
-
-Qualidade / Segurança 11. Testes E2E (Nest + frontend smoke) 12. Refresh token + revogação 13. Sanitização markdown robusta
-
-## Como Rodar (Full Stack)
-
-Pré-requisitos: Node 20+.
-
-### Backend
-
-Pré-requisitos: Docker / Node 20+
-
-Subir Postgres:
+### 🛠️ Instalação Rápida
 
 ```bash
-cd backend
-docker compose up -d
-```
+# Clone do repositório
+git clone https://github.com/Driva-tecnologia/forge.git
+cd forge
 
-Configurar `.env` (exemplo):
-
-```
-DATABASE_URL="postgresql://forge_user:forge_pass@localhost:5433/forge_db"
-JWT_SECRET="dev_jwt_secret"
-```
-
-Instalar dependências e aplicar migrações:
-
-```bash
+# Backend setup
 cd backend
 npm install
+cp .env.example .env  # Configure suas variáveis
+npx prisma generate
 npx prisma migrate dev
-npm run start:dev
-```
+npm run seed  # Cria dados iniciais + perfis de gamificação
 
-Seed de dados (mock completo + reset de banco):
-
-```bash
-# do diretório raiz do projeto
-bash script.sh
-```
-
-O script irá:
-
-- Subir o Postgres (via Docker) se necessário e aguardar disponibilidade
-- Resetar o schema via Prisma (ou via SQL com docker em fallback)
-- Aguardar a API ficar pronta antes de disparar requests
-- Criar o admin (primeiro usuário) e obter token
-- Criar usuários (manager + 2 devs) via endpoint admin e vincular relações
-- Popular PRs variados (open/merged/closed) em frontend/backend
-- Criar um PDI completo para cada dev
-
-### Frontend
-
-Instalação e dev:
-
-```bash
-cd frontend
+# Frontend setup
+cd ../frontend
 npm install
-npm run dev
+cp .env.example .env  # Configure URL da API
+
+# Executar em desenvolvimento
+# Terminal 1: Backend
+cd backend && npm run start:dev
+
+# Terminal 2: Frontend
+cd frontend && npm run dev
 ```
 
-Build produção:
+### ⚙️ Configuração de Ambiente
+
+**Backend (.env):**
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/forge"
+JWT_SECRET="your-jwt-secret"
+FRONTEND_URL="http://localhost:5173"
+```
+
+**Frontend (.env):**
+
+```env
+VITE_API_URL="http://localhost:3000"
+```
+
+### 🗄️ Database Setup
 
 ```bash
-cd frontend
-npm run build
-npm run preview
+# Rodar migrações (inclui tabelas de gamificação)
+npx prisma migrate dev
+
+# Seed com dados de exemplo + perfis de gamificação
+npm run seed
+
+# Reset completo (se necessário)
+npx prisma migrate reset
 ```
 
-## Convenções de Código
+## 📖 Principais Funcionalidades
 
-- `import type` para diferenciar tipos.
-- Reducer centraliza mutações de PDI; evitar state derivado duplicado.
-- Hooks isolam efeitos remotos e debounce.
-- Extração de componentes de layout/estrutura em `pdi/*` reduz acoplamento.
+### 🎮 Sistema de Gamificação
 
-## Adicionando Novos PRs (Mock / Durante Transição)
+1. **Dashboard de Jogador**: Perfil com XP, level, badges e progresso
+2. **Sistema de Pontos**: XP automático por ações de desenvolvimento
+3. **Conquistas**: Badges desbloqueados por comportamentos específicos
+4. **Rankings de Equipe**: Leaderboards colaborativos focados em times
+5. **Página Educativa**: Guia completo sobre XP e filosofia team-first
+6. **Notificações**: Feedback imediato a cada ação realizada
 
-```ts
-mockPrs.push({
-  id: "ID_UNICO",
-  author: "dev",
-  repo: "repo-name",
-  title: "Título do PR",
-  created_at: new Date().toISOString(),
-  state: "open",
-  lines_added: 0,
-  lines_deleted: 0,
-  files_changed: 0,
-  ai_review_summary:
-    "Resumo Geral\n\nPontos fortes:\n...\nPontos fracos/risco:\n...",
-  review_comments_highlight: ["Item 1", "Item 2"],
-});
+**🎯 Filosofia Team-First:**
+
+- Equipes em destaque no lugar de rankings individuais
+- Badges colaborativos que incentivam trabalho em conjunto
+- Interface redesenhada para promover colaboração
+- Sistema educativo explicando benefícios da abordagem team-first
+
+### 🏠 Homepage Inteligente
+
+1. **Dashboard Adaptativo**: Interface personalizada por perfil de usuário
+2. **Visão Individual**: Dashboard gamificado para desenvolvimento pessoal
+3. **Visão de Gestor**: Seção adicional com métricas e equipe para managers
+4. **Acesso Rápido**: Navegação direta para funcionalidades principais
+5. **Métricas em Tempo Real**: Dados atualizados de progresso e conquistas
+
+### 📊 PDI Modernizado
+
+1. **Key Results Inteligentes**: 5 tipos de critérios com cálculo automático
+2. **Competências Estruturadas**: 4 áreas fixas com 3 níveis cada
+3. **Ciclos de Desenvolvimento**: Organização temporal por períodos
+4. **Interface Colapsável**: Seções organizadas para melhor foco
+5. **Timeline Aprimorada**: Histórico detalhado com atividades e marcos
+
+### 🔐 Sistema Administrativo
+
+1. **Gestão de Usuários**: Interface moderna com cards clicáveis
+2. **Controle Hierárquico**: Configuração de relações de liderança
+3. **Seleção Múltipla**: Criação de regras para várias pessoas/equipes
+4. **Anti-Duplicação**: Sistema inteligente previne regras duplicadas
+5. **Senhas Administrativas**: Admin pode alterar senhas de usuários
+
+## 📋 Guia de Uso
+
+### Interface de Administração
+
+- **Acesso**: Login como admin → `/admin`
+- **Navegação**: Alt+1 (Usuários), Alt+2 (Equipes), Alt+3 (Subordinados)
+- **Gestão**: Click em cards para editar perfis
+- **Subordinados**: Configure relações hierárquicas centralizadamente
+
+### Dashboard de Manager
+
+- **Visibilidade Total**: Todas as pessoas gerenciadas aparecem
+- **Cards Interativos**: Dados em tempo real de atividades e PDI
+- **Navegação Direta**: Click para acessar detalhes completos
+- **Performance**: 85% mais rápido com API otimizada
+
+### PDI e Ciclos
+
+- **Acesso**: `/me/pdi` → Navegação por abas (PDI | Ciclos)
+- **Edição**: Interface colapsável com seções inteligentes
+- **Ciclos**: Ctrl+N (novo), Ctrl+Enter (salvar), Esc (fechar)
+- **Auto-save**: Sincronização automática com status visual
+
+## 🎯 Roadmap de Desenvolvimento
+
+### Fase 2 - Features Avançadas
+
+- 🎯 **Sistema de Desafios**: Challenges automáticos semanais/mensais
+- 🏅 **Leaderboards Múltiplos**: Por equipe, departamento, especialidade
+- 🤝 **Social Features**: Peer recognition, celebrações de conquistas
+- 🎨 **Dark Mode**: Tema escuro seguindo design system v2.0 violet
+
+### Fase 3 - Integração Total
+
+- 🔗 **Integração Git/PRs**: XP automático por atividade de código
+- 📊 **Business Intelligence**: Métricas de ROI da gamificação
+- 🤖 **Automação IA**: Desafios personalizados, coaching automático
+- 🎮 **Command Palette**: Navegação rápida (⌘K) com design system v2.0
+
+### Melhorias Técnicas Priorizadas
+
+- Command Palette completo (Ctrl/⌘+K) com estilo violet
+- Dark mode toggle seguindo tokens do design system
+- Export/import de PDI com interface modernizada
+- Testes automatizados E2E para componentes redesenhados
+- Performance monitoring para micro-interactions
+
+## 🛠️ Desenvolvimento e Contribuição
+
+### Estrutura de Desenvolvimento
+
+```bash
+# Hot reload funcional para desenvolvimento ágil
+cd backend && npm run start:dev
+cd frontend && npm run dev
+
+# Testes
+npm test                # Backend - testes unitários
+npm run test:e2e        # Backend - testes de integração
+npm run test:cov        # Backend - cobertura
 ```
 
-### Exemplo de Payload de Criação/Atualização de PR (API)
+### Convenções de Código
 
-Campos snake_case são mapeados internamente para camelCase; datas terminadas em `_at` são convertidas para Date:
+- `import type` para diferenciar tipos
+- Hooks isolam efeitos remotos e debounce
+- Feature-first architecture para novos componentes
+- TypeScript strict mode em todo o projeto
 
-```json
-{
-  "id": 987654321,
-  "repo": "org/repo",
-  "number": 42,
-  "title": "Improve performance of X",
-  "state": "open",
-  "user": "github-login",
-  "created_at": "2025-09-13T10:15:00Z",
-  "updated_at": "2025-09-13T10:20:00Z",
-  "total_additions": 120,
-  "total_deletions": 30,
-  "total_changes": 150,
-  "files_changed": 8
-}
+### APIs Principais
+
+**Gamificação:**
+
+- `POST /gamification/add-xp` - Adicionar XP por ação
+- `GET /gamification/profile` - Perfil do jogador
+- `GET /gamification/leaderboard` - Rankings de equipes (team-first)
+- `GET /gamification/badges` - Sistema de badges
+
+**PDI:**
+
+- `GET /pdi/me` - PDI do usuário
+- `PATCH /pdi/me` - Atualização parcial
+- `GET /pdi/cycles/me/:cycleId` - Ciclo histórico
+- `POST /pdi/cycles` - Criar novo ciclo
+
+**Administração:**
+
+- `GET /auth/users` - Lista de usuários
+- `POST /auth/admin/create-user` - Criar usuário
+- `POST /management/admin/rules` - Criar regra de liderança
+
+## 🔒 Segurança e Qualidade
+
+### Implementações de Segurança
+
+- Hash bcrypt para senhas
+- JWT com expiração (7 dias)
+- Guards de autorização (Admin, Owner, Manager)
+- Validação de dados com class-validator
+- Sanitização de inputs
+
+### Qualidade de Código
+
+- ESLint + Prettier configurados
+- TypeScript strict em todo o stack
+- Logging estruturado com Pino
+- Error boundaries no frontend
+- Tratamento consistente de erros
+
+## 📈 Performance e Observabilidade
+
+### Otimizações Implementadas
+
+- **Dashboard de Liderança**: Redução de 10s para <1s
+- **Queries Bulk**: Eliminação de N+1 queries
+- **Consultas Paralelas**: Promise.all para operações simultâneas
+- **Memory Optimization**: Maps para lookup O(1)
+
+### Logging e Monitoramento
+
+- Logs estruturados com contexto de requisições
+- Interceptores globais para timing e status
+- BigInt serialization automática
+- Tratamento específico de erros Prisma
+
+## 🎮 Sistema de Gamificação Completo
+
+### XP System (25+ tipos de ações)
+
+```typescript
+const XP_VALUES = {
+  // PDI Actions
+  pdi_milestone_completed: 100,
+  pdi_competency_improved: 50,
+  pdi_cycle_completed: 300,
+
+  // Collaboration
+  peer_feedback_given: 25,
+  mentor_session_completed: 75,
+
+  // Code & PRs
+  pr_merged: 50,
+  code_review_completed: 30,
+  bug_fixed: 40,
+};
 ```
 
-Se `ownerUserId` não for enviado e `user` corresponder ao `githubId` de um usuário, o vínculo é atribuído automaticamente.
+### Badge System Automático
 
-## Ajustando Tema
+- **Conquistas por Milestone**: First Steps, Growth Mindset
+- **Conquistas por Consistência**: Daily Streak, Weekly Warrior
+- **Conquistas Sociais**: Team Player, Mentor Master
+- **Conquistas Técnicas**: Code Warrior, Bug Hunter
 
-Arquivo: `tailwind.config.js`
+### Leaderboard Team-First
 
-- Paleta clara atual em `surface`.
-- Para reativar dark mode: criar variantes e togglar classe `dark` no `<html>`.
+- Rankings focados exclusivamente em equipes
+- Trends visuais de progresso coletivo (↑↓→)
+- Métricas de colaboração e crescimento conjunto
+- Filtros por período temporal
 
-## Persistência Local
+## 💡 Próximos Itens Recomendados
 
-O PDI passou a persistir no backend. O uso de `localStorage` foi desativado na tela de PDI para evitar conflito com o estado remoto.
+### Frontend - Design System v2.0
 
-## Limitações Atuais
+- Command Palette com design violet para navegação rápida
+- Dark mode seguindo tokens do design system v2.0
+- Export/import de PDI com interface modernizada seguindo violet theme
+- Indicators de sincronização granular com micro-interactions
+- Lazy loading otimizado para componentes redesenhados
 
-- PDI salvo como blob único (PUT/PATCH) – falta granularidade.
-- Checklist / review notes de PR não persiste.
-- Falta DTO/validation pipes (payloads PR/PDI aceitam `any`).
-- Sem refresh token / rotação de chave JWT.
-- Sanitização markdown mínima.
-- Métricas agregadas de PR ausentes.
-- Sugestões de PDI ainda placeholder (IA).
+### Backend
 
-## Qualidade / Build / Testes
+- DTO + validation pipes para todas as APIs
+- Endpoints granulares de PDI (patch por seção)
+- Métricas agregadas de PR (/prs/metrics)
+- Refresh token + rotação de chaves
 
-- Frontend: `npm run build` / `npm run dev`
-- Backend: `npm run start:dev`
-- Testes atuais concentrados em reducer de PDI; utilidades migradas para `features/pdi/lib`
-- Planejar: testes de hooks remotos (mock fetch), auto‑save com timers, edge cases de milestones
-- ESLint + TS estritos (`strict`, `noUnusedLocals`)
+### Qualidade
 
-## Segurança
-
-- Hash bcrypt para senhas (backend)
-- JWT simples (7d) sem refresh; renovar estratégia depois
-- Sanitização limitada (inputs ainda não validados por DTO)
-
-* Entrada de usuário limitada a campos de texto simples; markdown ainda é ingênuo (baixa superfície de XSS). Revisar sanitização ao adotar parser real.
-
-## Contato / Handoff
-
-Próximo agente deve:
-
-1. Configurar backend (.env + docker compose up) e rodar migrações
-2. Criar usuário via /auth/register (curl ou frontend) e validar /auth/me
-3. Criar/atualizar PRs (POST /prs) e verificar listagem no frontend
-4. Escolher item da lista "Possíveis Próximos Passos" (priorizar DTO + filtros) e implementar
+- Testes E2E automatizados para novos componentes v2.0
+- Performance monitoring para micro-interactions
+- Cache inteligente para hierarquias
+- Sanitização markdown robusta
+- Accessibility audit para design system violet
 
 ---
 
-MVP pronto para extensão.
+**MVP evoluído para Team-First Platform com Design System v2.0.**
 
-## Mudanças Recentes (Resumo)
+O Forge evoluiu de uma simples plataforma de PDI para uma **plataforma gamificada de gestão de times** completa, revolucionando tanto a abordagem tradicional de gamificação corporativa ao adotar uma **filosofia team-first** quanto o design visual com um **sistema v2.0 baseado em Violet**. Esta combinação única prioriza colaboração sobre competição individual enquanto oferece uma interface moderna, profissional e altamente interativa, criando um ambiente mais saudável, engajante e visualmente sofisticado para o desenvolvimento profissional.
 
-- Administração
-  - Modal de criação de usuário reestruturado (grid responsivo, overlay corrigido).
-  - Tabela simplificada (Usuário | Permissões | Gerentes) com header fixo e gerência inline.
-  - Atribuição de manager via menu/botão “+ Adicionar gerente”; nomes longos com truncamento e tooltip.
-  - Erro de e-mail duplicado tratado como 409 (mensagem amigável no frontend).
-- Navegação e páginas
-  - Sidebar renovada com ícones (react-icons), visual mais consistente e logout destacado.
-  - Páginas de PRs e PDI com iconografia e tabelas/cartões refinados.
-- PDI
-  - Seção “Resultado” agora totalmente editável: nível antes/depois, evidências, adicionar/remover linhas.
-  - Adição rápida a partir de competências existentes ou criação manual de nova área.
-- Admin / GitHub
-  - Adicionados campo `githubId` ao usuário e edição inline na página `/admin`.
-  - Vinculação automática de PRs pelo login GitHub (`user` do PR -> `githubId` do usuário) quando `ownerUserId` não for enviado.
-  - Ação de remoção de usuário (soft para PRs: apenas anula ownerUserId) disponível na UI admin.
+## 📞 Contato e Suporte
 
-### Dashboard de Manager (Atualizações 2025-09-14)
-
-| Alteração               | Antes                                                                      | Depois                                                    | Benefício                                         |
-| ----------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------- |
-| Métricas de topo        | 3 cards separados (Subordinados / PRs / PDIs) ocupando altura considerável | Barra horizontal única `TeamOverviewBar`                  | Menor consumo vertical, leitura sequencial rápida |
-| Detalhes de subordinado | Drawer lateral sobreposto                                                  | Painel em fluxo (inline) abaixo da grade                  | Menos compressão lateral, contexto preservado     |
-| KPI card / tab          | Exibido (sem dados maduros)                                                | Removido                                                  | Redução de ruído visual                           |
-| Componentes legados     | `ManagerMetricCards`, `ReportDrawer`                                       | Removidos do codebase                                     | Simplificação e menor bundle                      |
-| Estado loading          | Traço ou conteúdo “saltando” rapidamente                                   | Skeletons com atraso mínimo (`useDeferredLoading`) + fade | Percepção de fluidez, ausência de flicker         |
-
-### Admin (Atualizações 2025-09-24)
-
-- Removidos ícones dos cabeçalhos de colunas nas tabelas (ex.: Equipes) para reduzir ruído visual.
-- Substituídos emojis por ícones do `react-icons` em ações (ex.: remoção de usuário).
-- Corrigido comportamento do seletor de Gerentes: agora é renderizado em portal com posicionamento absoluto relativo à âncora, evitando ativação de scroll horizontal/vertical no container da tabela.
-- Prevenido auto‑remoção de privilégios: o admin logado não pode remover seu próprio acesso admin (toggle desativado na própria linha).
-
-#### Novo Componente: `TeamOverviewBar`
-
-Características:
-
-- Estrutura compacta (título + 3 métricas linearizadas com separadores sutis `|` / `•`).
-- Não fixa (rola com o conteúdo para não competir com o header global futuro).
-- Sem interatividade; foco em leitura imediata.
-- Tipografia reduzida com `tabular-nums` nos valores para estabilidade visual.
-
-#### Skeleton & Carregamento Diferido
-
-Implementado hook `useDeferredLoading(delay=~120ms, minVisible=~300ms)` que:
-
-1. Só exibe skeleton se a requisição ultrapassar o delay (evita “flash”).
-2. Mantém skeleton tempo mínimo para evitar troca abrupta.
-3. Aplica fade de opacidade ao transicionar lista de cards (0.55 ➜ 1).
-
-Skeletons criados:
-
-- `TeamOverviewBar` placeholders (blocos curtos de valor + label).
-- `ReportCardSkeleton`: avatar circular neutro, linhas de texto, badges opacas e barra de progresso parcial.
-
-#### Limpeza de Código
-
-- Removidos arquivos: `ManagerMetricCards.tsx`, `ReportDrawer.tsx`.
-- Exports eliminados do barrel `features/manager/index.ts` para prevenir import acidental.
-- Build verificado pós-removal (nenhum consumidor quebrado).
-
-#### Evoluções Futuras (Sugestões)
-
-- Deep link para subordinado e aba (`/manager?user=<id>&tab=pdi`).
-- Lazy load do painel de detalhes (code splitting) quando usuário é selecionado.
-- Indicadores de atualização em background (ex.: pequena animação de progress bar sob a barra de overview).
-- Métricas agregadas adicionais (lead time médio, throughput semanal) quando endpoint consolidado estiver pronto.
-
-> **Nota (2025-09-26)**: `TeamOverviewBar` e `useDeferredLoading` foram removidos durante refatoração person-centric. Ver seção "Dashboard de Manager - Refatoração Person-Centric" para detalhes da nova implementação.
-
-### Novidades Técnicas
-
-- PRs: Paginação server-side (`GET /prs?page=1&pageSize=20`) retornando `{ items, total, page, pageSize }` e frontend ajustado para usar `serverPaginated` em `PrList`.
-- PRs: Filtro inclusivo para PDI / visão de subordinado: quando `ownerUserId` é enviado, a busca inclui PRs cujo `ownerUserId` seja o usuário OU cujo login GitHub (`user`) case com `githubId` do usuário.
-- PRs: Hook `useRemotePrs` agora envia page/pageSize e processa resposta paginada.
-- PDI: Salvamento otimista no `EditablePdiView` com rollback em caso de falha (antes ficava sem feedback). Fallback POST quando PATCH retorna 404.
-- PDI: Edição via manager usa `saveForUserId` (PUT `/pdi/:userId`). Garantir que o manager selecione explicitamente o subordinado correto antes de editar.
-- Admin: Removidos imports React obsoletos para build mais limpo (React 19 JSX transform).
-- Infra: Ajustes menores de tipagem e prevenção de BigInt vs number em filtros de PRs.
-- Backend: Modularização (PrismaModule + módulos de domínio) concluída; guard `OwnerOrManagerGuard` substitui verificações manuais; introduzido `LoggingInterceptor` e logs de serviço; util de erro único Prisma para respostas 409 consistentes; remoção de client Prisma direto de arquivos de domínio.
-
-### Atualizações PDI (2025-09-14)
-
-#### UX de Resultados / Competências
-
-- Editor de Resultados redesenhado em cards: cada competência agora tem um bloco com título, seleção de nível Antes / Depois (0–5), barra de evolução com gradiente mostrando progresso e delta textual (+N / Sem mudança / regressão).
-- Valores não definidos exibem traço "—" ao invés de forçar 0; barra só aparece quando há pelo menos um lado definido.
-- Botão Limpar explícito para remover nível (removido comportamento implícito de clique para limpar que causava confusão).
-- Acessibilidade: navegação por teclado (Arrow Left/Right, Home/End, Delete/Backspace/Space para limpar) via radiogroup; foco visível; mensagens úteis para leitores de tela.
-- Área de evidências estilizada, placeholder claro incentivando exemplos.
-- Novo componente de adição (AddResultBar): sugestões filtradas conforme digitação, chips rápidos (até 10 disponíveis), detecção de duplicado com feedback visual e aria-live para sucesso/erro.
-- Destaque visual temporário (pulse + borda verde) no card recém-adicionado para reforçar feedback.
-
-#### Autosave & Merge
-
-- Introduzido campo local `lastEditedAt` (apenas no frontend) em cada record para evitar que respostas de PATCH atrasadas revertam mudanças recentes.
-- Estratégia `mergeServerPlan` compara timestamps por record quando a seção de resultados está em edição e preserva o valor mais recente local.
-- Sanitização antes do envio: `lastEditedAt` removido no hook `useAutoSave` para evitar `400 Bad Request` devido ao `ValidationPipe (forbidNonWhitelisted)` no backend.
-
-#### Validação / Backend
-
-- O erro 400 identificado vinha do envio de campos extras (`lastEditedAt`) não presentes em `PdiCompetencyRecordDto` (whitelist + forbidNonWhitelisted). Ajuste feito no frontend; alternativa futura seria estender DTO ou desativar `forbidNonWhitelisted` (não recomendado agora).
-
-#### Próximas Melhorias Potenciais
-
-- Persistir `lastEditedAt` no backend (opcional) para auditoria e merge mais robusto colaborativo.
-- Animação de scroll automática para card recém-adicionado (foco acessível).
-- Chips de evidência (parse de linhas prefixadas com `- `) com remoção individual.
-- Undo rápido para remoção de competência (toast com timeout).
-- Diff visual quando houver regressão (ex: cor âmbar na barra parcial regressiva).
-
-#### Testes Recomendados (a adicionar)
-
-- Caso de merge: servidor retorna valor antigo após alteração local -> garantir que merge mantém local.
-- Sanitização: função que prepara payload remove `lastEditedAt` e outros campos desconhecidos.
-- Acessibilidade: snapshot de roles/ARIA nos botões de nível.
-
-## 🛠️ Stack Tecnológica
-
-### Frontend
-
-- **React 19** + **TypeScript** - Interface moderna e type-safe
-- **Vite** - Build tool rápido e otimizado
-- **TailwindCSS** - Styling utilitário com design system
-- **React Router** - Navegação SPA com lazy loading
-- **React Icons** - Ícones profissionais (Feather Icons)
-- **Headless UI** - Componentes acessíveis (modais, dropdowns)
-
-### Backend
-
-- **NestJS** - Framework Node.js escalável
-- **Prisma** - ORM type-safe com migrations
-- **PostgreSQL** - Banco de dados relacional
-- **JWT** - Autenticação stateless
-- **bcryptjs** - Hash seguro de senhas
-- **Pino** - Logging estruturado de alta performance
-
-### DevOps & Qualidade
-
-- **Docker** - Containerização completa
-- **ESLint + Prettier** - Code quality e formatação
-- **TypeScript strict** - Type checking rigoroso
-- **Jest** - Testes unitários e de integração
-
-## 🏗️ Arquitetura
-
-### Feature-First Structure
-
-```
-frontend/src/
-├── features/           # Módulos isolados por domínio
-│   ├── admin/         # Sistema administrativo
-│   ├── auth/          # Autenticação
-│   ├── pdi/           # PDI e ciclos
-│   ├── prs/           # Pull Requests
-│   ├── settings/      # Configurações de usuário
-│   └── management/    # Gerenciamento hierárquico
-├── shared/            # Componentes reutilizáveis
-├── lib/               # Utilitários e clientes
-└── pages/             # Páginas principais
-
-backend/src/
-├── auth/              # Autenticação e usuários
-├── management/        # Sistema hierárquico
-├── pdi/               # PDI e ciclos
-├── teams/             # Equipes
-├── common/            # Guards, middlewares, utils
-└── core/              # Prisma, configurações
-```
-
-### Padrões Implementados
-
-- **Hooks Personalizados**: Lógica de estado isolada
-- **Type Safety**: Interfaces compartilhadas entre frontend/backend
-- **Error Boundaries**: Tratamento gracioso de erros
-- **Loading States**: UX consistente durante carregamento
-- **Responsive Design**: Mobile-first com breakpoints inteligentes
-
-## 🧪 Testes e Validação
-
-### Backend Tests
-
-Para executar os testes do backend:
-
-```bash
-cd backend
-npm test                # Testes unitários
-npm run test:e2e        # Testes de integração
-npm run test:cov        # Cobertura de código
-```
-
-**Casos de Teste Implementados:**
-
-- Criação de regras de gerenciamento (`management.service.test.ts`)
-- Cálculo dinâmico de subordinados
-- Autenticação e autorização
-- Queries complexas com Prisma
-
-### Testando Funcionalidades Novas (2025-09-29)
-
-**Sistema de Senhas Admin:**
-
-```bash
-# 1. Login como admin
-POST /auth/login { "email": "admin@example.com", "password": "admin123" }
-
-# 2. Alterar senha de usuário
-POST /auth/admin/change-password
-Body: { "userId": 14, "newPassword": "novaSenha123" }
-# Ou deixar vazio para gerar automaticamente
-
-# 3. Verificar resposta
-{
-  "success": true,
-  "generatedPassword": "xK9mN2pQ7vR1"  // Se auto-gerada
-}
-```
-
-**Cards de Usuários:**
-
-- Abrir `/admin`
-- Verificar grid responsivo (1→2→3→4 colunas)
-- Clicar em card = navegação direta para `/admin/users/:id`
-- Hover no botão delete (canto superior direito)
-- Testar modal de confirmação de exclusão
-
-**Update Profile Admin:**
-
-```bash
-# 1. Acessar página de edição
-GET /admin/users/14
-
-# 2. Atualizar perfil via admin
-PATCH /auth/admin/update-profile/14
-Body: {
-  "name": "Nome Atualizado",
-  "position": "Cargo Novo",
-  "bio": "Biografia atualizada"
-}
-```
-
-**Validação Completa:**
-
-```bash
-# 1. Setup inicial
-bash script.sh  # Popula dados completos
-
-# 2. Login como admin
-POST /auth/login { "email": "admin@example.com", "password": "admin123" }
-
-# 3. Testar fluxo admin completo:
-#    - Visualizar cards de usuários
-#    - Editar perfil de usuário
-#    - Alterar senha (aba Conta)
-#    - Gerenciar subordinados
-#    - Administrar equipes
-```
-
-### Frontend Refactor (Feature PRs & Shared Layer)
-
-- Introduzida pasta `frontend/src/shared` contendo apenas componentes verdadeiramente genéricos (layout / UI atômica): `PaginationFooter`, `StatCard`, `LinesDeltaCard`, `SidePanel`, `Badge`.
-- Removido código morto: componentes antigos `ProgressCharts` e `SummaryCards` (ficarão para futura reimplementação quando endpoint de métricas existir).
-- Extraídas partes reutilizáveis da feature de PRs (paginação, cards, painel lateral) para reduzir duplicação futura entre PRs, PDI e Admin.
-- Criado util de status específico de PR em `features/prs/lib/status.ts` (antes estava incorretamente em `shared/lib`). Mantém `shared` neutro de domínio.
-- Padronizados imports via barrels (`@/shared`, `@/features/prs`).
-- Adicionado `Badge` genérica com helper `semanticStatusBadge` para mapear estados sem acoplar lógica de PR.
-- Documentação TSDoc mínima aplicada aos componentes compartilhados (foco em responsabilidade e props principais).
-
-### Fluxo de Paginação de PRs
-
-Requisição:
-
-```
-GET /prs?page=2&pageSize=50
-Authorization: Bearer <token>
-```
-
-Opcional `ownerUserId` para filtrar subordinado (aplica checagem de permissão). Retorno:
-
-```json
-{
-  "items": [
-    {
-      /* PullRequest */
-    }
-  ],
-  "total": 137,
-  "page": 2,
-  "pageSize": 50
-}
-```
-
-Limites: `page >= 1`, `pageSize` máximo 200 (valores maiores são normalizados para 200).
-
-### Fluxo de Persistência de PDI
-
-Self:
-
-- PATCH `/pdi/me` para atualizações parciais.
-- POST `/pdi` faz upsert: cria se inexistente ou substitui campos informados.
-
-Manager editando subordinado:
-
-- PUT `/pdi/:userId` (substitui blob completo). UI envia apenas campos atuais.
-
-Estratégia atual: enviar o blob completo (milestones/KRs/records). Futuro: endpoints granulares (ex.: `PATCH /pdi/:userId/milestones/:id`).
-
-### Observações sobre Edição de PDI via Manager
-
-Se notar que ao editar está modificando o próprio PDI do manager:
-
-1. Verifique se um subordinado foi realmente selecionado (estado `currentId`).
-2. Confirme a URL da requisição (`PUT /pdi/<idDoReport>`).
-3. Garanta que a lista de reports não inclui o próprio manager.
-4. Planejado: impedir edição até seleção explícita (todo).
-
-### Próximos Itens Recomendados
-
-- Mover filtros de PR (repo/state/author) para o backend (where condicional + índices).
-- Sort configurável (`sort=createdAt:desc|lines:asc`).
-- Debounced auto-save PDI (PATCH incremental) com status visual (badge “Sincronizado / Pendente”).
-- DTO + validação para PDI/PRs (class-validator) para sanitizar payload antes de persistir JSON.
-
-Dicas rápidas
-
-- Para testar administração, faça login com um usuário admin e abra `/admin`.
-- Na página Meu PDI (`/me/pdi`), clique em “Editar PDI” para habilitar a edição da seção “Resultado”. Salve para persistir no backend.
+Para dúvidas técnicas ou contribuições, consulte a documentação específica de cada módulo em suas respectivas pastas ou abra uma issue no repositório.

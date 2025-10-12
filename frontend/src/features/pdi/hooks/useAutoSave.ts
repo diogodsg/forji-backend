@@ -51,6 +51,13 @@ export function useAutoSave({
         return;
       }
 
+      // Evitar auto-save se há KRs sendo editados ativamente
+      // para prevenir race conditions durante digitação
+      if (editingSections.krs) {
+        console.log("Auto-save pausado: KRs em edição");
+        return;
+      }
+
       const abort = new AbortController();
       (async () => {
         dispatch({ type: "SAVE_STARTED" });
@@ -99,6 +106,7 @@ export function useAutoSave({
       saveForUserId,
       lastSavedAt,
       editingMilestones.size,
+      editingSections.krs,
     ]
   );
 }

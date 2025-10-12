@@ -9,6 +9,7 @@ import {
   Patch,
   BadRequestException,
   Param,
+  Query,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
@@ -88,6 +89,78 @@ export class AuthController {
       managers: [],
       reports: [],
     }));
+  }
+
+  @Get("search")
+  @UseGuards(JwtAuthGuard)
+  async searchUsers(@Query("q") query?: string) {
+    if (!query || query.trim().length < 2) {
+      return [];
+    }
+
+    const searchTerm = query.trim().toLowerCase();
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        deleted_at: null,
+        OR: [
+          { name: { contains: searchTerm, mode: "insensitive" } },
+          { email: { contains: searchTerm, mode: "insensitive" } },
+          { position: { contains: searchTerm, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        position: true,
+        bio: true,
+        github_id: true,
+      },
+      orderBy: { name: "asc" },
+      take: 10, // Limitar a 10 resultados para performance
+    });
+
+    return users.map((user) => ({
+      ...user,
+      githubId: user.github_id,
+    }));
+  }
+
+  @Get("users/:id")
+  @UseGuards(JwtAuthGuard)
+  async getUserById(@Param("id") id: string) {
+    const userId = parseInt(id, 10);
+    if (!Number.isFinite(userId)) {
+      throw new BadRequestException("Invalid user ID");
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: BigInt(userId),
+        deleted_at: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        position: true,
+        bio: true,
+        github_id: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    return {
+      ...user,
+      id: Number(user.id),
+      githubId: user.github_id,
+    };
   }
 
   @Post("admin/create-user")

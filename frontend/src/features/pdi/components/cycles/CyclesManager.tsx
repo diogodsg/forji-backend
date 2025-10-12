@@ -6,6 +6,7 @@ import {
   FiSearch,
   FiGrid,
   FiList,
+  FiInfo,
 } from "react-icons/fi";
 import type { PdiCycle } from "../../types/pdi";
 import { CreateCycleModal } from "./CreateCycleModal";
@@ -283,7 +284,8 @@ export function CyclesManager({
             </div>
             <div className="text-sm">
               <p className="text-blue-800 font-medium mb-1">
-                💡 Dica: Gerenciar Ciclos
+                <FiInfo className="w-4 h-4 text-blue-600" /> Dica: Gerenciar
+                Ciclos
               </p>
               <p className="text-blue-700">
                 Passe o mouse sobre um ciclo para ver os botões de{" "}

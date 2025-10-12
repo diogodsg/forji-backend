@@ -1,0 +1,33 @@
+      {/* Modal de edição individual */}
+      <Modal
+        open={krModalOpen && !!currentEditingKr}
+        onClose={closeKrModal}
+        title="Editar Key Result"
+        size='xl'
+        footer={
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                if (currentEditingKr) removeKr(currentEditingKr.id);
+                closeKrModal();
+              }}
+              className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 text-red-700 bg-white hover:bg-red-50 transition-colors duration-200"
+            >
+              Excluir
+            </button>
+            <button
+              onClick={closeKrModal}
+              className="px-6 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200"
+            >
+              Salvar & Concluir
+            </button>
+          </div>
+        }
+      >
+        {currentEditingKr && (
+          <MinimalKrEditor
+            kr={currentEditingKr}
+            onChange={(patch: any) => updateKr(currentEditingKr.id, patch)}
+          />
+        )}
+      </Modal>

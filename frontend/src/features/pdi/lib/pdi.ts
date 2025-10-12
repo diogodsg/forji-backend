@@ -16,6 +16,7 @@ export function makeMilestone(partial?: Partial<PdiMilestone>): PdiMilestone {
     date: todayISO(),
     title: `acompanhamento - ${todayISO()}`,
     summary: "",
+    workActivities: "",
     improvements: [],
     positives: [],
     resources: [],

@@ -75,51 +75,51 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
       preview={
         milestones.length > 0 ? (
           <div className="space-y-4">
-            {/* Badges de estatísticas */}
+            {/* Badges de estatísticas com cores mais suaves */}
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium border border-purple-200">
-                <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-full text-xs font-medium border border-slate-200">
+                <span className="w-2 h-2 bg-slate-500 rounded-full"></span>
                 <FiCalendar className="w-3 h-3" /> {milestones.length}{" "}
                 Acompanhamento{milestones.length !== 1 ? "s" : ""}
               </div>
 
               {totalTasks > 0 && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium border border-blue-200">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100">
+                  <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
                   <FiCheckSquare className="w-3 h-3" /> {totalTasks} Tarefa
                   {totalTasks !== 1 ? "s" : ""}
                 </div>
               )}
 
               {totalImprovements > 0 && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium border border-amber-200">
-                  <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-xs font-medium border border-amber-100">
+                  <span className="w-2 h-2 bg-amber-400 rounded-full"></span>
                   <FiTarget className="w-3 h-3" /> {totalImprovements} Melhoria
                   {totalImprovements !== 1 ? "s" : ""}
                 </div>
               )}
 
               {recentMilestones.length > 0 && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-medium border border-emerald-200">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium border border-emerald-100">
+                  <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
                   <FiClock className="w-3 h-3" /> {recentMilestones.length}{" "}
                   Recente{recentMilestones.length !== 1 ? "s" : ""}
                 </div>
               )}
             </div>
 
-            {/* Preview dos marcos mais recentes */}
+            {/* Preview dos marcos mais recentes com design melhorado */}
             <div className="space-y-3">
               {sortedMilestones.slice(0, 2).map((milestone) => (
                 <div
                   key={milestone.id}
-                  className="bg-gray-50 border border-gray-200 rounded-lg p-3"
+                  className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <h4 className="text-sm font-medium text-gray-900 flex-1">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <h4 className="text-sm font-medium text-slate-900 flex-1 leading-tight">
                       {milestone.title || "Marco sem título"}
                     </h4>
-                    <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full shrink-0">
+                    <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-md shrink-0 font-medium">
                       {new Date(milestone.date).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",
@@ -130,17 +130,17 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
 
                   {((milestone.tasks?.length || 0) > 0 ||
                     (milestone.improvements?.length || 0) > 0) && (
-                    <div className="flex items-center gap-4 text-xs text-gray-600">
+                    <div className="flex items-center gap-4 text-xs text-slate-600">
                       {(milestone.tasks?.length || 0) > 0 && (
-                        <span className="flex items-center gap-1">
-                          <FiCheckSquare className="w-3 h-3" />{" "}
+                        <span className="flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded-md">
+                          <FiCheckSquare className="w-3 h-3 text-blue-500" />
                           {milestone.tasks!.length} tarefa
                           {milestone.tasks!.length !== 1 ? "s" : ""}
                         </span>
                       )}
                       {(milestone.improvements?.length || 0) > 0 && (
-                        <span className="flex items-center gap-1">
-                          <FiTarget className="w-3 h-3" />{" "}
+                        <span className="flex items-center gap-1.5 bg-amber-50 px-2 py-1 rounded-md">
+                          <FiTarget className="w-3 h-3 text-amber-500" />
                           {milestone.improvements!.length} melhoria
                           {milestone.improvements!.length !== 1 ? "s" : ""}
                         </span>
@@ -151,8 +151,8 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
               ))}
 
               {milestones.length > 2 && (
-                <div className="text-center py-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="text-xs text-gray-500 font-medium">
+                <div className="text-center py-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <p className="text-xs text-slate-500 font-medium">
                     +{milestones.length - 2} acompanhamento
                     {milestones.length - 2 !== 1 ? "s" : ""} adicional
                     {milestones.length - 2 !== 1 ? "is" : ""}
@@ -162,15 +162,15 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
             </div>
           </div>
         ) : (
-          <div className="text-center py-6 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="w-8 h-8 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center">
-              <FiCalendar className="w-4 h-4 text-gray-500" />
+          <div className="text-center py-8 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="w-12 h-12 bg-slate-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+              <FiCalendar className="w-5 h-5 text-slate-400" />
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-slate-600 font-medium">
               Nenhum acompanhamento registrado
             </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Clique em "Editar" para adicionar marcos
+            <p className="text-xs text-slate-500 mt-1">
+              Clique em "Adicionar" para criar seu primeiro marco
             </p>
           </div>
         )
@@ -178,7 +178,7 @@ export const MilestonesSection: React.FC<MilestonesSectionProps> = ({
       action={
         <button
           onClick={onAdd}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-purple-200 text-purple-600 hover:bg-purple-50 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
         >
           <FiPlus className="w-4 h-4" />
           Adicionar

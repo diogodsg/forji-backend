@@ -12,29 +12,29 @@ const LIST_TONES: Record<
     addBtn: string;
   }
 > = {
-  emerald: {
-    container: "border-emerald-200 bg-emerald-50/40",
-    label: "text-emerald-700",
-    bullet: "text-emerald-600",
-    addBtn: "border-emerald-300 text-emerald-700 hover:bg-emerald-100/40",
+  green: {
+    container: "border-green-200 bg-green-50/50",
+    label: "text-green-700",
+    bullet: "text-green-500",
+    addBtn: "border-green-300 text-green-600 hover:bg-green-100",
   },
-  amber: {
-    container: "border-amber-200 bg-amber-50/40",
-    label: "text-amber-700",
-    bullet: "text-amber-600",
-    addBtn: "border-amber-300 text-amber-700 hover:bg-amber-100/40",
+  orange: {
+    container: "border-orange-200 bg-orange-50/50",
+    label: "text-orange-700",
+    bullet: "text-orange-500",
+    addBtn: "border-orange-300 text-orange-600 hover:bg-orange-100",
   },
-  violet: {
-    container: "border-violet-200 bg-violet-50/40",
-    label: "text-violet-700",
-    bullet: "text-violet-600",
-    addBtn: "border-violet-300 text-violet-700 hover:bg-violet-100/40",
+  blue: {
+    container: "border-blue-200 bg-blue-50/50",
+    label: "text-blue-700",
+    bullet: "text-blue-500",
+    addBtn: "border-blue-300 text-blue-600 hover:bg-blue-100",
   },
-  sky: {
-    container: "border-sky-200 bg-sky-50/40",
-    label: "text-sky-700",
-    bullet: "text-sky-600",
-    addBtn: "border-sky-300 text-sky-700 hover:bg-sky-100/40",
+  slate: {
+    container: "border-slate-200 bg-slate-50/50",
+    label: "text-slate-700",
+    bullet: "text-slate-500",
+    addBtn: "border-slate-300 text-slate-600 hover:bg-slate-100",
   },
 };
 
@@ -49,8 +49,8 @@ export const ListEditor: React.FC<{
   onChange: (v: string[]) => void;
   highlight?: keyof typeof LIST_TONES;
   placeholder?: string;
-}> = ({ label, value = [], onChange, highlight = "emerald", placeholder }) => {
-  const tone = LIST_TONES[highlight] || LIST_TONES.emerald;
+}> = ({ label, value = [], onChange, highlight = "slate", placeholder }) => {
+  const tone = LIST_TONES[highlight] || LIST_TONES.slate;
 
   const initialLines: LineItem[] = (value.length ? value : [""]).map((v) => ({
     id: crypto.randomUUID(),
@@ -157,48 +157,49 @@ export const ListEditor: React.FC<{
   };
 
   return (
-    <div className={`rounded-lg p-2 space-y-1 border ${tone.container}`}>
-      <label
-        className={`block text-[10px] font-semibold mb-1 uppercase tracking-wide ${tone.label}`}
-      >
-        {label}
-      </label>
-      <div className="flex flex-col gap-1">
+    <div className="space-y-3">
+      <div className="text-xs font-medium text-slate-600 mb-2">{label}</div>
+      <div className="space-y-2">
         {lines.map((line, idx) => {
           const isLast = idx === lines.length - 1;
           const isTrailingBlank = isLast && line.text.trim() === "";
           return (
-            <div key={line.id} className="group flex items-start gap-1">
+            <div key={line.id} className="group flex items-start gap-2">
               <span
-                className={`mt-1 text-[10px] w-4 select-none ${tone.bullet}`}
-              >
-                •
-              </span>
-              <textarea
-                value={line.text}
-                placeholder={placeholder && isTrailingBlank ? placeholder : ""}
-                rows={1}
-                onChange={(e) => updateLine(line.id, e.target.value)}
-                onBlur={handleBlurCommit}
-                onKeyDown={(e) => handleKeyDown(e, line, idx)}
-                className="flex-1 resize-none overflow-hidden text-[11px] rounded border border-surface-300 px-2 py-1 leading-snug focus:border-indigo-400 focus:outline-none min-h-[32px]"
-                style={{ height: "auto" }}
+                className={`mt-2 w-1.5 h-1.5 rounded-full ${tone.bullet.replace(
+                  "text-",
+                  "bg-"
+                )} flex-shrink-0`}
               />
+              <div className="flex-1">
+                <textarea
+                  value={line.text}
+                  placeholder={
+                    placeholder && isTrailingBlank ? placeholder : ""
+                  }
+                  rows={1}
+                  onChange={(e) => updateLine(line.id, e.target.value)}
+                  onBlur={handleBlurCommit}
+                  onKeyDown={(e) => handleKeyDown(e, line, idx)}
+                  className="w-full resize-none overflow-hidden text-sm rounded-md border border-slate-200 px-3 py-2 leading-snug focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-colors min-h-[36px]"
+                  style={{ height: "auto" }}
+                />
+              </div>
               {lines.length > 1 && !isTrailingBlank && (
                 <button
                   type="button"
                   onClick={() => removeLine(line.id)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] px-1 py-1 text-gray-400 hover:text-rose-600"
-                  title="Remover linha"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded"
+                  title="Remover item"
                 >
-                  ✕
+                  ×
                 </button>
               )}
             </div>
           );
         })}
       </div>
-      <div className="pt-1 flex justify-end">
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => {
@@ -209,9 +210,9 @@ export const ListEditor: React.FC<{
               ])
             );
           }}
-          className={`text-[10px] px-2 py-1 rounded border font-medium transition ${tone.addBtn}`}
+          className={`text-xs px-3 py-2 rounded-md border transition-colors font-medium ${tone.addBtn}`}
         >
-          + linha
+          + Adicionar item
         </button>
       </div>
     </div>
@@ -225,70 +226,196 @@ export const TaskEditor: React.FC<{
 }> = ({ tasks, onChange }) => {
   const [title, setTitle] = useState("");
   const list = tasks ?? [];
+
   const add = () => {
     const v = title.trim();
     if (!v) return;
     onChange([...list, { id: crypto.randomUUID(), title: v }]);
     setTitle("");
   };
+
   const toggle = (id: string) =>
     onChange(list.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+
   const remove = (id: string) => onChange(list.filter((t) => t.id !== id));
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      add();
+    }
+  };
+
   return (
-    <div className="mt-4 space-y-2">
-      <label className="text-xs font-semibold text-gray-600">
-        Tarefas / Próximos passos
-      </label>
-      <div className="flex gap-2">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Adicionar tarefa"
-          className="flex-1 text-xs border rounded px-2 py-1 border-surface-300"
-        />
-        <button
-          type="button"
-          onClick={add}
-          className="text-xs px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-500"
-        >
-          Add
-        </button>
+    <div className="space-y-4">
+      {/* Header com contador */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium text-slate-700">
+          Tarefas / Próximos passos
+        </div>
+        {list.length > 0 && (
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span className="px-2 py-1 bg-slate-100 rounded-full">
+              {list.filter((t) => t.done).length}/{list.length} concluídas
+            </span>
+          </div>
+        )}
       </div>
+
+      {/* Input para adicionar nova tarefa */}
+      <div className="relative">
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Digite uma nova tarefa..."
+              className="w-full text-sm border border-slate-200 rounded-lg px-4 py-3 pr-12 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400"
+            />
+            {title.trim() && (
+              <button
+                type="button"
+                onClick={() => setTitle("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                ×
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={add}
+            disabled={!title.trim()}
+            className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed transition-all transform hover:scale-105 disabled:hover:scale-100 shadow-sm hover:shadow-md"
+          >
+            + Adicionar
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de tarefas */}
       {list.length > 0 && (
-        <ul className="space-y-1">
-          {list.map((t) => (
-            <li
+        <div className="space-y-3">
+          {list.map((t, index) => (
+            <div
               key={t.id}
-              className="group flex items-center gap-2 text-[11px] bg-surface-100/50 border border-surface-300 rounded px-2 py-1"
+              className="group relative flex items-center gap-4 p-4 bg-gradient-to-r from-white to-slate-50 border border-slate-200 rounded-xl hover:shadow-md hover:border-slate-300 transition-all duration-200"
+              style={{
+                animationDelay: `${index * 50}ms`,
+                animation: "fadeInUp 0.3s ease-out forwards",
+              }}
             >
+              {/* Checkbox personalizado */}
               <button
                 type="button"
                 onClick={() => toggle(t.id)}
-                className={`h-4 w-4 rounded border flex items-center justify-center text-[10px] ${
-                  t.done
-                    ? "bg-indigo-600 border-indigo-600 text-white"
-                    : "border-indigo-300 text-transparent"
-                }`}
+                className="flex-shrink-0 relative"
               >
-                ✓
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                    t.done
+                      ? "bg-gradient-to-r from-green-400 to-green-500 border-green-500 scale-110"
+                      : "border-slate-300 hover:border-blue-400 hover:bg-blue-50"
+                  }`}
+                >
+                  {t.done && (
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
+                </div>
+                {t.done && (
+                  <div className="absolute inset-0 rounded-full bg-green-400 opacity-30 animate-ping"></div>
+                )}
               </button>
-              <span
-                className={`flex-1 ${
-                  t.done ? "line-through text-gray-400" : ""
-                }`}
-              >
-                {t.title}
-              </span>
+
+              {/* Conteúdo da tarefa */}
+              <div className="flex-1 min-w-0">
+                <span
+                  className={`block text-sm font-medium transition-all duration-200 ${
+                    t.done
+                      ? "text-slate-500 line-through"
+                      : "text-slate-800 group-hover:text-slate-900"
+                  }`}
+                >
+                  {t.title}
+                </span>
+                {t.done && (
+                  <span className="text-xs text-green-600 font-medium">
+                    ✨ Concluída
+                  </span>
+                )}
+              </div>
+
+              {/* Botão de remoção */}
               <button
                 type="button"
                 onClick={() => remove(t.id)}
-                className="opacity-60 group-hover:opacity-100 text-[10px]"
+                className="opacity-0 group-hover:opacity-100 transition-all duration-200 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transform hover:scale-110"
+                title="Remover tarefa"
               >
-                ✕
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
               </button>
-            </li>
+
+              {/* Linha de progresso sutil */}
+              <div
+                className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-blue-400 to-green-400 transition-all duration-500 ${
+                  t.done ? "w-full" : "w-0"
+                }`}
+              ></div>
+            </div>
           ))}
-        </ul>
+        </div>
+      )}
+
+      {/* Estado vazio com ilustração */}
+      {list.length === 0 && (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
+            <svg
+              className="w-8 h-8 text-blue-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              />
+            </svg>
+          </div>
+          <p className="text-sm text-slate-600 font-medium mb-1">
+            Nenhuma tarefa adicionada
+          </p>
+          <p className="text-xs text-slate-500">
+            Comece adicionando uma tarefa acima
+          </p>
+        </div>
       )}
     </div>
   );

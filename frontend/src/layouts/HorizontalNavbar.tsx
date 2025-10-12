@@ -7,7 +7,10 @@ import {
   FiLogOut,
   FiSettings,
   FiChevronDown,
+  FiAward,
+  FiHome,
 } from "react-icons/fi";
+import { useUserPoints } from "@/features/pdi/hooks/useUserPoints";
 
 interface HorizontalNavbarProps {
   userName: string;
@@ -27,6 +30,7 @@ export function HorizontalNavbar({
   const initial = userName?.[0]?.toUpperCase() || "U";
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
   const userMenuRef = React.useRef<HTMLDivElement | null>(null);
+  const { totalPoints } = useUserPoints();
 
   // Close user menu when clicking outside
   React.useEffect(() => {
@@ -62,6 +66,7 @@ export function HorizontalNavbar({
         }, 800);
       } else if ((document as any)._navGPressed) {
         const k = e.key.toLowerCase();
+        if (k === "h") navigate("/");
         if (k === "d") navigate("/me/pdi");
         if (k === "m" && showManager) navigate("/manager");
         if (k === "a" && showAdmin) navigate("/admin");
@@ -91,6 +96,15 @@ export function HorizontalNavbar({
 
             {/* Navigation Items */}
             <nav className="hidden md:flex items-center space-x-1">
+              <NavItem
+                to="/"
+                icon={<FiHome className="w-4 h-4" />}
+                label="Home"
+                isActive={
+                  location.pathname === "/" || location.pathname === "/home"
+                }
+              />
+
               <NavItem
                 to="/me/pdi"
                 icon={<FiTarget className="w-4 h-4" />}
@@ -127,8 +141,16 @@ export function HorizontalNavbar({
               </kbd>{" "}
               +{" "}
               <kbd className="px-1.5 py-0.5 text-xs font-mono bg-gray-100 border border-gray-200 rounded">
-                d/m/a
+                h/d/m/a
               </kbd>
+            </div>
+
+            {/* Points Badge */}
+            <div className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+              <FiAward className="w-4 h-4 text-yellow-600" />
+              <span className="text-sm font-semibold text-yellow-700">
+                {totalPoints.toLocaleString()} pts
+              </span>
             </div>
 
             {/* User Menu */}
@@ -189,6 +211,15 @@ export function HorizontalNavbar({
       {/* Mobile Navigation */}
       <div className="md:hidden border-t border-gray-200 bg-white">
         <div className="flex">
+          <MobileNavItem
+            to="/"
+            icon={<FiHome className="w-5 h-5" />}
+            label="Home"
+            isActive={
+              location.pathname === "/" || location.pathname === "/home"
+            }
+          />
+
           <MobileNavItem
             to="/me/pdi"
             icon={<FiTarget className="w-5 h-5" />}

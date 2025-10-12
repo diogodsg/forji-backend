@@ -1,0 +1,12 @@
+export { GuideHeader } from "./GuideHeader";
+export { TeamFirstPhilosophy } from "./TeamFirstPhilosophy";
+export { XpCategoriesExplanation } from "./XpCategoriesExplanation";
+export { XpCategory } from "./XpCategory";
+export { XpItem } from "./XpItem";
+export { DevelopmentCategory } from "./DevelopmentCategory";
+export { CollaborationCategory } from "./CollaborationCategory";
+export { TeamContributionCategory } from "./TeamContributionCategory";
+export { StrategicTips } from "./StrategicTips";
+export { AntiGamingSection } from "./AntiGamingSection";
+export { EqualizationSection } from "./EqualizationSection";
+export { CallToAction } from "./CallToAction";

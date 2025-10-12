@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { useAuth, AuthProvider } from "@/features/auth";
+import { GamificationProvider } from "@/features/gamification";
 import { AppLayout } from "./layouts/AppLayout";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ScreenLoading, PageLoading, LoginLoading } from "./lib/fallbacks";
@@ -23,6 +24,26 @@ const ManagerUserEditPage = lazy(() =>
 const MyPdiPage = lazy(() =>
   import("./pages/MyPdiPage").then((m) => ({ default: m.MyPdiPage }))
 );
+const DevelopmentHubPage = lazy(() =>
+  import("./pages/DevelopmentHubPage").then((m) => ({
+    default: m.DevelopmentHubPage,
+  }))
+);
+const LeaderboardPage = lazy(() =>
+  import("./pages/LeaderboardPage").then((m) => ({
+    default: m.LeaderboardPage,
+  }))
+);
+const GamificationGuidePage = lazy(() =>
+  import("./pages/GamificationGuidePage").then((m) => ({
+    default: m.GamificationGuidePage,
+  }))
+);
+const GamificationSystemPage = lazy(() =>
+  import("./pages/GamificationSystemPage").then((m) => ({
+    default: m.GamificationSystemPage,
+  }))
+);
 const SettingsPage = lazy(() =>
   import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage }))
 );
@@ -33,6 +54,22 @@ const AdminUserEditPage = lazy(() =>
     default: m.AdminUserEditPage,
   }))
 );
+const PdiTimelinePage = lazy(() =>
+  import("./pages/PdiTimelinePage").then((m) => ({
+    default: m.PdiTimelinePage,
+  }))
+);
+const UserSearchPage = lazy(() =>
+  import("./pages/UserSearchPage").then((m) => ({
+    default: m.UserSearchPage,
+  }))
+);
+const UserProfilePage = lazy(() =>
+  import("./pages/UserProfilePage").then((m) => ({
+    default: m.UserProfilePage,
+  }))
+);
+const HomePage = lazy(() => import("./pages/HomePage"));
 
 /**
  * Root component: sets up auth + router context.
@@ -41,9 +78,11 @@ const AdminUserEditPage = lazy(() =>
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <InnerApp />
-      </BrowserRouter>
+      <GamificationProvider>
+        <BrowserRouter>
+          <InnerApp />
+        </BrowserRouter>
+      </GamificationProvider>
     </AuthProvider>
   );
 }
@@ -80,15 +119,52 @@ function InnerApp() {
       >
         <Suspense fallback={<PageLoading />}>
           <Routes>
-            {/* Redirect root to PDI (prioridade solicitada) */}
-            <Route index element={<Navigate to="/me/pdi" replace />} />
+            {/* Dashboard Gamificado como homepage */}
+            <Route index element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
+
+            {/* Desenvolvimento (novo hub) */}
+            <Route path="/development" element={<DevelopmentHubPage />} />
+            <Route path="/development/pdi" element={<MyPdiPage />} />
+
+            {/* PDI Timeline */}
+            <Route path="/pdi/timeline" element={<PdiTimelinePage />} />
+            <Route path="/pdi/timeline/:userId" element={<PdiTimelinePage />} />
+
+            {/* Leaderboard (rankings e competição) */}
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+
+            {/* Gamification Guide (página educativa) */}
+            <Route
+              path="/gamification/guide"
+              element={<GamificationGuidePage />}
+            />
+
+            {/* Gamification System (ações manuais e multiplicadores) */}
+            <Route
+              path="/gamification/system"
+              element={<GamificationSystemPage />}
+            />
+
+            {/* Legacy routes mantidas para compatibilidade */}
             <Route path="/me/pdi" element={<MyPdiPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+
+            {/* User Search & Feedback */}
+            <Route path="/users/search" element={<UserSearchPage />} />
+            <Route
+              path="/users/:userId/profile"
+              element={<UserProfilePage />}
+            />
+
+            {/* Management routes */}
             <Route path="/manager" element={<ManagerDashboardPage />} />
             <Route
               path="/manager/users/:userId"
               element={<ManagerUserEditPage />}
             />
+
+            {/* Admin routes */}
             {user.isAdmin && (
               <>
                 <Route path="/admin" element={<AdminAccessPage />} />

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import { FiInfo } from "react-icons/fi";
 import { FormField } from "./FormField";
 
 interface Props {
@@ -131,8 +132,9 @@ export function CreateUserModal({
                 </button>
               </div>
               <p className="text-xs text-green-600">
-                💡 Compartilhe esta senha com o usuário de forma segura. Ele
-                poderá alterá-la após o primeiro login.
+                <FiInfo className="w-4 h-4 text-blue-600" /> Compartilhe esta
+                senha com o usuário de forma segura. Ele poderá alterá-la após o
+                primeiro login.
               </p>
             </div>
             <div className="mt-3 flex justify-end">

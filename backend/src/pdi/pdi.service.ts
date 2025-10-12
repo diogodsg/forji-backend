@@ -3,6 +3,7 @@ import { PdiCycleStatus } from "@prisma/client";
 import { logger } from "../common/logger/pino";
 import { PrismaService } from "../core/prisma/prisma.service";
 import { SoftDeleteService } from "../common/prisma/soft-delete.extension";
+import { GamificationService } from "../gamification/gamification.service";
 
 export interface PdiTask {
   id: string;
@@ -21,6 +22,7 @@ export interface PdiMilestone {
   date: string;
   title: string;
   summary: string;
+  workActivities?: string;
   improvements?: string[];
   positives?: string[];
   resources?: string[];
@@ -42,7 +44,10 @@ export interface PdiPlanDto {
 
 @Injectable()
 export class PdiService extends SoftDeleteService {
-  constructor(prisma: PrismaService) {
+  constructor(
+    prisma: PrismaService,
+    private readonly gamificationService: GamificationService
+  ) {
     super(prisma);
   }
   async getByUser(userId: number) {
@@ -202,6 +207,10 @@ export class PdiService extends SoftDeleteService {
       where: { userId, deleted_at: null },
       orderBy: { startDate: "desc" },
     });
+
+    // Check for milestone progress and trigger gamification
+    await this.checkMilestoneProgress(userId, existing, partial);
+
     return { ...updated, cycles } as any;
   }
   async delete(userId: number) {
@@ -244,5 +253,246 @@ export class PdiService extends SoftDeleteService {
       userId
     );
     return { restored: true };
+  }
+
+  /**
+   * 🎮 Verificar progresso e disparar eventos de gamificação
+   */
+  private async checkMilestoneProgress(
+    userId: number,
+    existing: any,
+    partial: Partial<PdiPlanDto>
+  ) {
+    // Detectar milestones completados
+    if (partial.milestones) {
+      const oldMilestones = (existing.milestones as PdiMilestone[]) || [];
+      const newMilestones = partial.milestones;
+
+      const newCompletedMilestones = this.findNewCompletedMilestones(
+        oldMilestones,
+        newMilestones
+      );
+
+      // Disparar XP para cada milestone completado
+      for (const milestone of newCompletedMilestones) {
+        try {
+          await this.gamificationService.addXP({
+            userId,
+            action: "pdi_milestone_completed",
+            description: `Completed milestone: ${milestone.title}`,
+          });
+
+          logger.info(
+            {
+              msg: "pdi.milestone.completed",
+              userId,
+              milestoneId: milestone.id,
+              milestoneTitle: milestone.title,
+            },
+            "PDI milestone completed - XP awarded: userId=%d, milestone=%s",
+            userId,
+            milestone.title
+          );
+        } catch (error) {
+          logger.error(
+            {
+              msg: "pdi.milestone.gamification.error",
+              userId,
+              milestoneId: milestone.id,
+              error: error.message,
+            },
+            "Failed to award XP for milestone completion"
+          );
+        }
+      }
+    }
+
+    // Detectar competências que subiram de nível
+    if (partial.records) {
+      const oldRecords = (existing.records as PdiCompetencyRecord[]) || [];
+      const newRecords = partial.records;
+
+      const competencyLevelUps = this.findCompetencyLevelUps(
+        oldRecords,
+        newRecords
+      );
+
+      for (const competency of competencyLevelUps) {
+        try {
+          await this.gamificationService.addXP({
+            userId,
+            action: "competency_level_up",
+            description: `Competency ${competency.area} improved: Level ${competency.levelBefore} → ${competency.levelAfter}`,
+          });
+
+          logger.info(
+            {
+              msg: "pdi.competency.levelup",
+              userId,
+              area: competency.area,
+              fromLevel: competency.levelBefore,
+              toLevel: competency.levelAfter,
+            },
+            "Competency level up - XP awarded: userId=%d, competency=%s",
+            userId,
+            competency.area
+          );
+        } catch (error) {
+          logger.error(
+            {
+              msg: "pdi.competency.gamification.error",
+              userId,
+              area: competency.area,
+              error: error.message,
+            },
+            "Failed to award XP for competency level up"
+          );
+        }
+      }
+    }
+
+    // Detectar Key Results alcançados
+    if (partial.krs) {
+      const oldKRs = (existing.krs as PdiKeyResult[]) || [];
+      const newKRs = partial.krs;
+
+      const achievedKRs = this.findAchievedKeyResults(oldKRs, newKRs);
+
+      for (const kr of achievedKRs) {
+        try {
+          await this.gamificationService.addXP({
+            userId,
+            action: "key_result_achieved",
+            description: `Achieved key result: ${kr.description}`,
+          });
+
+          logger.info(
+            {
+              msg: "pdi.kr.achieved",
+              userId,
+              krId: kr.id,
+              krDescription: kr.description,
+            },
+            "Key result achieved - XP awarded: userId=%d, kr=%s",
+            userId,
+            kr.description
+          );
+        } catch (error) {
+          logger.error(
+            {
+              msg: "pdi.kr.gamification.error",
+              userId,
+              krId: kr.id,
+              error: error.message,
+            },
+            "Failed to award XP for key result achievement"
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Detectar competências que subiram de nível
+   */
+  private findCompetencyLevelUps(
+    oldRecords: PdiCompetencyRecord[],
+    newRecords: PdiCompetencyRecord[]
+  ): PdiCompetencyRecord[] {
+    const levelUps: PdiCompetencyRecord[] = [];
+
+    for (const newRecord of newRecords) {
+      const oldRecord = oldRecords.find((r) => r.area === newRecord.area);
+
+      // Se a competência tinha um nível antes e agora tem um nível maior
+      if (
+        oldRecord?.levelAfter &&
+        newRecord.levelAfter &&
+        newRecord.levelAfter > oldRecord.levelAfter
+      ) {
+        levelUps.push({
+          ...newRecord,
+          levelBefore: oldRecord.levelAfter,
+        });
+      }
+      // Se é uma nova competência com nível definido
+      else if (!oldRecord && newRecord.levelAfter && newRecord.levelAfter > 0) {
+        levelUps.push({
+          ...newRecord,
+          levelBefore: 0,
+        });
+      }
+    }
+
+    return levelUps;
+  }
+
+  /**
+   * Detectar Key Results que foram alcançados
+   */
+  private findAchievedKeyResults(
+    oldKRs: PdiKeyResult[],
+    newKRs: PdiKeyResult[]
+  ): PdiKeyResult[] {
+    const achieved: PdiKeyResult[] = [];
+
+    for (const newKR of newKRs) {
+      const oldKR = oldKRs.find((kr) => kr.id === newKR.id);
+
+      // Se o status mudou para "Concluído" ou similar
+      const wasCompleted = this.isKRCompleted(oldKR?.currentStatus);
+      const isNowCompleted = this.isKRCompleted(newKR.currentStatus);
+
+      if (isNowCompleted && !wasCompleted) {
+        achieved.push(newKR);
+      }
+    }
+
+    return achieved;
+  }
+
+  /**
+   * Verificar se um Key Result está completo baseado no status
+   */
+  private isKRCompleted(status?: string): boolean {
+    if (!status) return false;
+
+    const completedStatuses = [
+      "concluído",
+      "completo",
+      "atingido",
+      "alcançado",
+      "100%",
+      "finalizado",
+    ];
+
+    return completedStatuses.some((s) =>
+      status.toLowerCase().includes(s.toLowerCase())
+    );
+  }
+
+  /**
+   * Encontra milestones que foram marcados como completados
+   */
+  private findNewCompletedMilestones(
+    oldMilestones: PdiMilestone[],
+    newMilestones: PdiMilestone[]
+  ): PdiMilestone[] {
+    const completed: PdiMilestone[] = [];
+
+    for (const newMilestone of newMilestones) {
+      const oldMilestone = oldMilestones.find((m) => m.id === newMilestone.id);
+
+      // Se milestone não existia antes ou agora tem tarefas marcadas como done
+      const wasCompleted = oldMilestone?.tasks?.some((t) => t.done) || false;
+      const isNowCompleted = newMilestone.tasks?.some((t) => t.done) || false;
+
+      // Se agora está completado e antes não estava
+      if (isNowCompleted && !wasCompleted) {
+        completed.push(newMilestone);
+      }
+    }
+
+    return completed;
   }
 }

@@ -9,10 +9,10 @@ export interface ServerPdiCycle {
   endDate: string;
   status: "PLANNED" | "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED";
   competencies: string[];
-  krs?: any;
-  milestones: any;
-  records: any;
-  progressMeta?: any;
+  krs?: unknown;
+  milestones: unknown;
+  records: unknown;
+  progressMeta?: unknown;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,12 +30,16 @@ export function mapServerCycle(c: ServerPdiCycle) {
       .replace("planned", "planned")
       .replace("active", "active")
       .replace("completed", "completed")
-      .replace("paused", "paused") as any,
+      .replace("paused", "paused") as
+      | "planned"
+      | "active"
+      | "completed"
+      | "paused",
     pdi: {
-      competencies: c.competencies ?? [],
-      milestones: c.milestones ?? [],
-      krs: c.krs ?? [],
-      records: c.records ?? [],
+      competencies: Array.isArray(c.competencies) ? c.competencies : [],
+      milestones: Array.isArray(c.milestones) ? c.milestones : [],
+      krs: Array.isArray(c.krs) ? c.krs : [],
+      records: Array.isArray(c.records) ? c.records : [],
     },
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
@@ -44,6 +48,13 @@ export function mapServerCycle(c: ServerPdiCycle) {
 
 export async function fetchMyCycles() {
   const data = await api<ServerPdiCycle[]>(`/pdi/cycles/me`, { auth: true });
+  return data.map(mapServerCycle);
+}
+
+export async function fetchCyclesForUser(userId: number) {
+  const data = await api<ServerPdiCycle[]>(`/pdi/cycles/${userId}`, {
+    auth: true,
+  });
   return data.map(mapServerCycle);
 }
 
@@ -60,9 +71,9 @@ export async function createCycle(payload: {
   startDate: string;
   endDate: string;
   competencies?: string[];
-  krs?: any;
-  milestones: any;
-  records: any;
+  krs?: unknown;
+  milestones: unknown;
+  records: unknown;
 }) {
   const data = await api<ServerPdiCycle>(`/pdi/cycles`, {
     method: "POST",
@@ -72,7 +83,31 @@ export async function createCycle(payload: {
   return mapServerCycle(data);
 }
 
-export async function updateCycle(id: string | number, partial: any) {
+export async function createCycleForUser(
+  userId: number,
+  payload: {
+    title: string;
+    description?: string;
+    startDate: string;
+    endDate: string;
+    competencies?: string[];
+    krs?: unknown;
+    milestones: unknown;
+    records: unknown;
+  }
+) {
+  const data = await api<ServerPdiCycle>(`/pdi/cycles/${userId}`, {
+    method: "POST",
+    auth: true,
+    body: JSON.stringify(payload),
+  });
+  return mapServerCycle(data);
+}
+
+export async function updateCycle(
+  id: string | number,
+  partial: Record<string, unknown>
+) {
   const data = await api<ServerPdiCycle>(`/pdi/cycles/${id}`, {
     method: "PATCH",
     auth: true,

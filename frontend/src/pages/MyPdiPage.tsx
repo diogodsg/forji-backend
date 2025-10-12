@@ -1,8 +1,6 @@
 import { EditablePdiView, useRemotePdi, useEnsurePdi } from "../features/pdi";
 import { FiTarget } from "react-icons/fi";
-import { StatGridPdi } from "../features/pdi/components/StatGridPdi";
 import { PdiPageSkeleton } from "../features/pdi/components/PdiPageSkeleton";
-import { getPdiStats } from "../lib/stats";
 
 /**
  * MyPdiPage
@@ -20,13 +18,10 @@ export function MyPdiPage() {
   const { plan, loading, error, upsert } = useRemotePdi();
   useEnsurePdi({ plan, loading, error, upsert, userId: "me" });
 
-  const { competenciesCount, openKrs, meetings, avgProgressPct } = getPdiStats(
-    plan || undefined
-  );
-
   return (
-    <div className="min-h-full w-full bg-[#f8fafc] p-6 space-y-10">
-      <header className="space-y-3">
+    <div className="min-h-full w-full bg-[#f8fafc] p-6 space-y-6">
+      {/* Header */}
+      <header className="pb-6">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shadow-md">
             <FiTarget className="w-5 h-5 text-white" />
@@ -42,20 +37,7 @@ export function MyPdiPage() {
         </div>
       </header>
 
-      {loading ? (
-        <PdiPageSkeleton />
-      ) : (
-        <StatGridPdi
-          competenciesCount={competenciesCount}
-          openKrs={openKrs}
-          meetings={meetings}
-          avgProgressPct={avgProgressPct}
-          loading={loading}
-        />
-      )}
-      {error && (
-        <div className="text-sm text-red-600">Erro ao carregar: {error}</div>
-      )}
+      {loading && <PdiPageSkeleton />}
 
       {plan && <EditablePdiView initialPlan={plan} />}
     </div>

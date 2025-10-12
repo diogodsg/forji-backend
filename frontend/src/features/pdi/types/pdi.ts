@@ -10,6 +10,7 @@ export interface PdiMilestone {
   date: string;
   title: string;
   summary: string;
+  workActivities?: string;
   improvements?: string[];
   positives?: string[];
   resources?: string[];
@@ -34,7 +35,7 @@ export interface PdiCycle {
   description?: string;
   startDate: string;
   endDate: string;
-  status: "planned" | "active" | "completed" | "paused";
+  status: "planned" | "active" | "completed" | "paused" | "archived";
   pdi: {
     competencies: string[];
     milestones: PdiMilestone[];
