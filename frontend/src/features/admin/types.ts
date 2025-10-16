@@ -18,7 +18,6 @@ export interface CreateAdminUserInput {
   name: string;
   email: string;
   isAdmin?: boolean;
-  githubId?: string;
   position?: string;
 }
 

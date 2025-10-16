@@ -1,6 +1,9 @@
-import { useState } from "react";
 import { FiX } from "react-icons/fi";
-import { svgAvatarOptions, svgAvatarCategories } from "../data/svgAvatars";
+import {
+  dicebearAvatarOptions,
+  getDiceBearAvatarUrl,
+  type DiceBearAvatarOption,
+} from "../data/dicebearAvatars";
 
 interface UnifiedAvatarSelectorProps {
   currentAvatar?: string;
@@ -15,14 +18,7 @@ export function UnifiedAvatarSelector({
   onClose,
   isOpen,
 }: UnifiedAvatarSelectorProps) {
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>("professional");
-
   if (!isOpen) return null;
-
-  const filteredAvatars = svgAvatarOptions.filter(
-    (avatar) => avatar.category === selectedCategory
-  );
 
   const handleSelectAvatar = (avatarId: string) => {
     onSelectAvatar(avatarId);
@@ -39,7 +35,7 @@ export function UnifiedAvatarSelector({
               Escolher Avatar
             </h2>
             <p className="text-sm text-surface-600 mt-1 font-medium">
-              Selecione um avatar profissional que represente você
+              Selecione um avatar pixel art que represente você
             </p>
           </div>
           <button
@@ -50,34 +46,11 @@ export function UnifiedAvatarSelector({
           </button>
         </div>
 
-        {/* Category Tabs */}
-        <div className="border-b border-surface-200 bg-surface-50">
-          <div className="flex overflow-x-auto px-6 py-3 gap-2">
-            {svgAvatarCategories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap
-                  ${
-                    selectedCategory === category.id
-                      ? "bg-brand-500 text-white shadow-md"
-                      : "bg-surface-0 text-surface-700 border border-surface-300 hover:bg-surface-100"
-                  }
-                `}
-              >
-                <span className="text-base">{category.icon}</span>
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Avatar Grid */}
-        <div className="p-6 overflow-y-auto max-h-96">
-          <div className="grid gap-4 grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {filteredAvatars.map((avatar) => (
-              <SVGAvatarOption
+        <div className="p-6 overflow-y-auto max-h-[600px]">
+          <div className="grid gap-4 grid-cols-5 md:grid-cols-8 lg:grid-cols-10">
+            {dicebearAvatarOptions.map((avatar) => (
+              <DiceBearAvatarOption
                 key={avatar.id}
                 avatar={avatar}
                 isSelected={currentAvatar === avatar.id}
@@ -91,7 +64,7 @@ export function UnifiedAvatarSelector({
         <div className="px-6 py-4 border-t border-surface-200 bg-surface-50">
           <div className="flex items-center justify-between">
             <p className="text-xs text-surface-500 font-medium">
-              {filteredAvatars.length} avatares SVG disponíveis
+              {dicebearAvatarOptions.length} avatares pixel art disponíveis
             </p>
             <button
               onClick={onClose}
@@ -106,18 +79,20 @@ export function UnifiedAvatarSelector({
   );
 }
 
-// SVG Avatar Option Component
-interface SVGAvatarOptionProps {
-  avatar: any;
+// DiceBear Avatar Option Component
+interface DiceBearAvatarOptionProps {
+  avatar: DiceBearAvatarOption;
   isSelected: boolean;
   onSelect: () => void;
 }
 
-function SVGAvatarOption({
+function DiceBearAvatarOption({
   avatar,
   isSelected,
   onSelect,
-}: SVGAvatarOptionProps) {
+}: DiceBearAvatarOptionProps) {
+  const avatarUrl = getDiceBearAvatarUrl(avatar.seed, 120);
+
   return (
     <button
       onClick={onSelect}
@@ -133,15 +108,16 @@ function SVGAvatarOption({
     >
       <div
         className={`
-        w-full h-full rounded-xl bg-gradient-to-br ${avatar.gradient} 
-        flex items-center justify-center text-surface-0 
-        shadow-md group-hover:shadow-lg transition-all duration-200 p-3
-        ${isSelected ? "shadow-xl" : ""}
+        w-full h-full rounded-xl bg-surface-100
+        flex items-center justify-center overflow-hidden
+        shadow-md group-hover:shadow-lg transition-all duration-200
+        ${isSelected ? "shadow-xl ring-2 ring-brand-400" : ""}
       `}
       >
-        <div
-          className="w-full h-full"
-          dangerouslySetInnerHTML={{ __html: avatar.svg }}
+        <img
+          src={avatarUrl}
+          alt={avatar.name}
+          className="w-full h-full object-cover"
         />
       </div>
 

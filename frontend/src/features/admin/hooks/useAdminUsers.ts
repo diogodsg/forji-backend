@@ -10,7 +10,6 @@ interface UseAdminUsersResult {
   create: (
     input: CreateAdminUserInput
   ) => Promise<{ id: number; generatedPassword: string }>;
-  setGithub: (id: number, gh: string | null) => Promise<void>;
   toggleAdmin: (id: number, next: boolean) => Promise<void>;
   removeUser: (id: number) => Promise<void>;
   addManager: (userId: number, managerId: number) => Promise<void>;
@@ -23,7 +22,6 @@ interface UseAdminUsersResult {
     creating: boolean;
     deleting: Set<number>;
     togglingAdmin: Set<number>;
-    updatingGithub: Set<number>;
     managerChange: Set<number>;
     changingPassword: Set<number>;
   };
@@ -36,7 +34,6 @@ export function useAdminUsers(): UseAdminUsersResult {
   const [creating, setCreating] = useState(false);
   const deleting = useRef(new Set<number>());
   const togglingAdmin = useRef(new Set<number>());
-  const updatingGithub = useRef(new Set<number>());
   const managerChange = useRef(new Set<number>());
   const changingPassword = useRef(new Set<number>());
   const [, force] = useState(0);
@@ -77,19 +74,6 @@ export function useAdminUsers(): UseAdminUsersResult {
         return result;
       } finally {
         setCreating(false);
-      }
-    },
-    [refresh]
-  );
-
-  const setGithub = useCallback(
-    async (id: number, gh: string | null) => {
-      mark(updatingGithub, id, true);
-      try {
-        await adminApi.setGithubId(id, gh);
-        await refresh();
-      } finally {
-        mark(updatingGithub, id, false);
       }
     },
     [refresh]
@@ -165,7 +149,6 @@ export function useAdminUsers(): UseAdminUsersResult {
       creating,
       deleting: deleting.current,
       togglingAdmin: togglingAdmin.current,
-      updatingGithub: updatingGithub.current,
       managerChange: managerChange.current,
       changingPassword: changingPassword.current,
     }),
@@ -178,7 +161,6 @@ export function useAdminUsers(): UseAdminUsersResult {
     error,
     refresh,
     create,
-    setGithub,
     toggleAdmin,
     removeUser,
     addManager,

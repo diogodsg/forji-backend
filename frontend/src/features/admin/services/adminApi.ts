@@ -21,13 +21,6 @@ export const adminApi = {
       }
     );
   },
-  async setGithubId(userId: number, githubId: string | null): Promise<void> {
-    await api("/auth/admin/set-github-id", {
-      method: "POST",
-      body: JSON.stringify({ userId, githubId }),
-      auth: true,
-    });
-  },
   async toggleAdmin(userId: number, isAdmin: boolean): Promise<void> {
     await api("/auth/admin/set-admin", {
       method: "POST",

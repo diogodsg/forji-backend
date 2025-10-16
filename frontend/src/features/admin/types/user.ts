@@ -2,7 +2,6 @@ export interface UserRow {
   id: number;
   email: string;
   name: string;
-  githubId?: string | null;
   isAdmin?: boolean;
   position?: string | null;
   bio?: string | null;

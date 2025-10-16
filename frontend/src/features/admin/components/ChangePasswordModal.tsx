@@ -197,7 +197,7 @@ export function ChangePasswordModal({
                       type={showPassword ? "text" : "password"}
                       value={customPassword}
                       onChange={(e) => setCustomPassword(e.target.value)}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                       placeholder="Mínimo 6 caracteres"
                       minLength={6}
                       required
@@ -230,7 +230,7 @@ export function ChangePasswordModal({
                   disabled={
                     loading || (mode === "custom" && customPassword.length < 6)
                   }
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl hover:from-brand-700 hover:to-brand-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
                 >
                   {loading
                     ? "Alterando..."

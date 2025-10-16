@@ -31,16 +31,19 @@ export default {
         },
         success: {
           50: "#ecfdf5",
+          200: "#bbf7d0",
           500: "#10b981",
           600: "#059669",
         },
         warning: {
           50: "#fffbeb",
+          200: "#fed7aa",
           500: "#f59e0b",
           600: "#d97706",
         },
         error: {
           50: "#fef2f2",
+          200: "#fecaca",
           500: "#ef4444",
           600: "#dc2626",
         },

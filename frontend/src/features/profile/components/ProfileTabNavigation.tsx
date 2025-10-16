@@ -1,4 +1,4 @@
-import { FiStar, FiTarget, FiClock, FiSettings } from "react-icons/fi";
+import { FiStar, FiTarget } from "react-icons/fi";
 import type { ProfileTab, ProfileTabConfig } from "../types/profile";
 
 interface ProfileTabNavigationProps {
@@ -25,22 +25,6 @@ export function ProfileTabNavigation({
       icon: FiTarget,
       requiresPrivateAccess: true,
     },
-    {
-      id: "timeline",
-      label: "Timeline",
-      icon: FiClock,
-      requiresPrivateAccess: false,
-    },
-    ...(isCurrentUser
-      ? [
-          {
-            id: "settings" as ProfileTab,
-            label: "Configurações",
-            icon: FiSettings,
-            requiresPrivateAccess: true,
-          },
-        ]
-      : []),
   ];
 
   const visibleTabs = tabs.filter(

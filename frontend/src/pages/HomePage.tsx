@@ -1,18 +1,15 @@
 import { useAuth } from "@/features/auth";
-import {
-  PlayerCard,
-  BadgeComponent,
-  usePlayerProfile,
-} from "@/features/gamification";
+import { usePlayerProfile } from "@/features/gamification";
 import {
   WelcomeHeader,
-  PersonalPDISection,
-  ManagerTeamOverview,
-  QuickActions,
+  CollaboratorDashboard,
+  ManagerDashboard,
+  AdminDashboard,
 } from "@/features/homepage";
+import { DebugRoleSwitcher, useDebugRole } from "@/shared";
 
 /**
- * Homepage adaptativa que se comporta diferentemente para gestores e colaboradores
+ * Homepage adaptativa que se comporta diferentemente para gestores, colaboradores e admins
  *
  * Para Colaboradores:
  * - Dashboard gamificado focado no desenvolvimento pessoal
@@ -24,12 +21,31 @@ import {
  * - Seção adicional com visão da equipe
  * - Métricas e top performers da equipe
  * - Acesso rápido ao dashboard de manager
+ *
+ * Para Admins (CEOs/Donos):
+ * - Visão executiva de toda a empresa
+ * - Saúde de todos os times
+ * - Alertas críticos e insights estratégicos
+ * - Business intelligence e analytics
  */
 export default function HomePage() {
   const { user } = useAuth();
   const { profile, loading, error } = usePlayerProfile();
 
-  if (!user) {
+  // Debug: Hook para alternar entre papéis durante desenvolvimento
+  const { debugRole, setDebugRole, isManager, isAdmin } =
+    useDebugRole("collaborator");
+
+  // Para fins de debug, sobrescrever completamente as permissões do usuário
+  const effectiveUser = user
+    ? {
+        ...user,
+        isManager: isManager,
+        isAdmin: isAdmin,
+      }
+    : null;
+
+  if (!effectiveUser) {
     return null; // Não deveria acontecer pois já passou pela autenticação
   }
 
@@ -62,42 +78,30 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-surface-50 to-surface-100/50">
       <div className="max-w-7xl mx-auto p-6 space-y-8">
-        {/* Header de boas-vindas personalizado */}
-        <WelcomeHeader user={user} />
-
-        {/* Layout principal */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Coluna principal - Dashboard gamificado */}
-          <div className="xl:col-span-2 space-y-8">
-            {/* Dashboard de gamificação simplificado */}
-            <div className="space-y-6">
-              <PlayerCard profile={profile} />
-              {profile.badges.length > 0 && (
-                <div className="p-6 bg-card rounded-xl border border-border">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Últimas Conquistas
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {profile.badges.slice(0, 6).map((badge) => (
-                      <BadgeComponent key={badge.id} badge={badge} size="sm" />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Seção do PDI pessoal */}
-            <PersonalPDISection />
-
-            {/* Seção específica para gestores */}
-            {user.isManager && <ManagerTeamOverview />}
-          </div>
-
-          {/* Sidebar - Ações rápidas */}
-          <div className="space-y-6">
-            <QuickActions user={user} />
-          </div>
+        {/* Debug Role Switcher - Apenas em desenvolvimento */}
+        <div className="flex justify-end">
+          <DebugRoleSwitcher
+            currentRole={debugRole}
+            onRoleChange={setDebugRole}
+            size="sm"
+            className="bg-white rounded-lg border border-surface-300 p-3 shadow-sm"
+          />
         </div>
+
+        {/* Header de boas-vindas personalizado */}
+        <WelcomeHeader user={effectiveUser} />
+
+        {/* Layout baseado no perfil do usuário */}
+        {effectiveUser.isAdmin ? (
+          /* Layout Admin - Visão executiva completa da empresa */
+          <AdminDashboard />
+        ) : effectiveUser.isManager ? (
+          /* Layout Manager - Dashboard completo com visão de equipe */
+          <ManagerDashboard />
+        ) : (
+          /* Layout Colaborador - Foco em progresso pessoal e quick actions */
+          <CollaboratorDashboard profile={profile} />
+        )}
       </div>
     </div>
   );

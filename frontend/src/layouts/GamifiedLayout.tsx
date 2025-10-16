@@ -21,7 +21,7 @@ export function GamifiedLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Sidebar - Fixed */}
-      <GamifiedNavbar showManager={showManager} showAdmin={showAdmin} />
+      <GamifiedNavbar showAdmin={showAdmin} />
 
       {/* Mobile Navigation */}
       <GamifiedMobileNav showManager={showManager} showAdmin={showAdmin} />

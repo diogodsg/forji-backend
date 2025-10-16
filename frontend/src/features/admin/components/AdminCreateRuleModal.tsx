@@ -99,22 +99,23 @@ export function AdminCreateRuleModal({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+    <div className="fixed inset-0 z-[99999] overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+          className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm"
           onClick={onClose}
         ></div>
 
-        <div className="relative z-10 bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        <div className="relative z-10 bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-100">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-violet-50 to-purple-50">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
-                Nova Regra de Gerenciamento
+                ➕ Adicionar Subordinado
               </h2>
               <p className="text-sm text-gray-600 mt-1">
-                Configurando subordinados para: <strong>{managerName}</strong>
+                Configurando hierarquia para:{" "}
+                <strong className="text-violet-700">{managerName}</strong>
               </p>
             </div>
             <button
@@ -135,22 +136,28 @@ export function AdminCreateRuleModal({
             {/* Rule Type Selector */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Tipo de Regra
+                🎯 Tipo de Subordinação
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={() => setRuleType("TEAM")}
-                  className={`p-4 border rounded-lg text-left transition-colors ${
+                  className={`p-4 border-2 rounded-xl text-left transition-all duration-200 ${
                     ruleType === "TEAM"
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-violet-500 bg-violet-50 text-violet-700 shadow-lg transform scale-105"
+                      : "border-gray-200 hover:border-violet-300 hover:bg-violet-25"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <FiUsers className="w-5 h-5" />
+                    <div
+                      className={`p-2 rounded-lg ${
+                        ruleType === "TEAM" ? "bg-violet-100" : "bg-gray-100"
+                      }`}
+                    >
+                      <FiUsers className="w-5 h-5" />
+                    </div>
                     <div>
-                      <div className="font-medium">Por Equipe</div>
+                      <div className="font-semibold">Por Equipe</div>
                       <div className="text-sm text-gray-500">
                         Gerenciar todos os membros de uma equipe
                       </div>
@@ -161,16 +168,24 @@ export function AdminCreateRuleModal({
                 <button
                   type="button"
                   onClick={() => setRuleType("INDIVIDUAL")}
-                  className={`p-4 border rounded-lg text-left transition-colors ${
+                  className={`p-4 border-2 rounded-xl text-left transition-all duration-200 ${
                     ruleType === "INDIVIDUAL"
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-violet-500 bg-violet-50 text-violet-700 shadow-lg transform scale-105"
+                      : "border-gray-200 hover:border-violet-300 hover:bg-violet-25"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <FiUser className="w-5 h-5" />
+                    <div
+                      className={`p-2 rounded-lg ${
+                        ruleType === "INDIVIDUAL"
+                          ? "bg-violet-100"
+                          : "bg-gray-100"
+                      }`}
+                    >
+                      <FiUser className="w-5 h-5" />
+                    </div>
                     <div>
-                      <div className="font-medium">Individual</div>
+                      <div className="font-semibold">Individual</div>
                       <div className="text-sm text-gray-500">
                         Gerenciar pessoas específicas
                       </div>
@@ -184,25 +199,25 @@ export function AdminCreateRuleModal({
             {ruleType === "TEAM" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Selecionar Equipes
+                  👥 Selecionar Equipes
                 </label>
 
                 <div className="relative mb-4">
                   <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Buscar equipes..."
+                    placeholder="🔍 Buscar equipes..."
                     value={teamSearch}
                     onChange={(e) => setTeamSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors"
                   />
                 </div>
 
-                <div className="border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
+                <div className="border border-gray-200 rounded-xl max-h-48 overflow-y-auto bg-gray-50">
                   {filteredTeams.map((team) => (
                     <label
                       key={team.id}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      className="flex items-center gap-3 p-4 hover:bg-violet-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -216,14 +231,19 @@ export function AdminCreateRuleModal({
                             );
                           }
                         }}
-                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="rounded border-gray-300 text-violet-600 focus:ring-violet-500 w-4 h-4"
                       />
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">
-                          {team.name}
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-600 rounded-lg flex items-center justify-center">
+                          <FiUsers className="w-4 h-4 text-white" />
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {team.description}
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            {team.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {team.description || "Equipe organizacional"}
+                          </div>
                         </div>
                       </div>
                     </label>
@@ -241,25 +261,25 @@ export function AdminCreateRuleModal({
             {ruleType === "INDIVIDUAL" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Selecionar Pessoas
+                  👤 Selecionar Pessoas
                 </label>
 
                 <div className="relative mb-4">
                   <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Buscar pessoas..."
+                    placeholder="🔍 Buscar pessoas..."
                     value={personSearch}
                     onChange={(e) => setPersonSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors"
                   />
                 </div>
 
-                <div className="border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
+                <div className="border border-gray-200 rounded-xl max-h-48 overflow-y-auto bg-gray-50">
                   {filteredUsers.map((user) => (
                     <label
                       key={user.id}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      className="flex items-center gap-3 p-4 hover:bg-violet-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -276,9 +296,9 @@ export function AdminCreateRuleModal({
                             );
                           }
                         }}
-                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="rounded border-gray-300 text-violet-600 focus:ring-violet-500 w-4 h-4"
                       />
-                      <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center text-white text-sm font-medium">
                         {user.name
                           .split(" ")
                           .map((n) => n[0])
@@ -287,11 +307,11 @@ export function AdminCreateRuleModal({
                           .toUpperCase()}
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-gray-900">
+                        <div className="font-semibold text-gray-900">
                           {user.name}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {user.email}
+                          📧 {user.email}
                         </div>
                       </div>
                     </label>
@@ -307,17 +327,25 @@ export function AdminCreateRuleModal({
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              {ruleType === "TEAM"
-                ? `${selectedTeamIds.length} equipe(s) selecionada(s)`
-                : `${selectedPersonIds.length} pessoa(s) selecionada(s)`}
+          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-violet-50 border-t border-gray-200 flex items-center justify-between">
+            <div className="text-sm font-medium text-gray-700">
+              {ruleType === "TEAM" ? (
+                <span className="inline-flex items-center gap-1">
+                  <FiUsers className="w-4 h-4 text-green-600" />
+                  {selectedTeamIds.length} equipe(s) selecionada(s)
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1">
+                  <FiUser className="w-4 h-4 text-blue-600" />
+                  {selectedPersonIds.length} pessoa(s) selecionada(s)
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium"
               >
                 Cancelar
               </button>
@@ -330,9 +358,18 @@ export function AdminCreateRuleModal({
                     ? selectedTeamIds.length === 0
                     : selectedPersonIds.length === 0)
                 }
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-6 py-2.5 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl hover:from-violet-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                {creating ? "Criando..." : "Criar Regras"}
+                {creating ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Criando...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    ✨ Criar Subordinação
+                  </span>
+                )}
               </button>
             </div>
           </div>

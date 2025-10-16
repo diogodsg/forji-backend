@@ -1,4 +1,8 @@
-import { svgAvatarOptions } from "../data/svgAvatars";
+import {
+  getDiceBearAvatarById,
+  getDiceBearAvatarUrl,
+  dicebearAvatarOptions,
+} from "../data/dicebearAvatars";
 
 interface AvatarProps {
   avatarId?: string;
@@ -8,12 +12,21 @@ interface AvatarProps {
 }
 
 const sizeClasses = {
-  xs: "w-6 h-6 text-xs",
-  sm: "w-8 h-8 text-sm",
-  md: "w-12 h-12 text-base",
-  lg: "w-16 h-16 text-xl",
-  xl: "w-20 h-20 text-2xl",
-  "2xl": "w-24 h-24 text-3xl",
+  xs: "w-6 h-6",
+  sm: "w-8 h-8",
+  md: "w-12 h-12",
+  lg: "w-16 h-16",
+  xl: "w-20 h-20",
+  "2xl": "w-24 h-24",
+};
+
+const sizePixels = {
+  xs: 24,
+  sm: 32,
+  md: 48,
+  lg: 64,
+  xl: 80,
+  "2xl": 96,
 };
 
 export function Avatar({
@@ -22,10 +35,10 @@ export function Avatar({
   className = "",
   showName = false,
 }: AvatarProps) {
-  // Procura o avatar SVG ou usa o primeiro como fallback
+  // Procura o avatar DiceBear ou usa o primeiro como fallback
   const avatar = avatarId
-    ? svgAvatarOptions.find((a: any) => a.id === avatarId)
-    : svgAvatarOptions[0];
+    ? getDiceBearAvatarById(avatarId)
+    : dicebearAvatarOptions[0];
 
   if (!avatar) {
     // Fallback para quando não encontrar o avatar
@@ -44,19 +57,22 @@ export function Avatar({
     );
   }
 
+  const avatarUrl = getDiceBearAvatarUrl(avatar.seed, sizePixels[size]);
+
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <div
         className={`
         ${sizeClasses[size]} 
-        rounded-full bg-gradient-to-br ${avatar.gradient} 
-        flex items-center justify-center
-        shadow-soft hover:shadow-glow transition-shadow duration-200 p-2
+        rounded-full bg-surface-100
+        overflow-hidden
+        shadow-soft hover:shadow-glow transition-shadow duration-200
       `}
       >
-        <div
-          className="w-full h-full"
-          dangerouslySetInnerHTML={{ __html: avatar.svg }}
+        <img
+          src={avatarUrl}
+          alt={avatar.name}
+          className="w-full h-full object-cover"
         />
       </div>
 

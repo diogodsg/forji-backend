@@ -152,23 +152,6 @@ export function GamificationTab({
             </div>
           </div>
         )}
-
-        {/* All Badges Grid */}
-        <div>
-          <h4 className="text-md font-medium text-surface-800 mb-3">
-            🎖️ Todas as Conquistas
-          </h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {badges.map((badge) => (
-              <BadgeComponent
-                key={badge.id}
-                badge={badge}
-                showProgress={!badge.unlockedAt}
-                size="md"
-              />
-            ))}
-          </div>
-        </div>
       </section>
     </div>
   );

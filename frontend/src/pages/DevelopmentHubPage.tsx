@@ -98,69 +98,67 @@ export function DevelopmentHubPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* PDI Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-8 hover:shadow-lg transition-shadow">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-4">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-white">
               <FiTarget className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              Plano de Desenvolvimento (PDI)
-            </h3>
-            <p className="text-gray-600">
-              Gerencie suas competências, metas e marcos de desenvolvimento
-            </p>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-1">
+                Ciclo Atual
+              </h3>
+              <p className="text-gray-600">
+                Gerencie seu desenvolvimento com ciclos focados e gamificados
+              </p>
+            </div>
           </div>
 
           <div className="space-y-4">
             <button
-              onClick={() => navigate("/development/pdi")}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-700 transition-colors"
+              onClick={() => navigate("/development/cycles")}
+              className="w-full bg-gradient-to-r from-violet-600 to-violet-500 text-white py-3 px-4 rounded-lg font-medium hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
             >
-              Acessar Meu PDI
+              🎯 Acessar Ciclo Atual
             </button>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <p className="text-2xl font-bold text-blue-600">8</p>
-                <p className="text-xs text-blue-600">Competências</p>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <p className="text-2xl font-bold text-green-600">12</p>
-                <p className="text-xs text-green-600">Metas</p>
-              </div>
-            </div>
+            <button
+              onClick={() => navigate("/development/pdi")}
+              className="w-full bg-violet-50 text-violet-700 py-3 px-4 rounded-lg font-medium hover:bg-violet-100 transition-colors"
+            >
+              📋 PDI Tradicional
+            </button>
           </div>
         </div>
 
         {/* Cycles Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-8 hover:shadow-lg transition-shadow">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-4">
               <FiCalendar className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               Ciclos de Desenvolvimento
             </h3>
             <p className="text-gray-600">
-              Organize seu desenvolvimento em períodos estruturados
+              Sistema gamificado de metas com foco em velocidade
             </p>
           </div>
 
           <div className="space-y-4">
             <button
-              onClick={() => navigate("/development/pdi")} // Redirect to PDI with cycles tab
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-4 rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 transition-colors"
+              onClick={() => navigate("/development/cycles")}
+              className="w-full bg-gradient-to-r from-violet-600 to-violet-500 text-white py-3 px-4 rounded-lg font-medium hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
             >
-              Gerenciar Ciclos
+              🎯 Acessar Ciclo Atual
             </button>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <p className="text-2xl font-bold text-green-600">3</p>
-                <p className="text-xs text-green-600">Ciclos Ativos</p>
+              <div className="text-center p-3 bg-violet-50 rounded-lg">
+                <p className="text-2xl font-bold text-violet-600">2-3</p>
+                <p className="text-xs text-violet-600">Metas Foco</p>
               </div>
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <p className="text-2xl font-bold text-blue-600">85%</p>
-                <p className="text-xs text-blue-600">Progresso</p>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <p className="text-2xl font-bold text-green-600">5min</p>
+                <p className="text-xs text-green-600">Criação Rápida</p>
               </div>
             </div>
           </div>

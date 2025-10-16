@@ -7,6 +7,7 @@ import {
   FiUsers,
   FiShield,
   FiAward,
+  FiZap,
 } from "react-icons/fi";
 import { usePlayerProfile } from "@/features/gamification/hooks/useGamification";
 
@@ -47,6 +48,11 @@ export function GamifiedMobileNav({
         to: "/",
         label: "Home",
         icon: <FiHome className="w-5 h-5" />,
+      },
+      {
+        to: "/development/cycles",
+        label: "Ciclo",
+        icon: <FiZap className="w-5 h-5" />,
       },
       {
         to: "/me/pdi",

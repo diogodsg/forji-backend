@@ -59,7 +59,7 @@ export function ManagerDrawer({
                   const v = e.target.value;
                   setSelectedId(v ? Number(v) : "");
                 }}
-                className="flex-1 rounded-md border border-surface-300 px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+                className="flex-1 rounded-xl border border-surface-300 px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/60"
               >
                 <option value="">Selecionar usuário…</option>
                 {eligible.map((u) => (
@@ -79,7 +79,7 @@ export function ManagerDrawer({
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition border ${
                   selectedId === ""
                     ? "bg-surface-100 text-gray-400 border-surface-300 cursor-not-allowed"
-                    : "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-500"
+                    : "bg-gradient-to-r from-brand-600 to-brand-700 text-white border-brand-600 hover:from-brand-700 hover:to-brand-800"
                 }`}
               >
                 Adicionar

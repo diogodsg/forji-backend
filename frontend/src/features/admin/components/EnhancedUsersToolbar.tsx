@@ -5,9 +5,7 @@ interface Props {
   setQuery: (v: string) => void;
   roleFilter: "all" | "admin" | "user";
   setRoleFilter: (v: "all" | "admin" | "user") => void;
-  githubFilter: "all" | "with" | "without";
-  setGithubFilter: (v: "all" | "with" | "without") => void;
-  onNew: () => void;
+  onNew?: () => void; // Tornando opcional para remover duplicação
   totalUsers: number;
   filteredCount: number;
 }
@@ -17,14 +15,11 @@ export function EnhancedUsersToolbar({
   setQuery,
   roleFilter,
   setRoleFilter,
-  githubFilter,
-  setGithubFilter,
   onNew,
   totalUsers,
   filteredCount,
 }: Props) {
-  const hasFilters =
-    roleFilter !== "all" || githubFilter !== "all" || query.trim() !== "";
+  const hasFilters = roleFilter !== "all" || query.trim() !== "";
 
   return (
     <div className="space-y-4 mb-6">
@@ -38,13 +33,15 @@ export function EnhancedUsersToolbar({
               : `${totalUsers} usuários`}
           </p>
         </div>
-        <button
-          onClick={onNew}
-          className="inline-flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-indigo-700 shadow-sm transition-colors"
-        >
-          <FiPlus className="w-4 h-4" />
-          Novo usuário
-        </button>
+        {onNew && (
+          <button
+            onClick={onNew}
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 via-sky-500 to-brand-400 text-white rounded-lg px-4 py-2.5 text-sm font-medium hover:opacity-90 shadow-sm transition-opacity"
+          >
+            <FiPlus className="w-4 h-4" />
+            Novo usuário
+          </button>
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -56,35 +53,39 @@ export function EnhancedUsersToolbar({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nome ou email..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-300 bg-white/80 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-surface-300 bg-white text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-500 transition-all"
           />
         </div>
 
         {/* Filters */}
         <div className="flex items-center gap-2">
-          <FiFilter className="w-4 h-4 text-gray-400 flex-shrink-0" />
-
-          {/* Role Filter */}
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as any)}
-            className="px-3 py-2.5 rounded-lg border border-surface-300 bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 transition-all"
-          >
-            <option value="all">Todos os papéis</option>
-            <option value="admin">Apenas admins</option>
-            <option value="user">Apenas usuários</option>
-          </select>
-
-          {/* GitHub Filter */}
-          <select
-            value={githubFilter}
-            onChange={(e) => setGithubFilter(e.target.value as any)}
-            className="px-3 py-2.5 rounded-lg border border-surface-300 bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 transition-all"
-          >
-            <option value="all">GitHub: Todos</option>
-            <option value="with">Com GitHub</option>
-            <option value="without">Sem GitHub</option>
-          </select>
+          <div className="relative">
+            <FiFilter className="w-4 h-4 text-violet-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value as any)}
+              className="pl-10 pr-4 py-2 rounded-lg border border-surface-300 bg-white text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-500 transition-all appearance-none cursor-pointer shadow-sm hover:border-violet-400 min-w-[250px]"
+            >
+              <option value="all">Todos os papéis</option>
+              <option value="admin">Apenas admins</option>
+              <option value="user">Apenas usuários</option>
+            </select>
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -93,7 +94,7 @@ export function EnhancedUsersToolbar({
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-500">Filtros ativos:</span>
           {query && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md">
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-brand-100 text-brand-700 rounded-md">
               Busca: "{query}"
             </span>
           )}
@@ -102,16 +103,10 @@ export function EnhancedUsersToolbar({
               {roleFilter === "admin" ? "Apenas admins" : "Apenas usuários"}
             </span>
           )}
-          {githubFilter !== "all" && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-md">
-              {githubFilter === "with" ? "Com GitHub" : "Sem GitHub"}
-            </span>
-          )}
           <button
             onClick={() => {
               setQuery("");
               setRoleFilter("all");
-              setGithubFilter("all");
             }}
             className="text-xs text-gray-500 hover:text-gray-700 underline"
           >

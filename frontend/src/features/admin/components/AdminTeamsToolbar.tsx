@@ -36,7 +36,7 @@ export function AdminTeamsToolbar({
         </div>
         <button
           onClick={onNew}
-          className="inline-flex items-center justify-center bg-indigo-600 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-indigo-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+          className="inline-flex items-center justify-center bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-xl px-3 py-2 text-sm font-medium hover:from-brand-700 hover:to-brand-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500/60"
         >
           Nova equipe
         </button>
@@ -47,14 +47,14 @@ export function AdminTeamsToolbar({
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Buscar por nome / filtrar..."
-            className="w-full rounded-md border border-surface-300 pl-3 pr-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500 bg-white/80"
+            className="w-full rounded-xl border border-surface-300 pl-3 pr-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:border-brand-500 bg-white/80"
           />
         </div>
         <div>
           <select
             value={role}
             onChange={(e) => onRole(e.target.value as any)}
-            className="w-full rounded-md border border-surface-300 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+            className="w-full rounded-xl border border-surface-300 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/60"
           >
             <option value="ALL">Todas funções</option>
             <option value="MANAGER">Com Managers</option>
@@ -68,7 +68,7 @@ export function AdminTeamsToolbar({
               onChange={(e) =>
                 onTeam(e.target.value ? Number(e.target.value) : null)
               }
-              className="flex-1 rounded-md border border-surface-300 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+              className="flex-1 rounded-xl border border-surface-300 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/60"
             >
               <option value="">Todas as equipes</option>
               {teams.map((t) => (

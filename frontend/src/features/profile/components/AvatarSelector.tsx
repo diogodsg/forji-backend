@@ -1,10 +1,9 @@
-import { useState } from "react";
 import { FiX } from "react-icons/fi";
 import {
-  avatarOptions,
-  avatarCategories,
-  type AvatarOption,
-} from "../data/avatars";
+  dicebearAvatarOptions,
+  getDiceBearAvatarUrl,
+  type DiceBearAvatarOption,
+} from "../data/dicebearAvatars";
 
 interface AvatarSelectorProps {
   currentAvatar?: string;
@@ -19,13 +18,7 @@ export function AvatarSelector({
   onClose,
   isOpen,
 }: AvatarSelectorProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("people");
-
   if (!isOpen) return null;
-
-  const filteredAvatars = avatarOptions.filter(
-    (avatar) => avatar.category === selectedCategory
-  );
 
   const handleSelectAvatar = (avatarId: string) => {
     onSelectAvatar(avatarId);
@@ -34,7 +27,7 @@ export function AvatarSelector({
 
   return (
     <div className="fixed inset-0 bg-surface-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-surface-0 rounded-2xl shadow-xl border border-surface-200 max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-surface-0 rounded-2xl shadow-xl border border-surface-200 max-w-4xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-surface-200">
           <div>
@@ -42,7 +35,7 @@ export function AvatarSelector({
               Escolher Avatar
             </h2>
             <p className="text-sm text-surface-600 mt-1 font-medium">
-              Selecione um avatar que represente você
+              Selecione um avatar pixel art que represente você
             </p>
           </div>
           <button
@@ -53,33 +46,10 @@ export function AvatarSelector({
           </button>
         </div>
 
-        {/* Category Tabs */}
-        <div className="border-b border-surface-200 bg-surface-50">
-          <div className="flex overflow-x-auto px-6 py-3 gap-2">
-            {avatarCategories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap
-                  ${
-                    selectedCategory === category.id
-                      ? "bg-brand-600 text-white shadow-md"
-                      : "bg-surface-0 text-surface-700 border border-surface-300 hover:bg-surface-100"
-                  }
-                `}
-              >
-                <span className="text-base">{category.icon}</span>
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Avatar Grid */}
-        <div className="p-6 overflow-y-auto max-h-96">
-          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-            {filteredAvatars.map((avatar) => (
+        <div className="p-6 overflow-y-auto max-h-[600px]">
+          <div className="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-3">
+            {dicebearAvatarOptions.map((avatar) => (
               <AvatarOption
                 key={avatar.id}
                 avatar={avatar}
@@ -94,7 +64,7 @@ export function AvatarSelector({
         <div className="px-6 py-4 border-t border-surface-200 bg-surface-50">
           <div className="flex items-center justify-between">
             <p className="text-xs text-surface-500 font-medium">
-              {filteredAvatars.length} avatares disponíveis
+              {dicebearAvatarOptions.length} avatares disponíveis
             </p>
             <button
               onClick={onClose}
@@ -110,12 +80,14 @@ export function AvatarSelector({
 }
 
 interface AvatarOptionProps {
-  avatar: AvatarOption;
+  avatar: DiceBearAvatarOption;
   isSelected: boolean;
   onSelect: () => void;
 }
 
 function AvatarOption({ avatar, isSelected, onSelect }: AvatarOptionProps) {
+  const avatarUrl = getDiceBearAvatarUrl(avatar.seed, 120);
+
   return (
     <button
       onClick={onSelect}
@@ -131,13 +103,17 @@ function AvatarOption({ avatar, isSelected, onSelect }: AvatarOptionProps) {
     >
       <div
         className={`
-        w-full h-full rounded-xl bg-gradient-to-br ${avatar.gradient} 
-        flex items-center justify-center text-white font-bold text-lg
+        w-full h-full rounded-xl bg-surface-100
+        flex items-center justify-center overflow-hidden
         shadow-md group-hover:shadow-lg transition-all duration-200
-        ${isSelected ? "shadow-xl" : ""}
+        ${isSelected ? "shadow-xl ring-2 ring-brand-400" : ""}
       `}
       >
-        <span className="text-2xl select-none">{avatar.emoji}</span>
+        <img
+          src={avatarUrl}
+          alt={avatar.name}
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {/* Selection indicator */}

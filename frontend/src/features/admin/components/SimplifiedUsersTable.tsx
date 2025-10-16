@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiShield, FiGithub, FiTrash2, FiUsers, FiMail } from "react-icons/fi";
+import { FiTrash2, FiUsers, FiMail } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import type { AdminUser } from "../types";
 import { ChangePasswordModal } from "./ChangePasswordModal";
@@ -88,17 +88,17 @@ export function SimplifiedUsersTable({
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((user) => {
-          const managersCount = user.managers.filter(
-            (m) => m.id !== user.id
-          ).length;
+          const managersCount =
+            user.managers?.filter((m) => m.id !== user.id).length || 0;
           const subordinatesCount = users.filter(
-            (u) => u.managers.some((m) => m.id === user.id) && u.id !== user.id
+            (u) => u.managers?.some((m) => m.id === user.id) && u.id !== user.id
           ).length;
+          // Exemplo de dados expandidos
 
           return (
             <div
               key={user.id}
-              className="group relative bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer"
+              className="group relative bg-surface-50 rounded-2xl border border-surface-300 shadow-sm p-5 hover:scale-[1.02] hover:shadow-lg hover:border-violet-400 transition-all duration-150 cursor-pointer"
               onClick={() => handleCardClick(user.id)}
             >
               {/* Botão deletar no top right */}
@@ -113,67 +113,62 @@ export function SimplifiedUsersTable({
                 <FiTrash2 className="w-4 h-4" />
               </button>
 
-              {/* Avatar e nome */}
-              <div className="flex items-center gap-3 mb-3">
+              {/* Avatar, nome, papel e status */}
+              <div className="flex items-center gap-4 mb-3">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-lg font-semibold flex items-center justify-center shadow-sm">
+                  <div className="h-12 w-12 rounded-full bg-violet-100 text-violet-700 text-lg font-bold flex items-center justify-center shadow-sm border border-violet-200">
                     {user.name?.[0]?.toUpperCase() || "U"}
                   </div>
-                  {user.isAdmin && (
-                    <div className="absolute -top-1 -right-1 h-5 w-5 bg-purple-500 rounded-full flex items-center justify-center">
-                      <FiShield className="w-3 h-3 text-white" />
-                    </div>
-                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 text-sm truncate mb-0.5">
+                  <h3 className="font-semibold text-gray-900 text-base truncate mb-0.5">
                     {user.name}
                   </h3>
                   <p className="text-xs text-gray-500 truncate flex items-center gap-1">
                     <FiMail className="w-3 h-3" />
                     {user.email}
                   </p>
+                  <div className="flex gap-2 mt-1">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-surface-200 text-gray-600">
+                      {status}
+                    </span>
+                    {/* <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                      {equipe}
+                    </span> */}
+                  </div>
                 </div>
               </div>
 
               {/* Informações secundárias */}
-              <div className="space-y-2">
-                {(user as any).position && (
-                  <div className="text-xs">
-                    <span className="text-gray-500">Cargo:</span>
-                    <span className="ml-1 font-medium text-gray-700">
-                      {(user as any).position}
-                    </span>
-                  </div>
-                )}
-
-                {user.githubId && (
-                  <div className="flex items-center gap-1 text-xs text-gray-600">
-                    <FiGithub className="w-3 h-3" />
-                    <span>@{user.githubId}</span>
-                  </div>
-                )}
-
-                {(managersCount > 0 || subordinatesCount > 0) && (
-                  <div className="flex items-center gap-1 text-xs text-gray-600">
-                    <FiUsers className="w-3 h-3" />
-                    <span>
-                      {managersCount > 0 &&
-                        `${managersCount} gerente${
-                          managersCount > 1 ? "s" : ""
-                        }`}
-                      {managersCount > 0 && subordinatesCount > 0 && ", "}
-                      {subordinatesCount > 0 &&
-                        `${subordinatesCount} subordinado${
-                          subordinatesCount > 1 ? "s" : ""
-                        }`}
-                    </span>
-                  </div>
-                )}
+              <div className="grid grid-cols-2 gap-2 text-xs text-gray-700 mb-2">
+                <div>
+                  <span className="text-gray-500">Cargo:</span>
+                  <span className="ml-1 font-medium">
+                    {user.position || "-"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Entrada:</span>
+                  {/* <span className="ml-1 font-medium">{entrada}</span> */}
+                </div>
               </div>
+              {(managersCount > 0 || subordinatesCount > 0) && (
+                <div className="flex items-center gap-1 text-xs text-gray-600">
+                  <FiUsers className="w-3 h-3" />
+                  <span>
+                    {managersCount > 0 &&
+                      `${managersCount} gerente${managersCount > 1 ? "s" : ""}`}
+                    {managersCount > 0 && subordinatesCount > 0 && ", "}
+                    {subordinatesCount > 0 &&
+                      `${subordinatesCount} subordinado${
+                        subordinatesCount > 1 ? "s" : ""
+                      }`}
+                  </span>
+                </div>
+              )}
 
               {/* Indicador visual no hover */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-30 transition-opacity pointer-events-none" />
+              <div className="absolute inset-0 rounded-2xl bg-violet-50 opacity-0 group-hover:opacity-40 transition-opacity pointer-events-none" />
             </div>
           );
         })}

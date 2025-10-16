@@ -1,13 +1,8 @@
 import React from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import {
-  FiTarget,
-  FiUsers,
-  FiShield,
-  FiLogOut,
-  FiSettings,
-} from "react-icons/fi";
+import { FiUsers, FiShield, FiLogOut, FiSettings, FiZap } from "react-icons/fi";
 import { HiOutlineHashtag } from "react-icons/hi2";
+import { BsPeople } from "react-icons/bs";
 import XPIndicator from "@/features/gamification/components/XPIndicator";
 
 // Sidebar sem colapso (feature removida a pedido)
@@ -21,7 +16,12 @@ type NavItemDef = {
 
 // Navegação principal focada no PDI
 const baseNavItems: Array<NavItemDef> = [
-  { to: "/me/pdi", label: "PDI", icon: <FiTarget className="w-4 h-4" /> },
+  {
+    to: "/me/pdi",
+    label: "Desenvolvimento",
+    icon: <FiZap className="w-4 h-4" />,
+  },
+  { to: "/teams", label: "Equipes", icon: <BsPeople className="w-4 h-4" /> },
 ];
 
 export function Sidebar({

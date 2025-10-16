@@ -45,16 +45,10 @@ export function TeamDetailPanel({
     [team]
   );
 
-  if (!team) {
-    return (
-      <div className="text-sm text-gray-500">
-        Selecione uma equipe para ver detalhes.
-      </div>
-    );
-  }
-
-  // usuarios que ainda não fazem parte do time
-  const memberUserIds = new Set(team.memberships.map((m) => m.user.id));
+  // usuarios que ainda não fazem parte do time - calculado sempre para manter ordem dos hooks
+  const memberUserIds = team
+    ? new Set(team.memberships.map((m) => m.user.id))
+    : new Set();
   const nonMembers = useMemo(() => {
     const base = availableUsers.filter((u) => !memberUserIds.has(u.id));
     if (!memberQuery.trim()) return base;
@@ -63,7 +57,15 @@ export function TeamDetailPanel({
       (u) =>
         u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
     );
-  }, [availableUsers, memberQuery, team]);
+  }, [availableUsers, memberQuery, memberUserIds]);
+
+  if (!team) {
+    return (
+      <div className="text-sm text-gray-500">
+        Selecione uma equipe para ver detalhes.
+      </div>
+    );
+  }
 
   const managers = filteredMemberships.filter((m) => m.role === "MANAGER");
   const nonManagerMembers = filteredMemberships.filter(
@@ -75,7 +77,7 @@ export function TeamDetailPanel({
       <header className="space-y-1">
         <h3 className="text-base font-semibold text-gray-800 flex items-center gap-2">
           {team.name}
-          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 text-[10px] font-medium">
+          <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 text-brand-600 border border-brand-100 px-2 py-0.5 text-[10px] font-medium">
             {managersCount} manager{managersCount === 1 ? "" : "s"}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 text-slate-600 border border-slate-200 px-2 py-0.5 text-[10px] font-medium">
@@ -95,7 +97,7 @@ export function TeamDetailPanel({
           value={memberQuery}
           onChange={(e) => setMemberQuery(e.target.value)}
           placeholder="Buscar nome ou email..."
-          className="w-full rounded-md border border-surface-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-white/80"
+          className="w-full rounded-xl border border-surface-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/60 bg-white/80"
         />
         <div className="space-y-5">
           <section className="space-y-2">
@@ -138,7 +140,7 @@ export function TeamDetailPanel({
                       onChange={(e) =>
                         onUpdateRole(m.user.id, e.target.value as any)
                       }
-                      className="text-[10px] rounded border border-surface-300 px-1.5 py-0.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                      className="text-[10px] rounded border border-surface-300 px-1.5 py-0.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                     >
                       <option value="MANAGER">Manager</option>
                       <option value="MEMBER">Membro</option>
@@ -196,7 +198,7 @@ export function TeamDetailPanel({
                       onChange={(e) =>
                         onUpdateRole(m.user.id, e.target.value as any)
                       }
-                      className="text-[10px] rounded border border-surface-300 px-1.5 py-0.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                      className="text-[10px] rounded border border-surface-300 px-1.5 py-0.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                     >
                       <option value="MEMBER">Membro</option>
                       <option value="MANAGER">Manager</option>
@@ -249,7 +251,7 @@ export function TeamDetailPanel({
                   <button
                     disabled={busy}
                     onClick={() => onAddMember(u.id)}
-                    className="text-[10px] font-medium text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
+                    className="text-[10px] font-medium text-brand-600 hover:text-brand-700 disabled:opacity-50"
                   >
                     Adicionar
                   </button>
@@ -272,7 +274,7 @@ function Avatar({ name }: { name: string }) {
     .map((p) => p[0]?.toUpperCase())
     .join("");
   return (
-    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-[10px] font-semibold shadow-sm">
+    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center text-[10px] font-semibold shadow-sm">
       {initials || "?"}
     </div>
   );

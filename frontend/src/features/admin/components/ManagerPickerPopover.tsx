@@ -101,10 +101,10 @@ export function ManagerPickerPopover({
                       : onAdd(target.id, u.id)
                   }
                   className={`w-full flex items-center gap-2 px-2 py-1.5 text-left text-[13px] hover:bg-surface-100 transition ${
-                    isSelected ? "text-indigo-600" : "text-gray-700"
+                    isSelected ? "text-brand-600" : "text-gray-700"
                   }`}
                 >
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white text-[11px] font-semibold">
+                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white text-[11px] font-semibold">
                     {u.name?.[0]?.toUpperCase() || "U"}
                   </span>
                   <span className="truncate">{u.name}</span>
@@ -131,7 +131,7 @@ export function ManagerPickerPopover({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Buscar nome ou email…"
-          className="w-full rounded-md border border-surface-300 bg-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+          className="w-full rounded-xl border border-surface-300 bg-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/60"
         />
       </div>
       <div className="divide-y divide-surface-200 max-h-96 overflow-auto">

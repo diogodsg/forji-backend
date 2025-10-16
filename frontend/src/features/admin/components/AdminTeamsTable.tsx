@@ -61,13 +61,13 @@ export function AdminTeamsTable({
             key={t.id}
             className={`bg-white/80 backdrop-blur border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md group ${
               selected
-                ? "border-indigo-300 bg-indigo-50/60 shadow-md"
+                ? "border-brand-300 bg-brand-50/60 shadow-md"
                 : "border-surface-300/70 hover:border-surface-400/80"
             }`}
             onClick={() => !editing && onSelect(t.id)}
           >
             <div className="flex items-start gap-3 mb-3">
-              <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 text-sm font-semibold shrink-0">
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-brand-100 text-brand-700 text-sm font-semibold shrink-0">
                 {initials || "?"}
               </div>
               <div className="flex-1 min-w-0">
@@ -81,7 +81,7 @@ export function AdminTeamsTable({
                         if (e.key === "Escape") cancelEdit();
                       }}
                       autoFocus
-                      className="w-full rounded border border-indigo-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
+                      className="w-full rounded-xl border border-brand-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/60"
                     />
                     <div className="flex gap-2">
                       <button
@@ -89,7 +89,7 @@ export function AdminTeamsTable({
                           e.stopPropagation();
                           commitEdit(t.id);
                         }}
-                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                        className="text-xs text-brand-600 hover:text-brand-700 font-medium"
                       >
                         Salvar
                       </button>
@@ -113,7 +113,7 @@ export function AdminTeamsTable({
                           e.stopPropagation();
                           startEdit(t);
                         }}
-                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-indigo-600 inline-flex items-center transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-brand-600 inline-flex items-center transition-opacity"
                         title="Renomear"
                       >
                         <FiEdit2 className="w-3 h-3" />
@@ -174,7 +174,7 @@ function RowActions({
           e.stopPropagation();
           onSelect(id);
         }}
-        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium mr-2"
+        className="text-xs text-brand-600 hover:text-brand-700 font-medium mr-2"
       >
         Ver detalhes
       </button>

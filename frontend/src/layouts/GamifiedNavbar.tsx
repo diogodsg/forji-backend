@@ -13,7 +13,6 @@ import {
 import { usePlayerProfile } from "@/features/gamification/hooks/useGamification";
 
 interface GamifiedNavbarProps {
-  showManager?: boolean;
   showAdmin?: boolean;
 }
 
@@ -36,10 +35,7 @@ const mockPlayerProfile = {
   recentBadges: [],
 };
 
-export function GamifiedNavbar({
-  showManager,
-  showAdmin,
-}: GamifiedNavbarProps) {
+export function GamifiedNavbar({ showAdmin }: GamifiedNavbarProps) {
   const location = useLocation();
 
   // Conectar com dados reais de gamifica????o
@@ -61,34 +57,31 @@ export function GamifiedNavbar({
     const items: NavItemDef[] = [
       {
         to: "/",
-        label: "ínicio",
+        label: "Início",
         icon: <FiHome className="w-5 h-5" />,
       },
       {
-        to: "/me/pdi",
-        label: "Meu Desenvolvimento",
+        to: "/development",
+        label: "Desenvolvimento",
         icon: <FiTarget className="w-5 h-5" />,
       },
       {
+        to: "/teams",
+        label: "Equipe",
+        icon: <FiUsers className="w-5 h-5" />,
+      },
+      {
         to: "/leaderboard",
-        label: "Rankings",
+        label: "Classificação",
         icon: <FiTrendingUp className="w-5 h-5" />,
         badge: playerData.rank > 0 ? playerData.rank : undefined,
       },
       {
-        to: "/gamification/guide",
-        label: "Growth System",
+        to: "/guide",
+        label: "Sistema",
         icon: <FiInfo className="w-5 h-5" />,
       },
     ];
-
-    if (showManager) {
-      items.push({
-        to: "/manager",
-        label: "Equipe",
-        icon: <FiUsers className="w-5 h-5" />,
-      });
-    }
 
     if (showAdmin) {
       items.push({
@@ -99,7 +92,7 @@ export function GamifiedNavbar({
     }
 
     return items;
-  }, [showManager, showAdmin, playerData.rank]);
+  }, [showAdmin, playerData.rank]);
 
   // NavItem component com novo design system
   const NavItem = ({

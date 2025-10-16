@@ -1,4 +1,4 @@
-import { FiSun, FiMoon, FiClock, FiUsers, FiTarget } from "react-icons/fi";
+import { Building2, Users, Target, Sun, Moon, Clock } from "lucide-react";
 import type { AuthUser } from "@/features/auth";
 
 interface WelcomeHeaderProps {
@@ -18,16 +18,16 @@ export function WelcomeHeader({ user }: WelcomeHeaderProps) {
     if (hour < 12)
       return {
         text: "Bom dia",
-        icon: <FiSun className="w-5 h-5 text-yellow-500" />,
+        icon: <Sun className="w-5 h-5 text-yellow-500" />,
       };
     if (hour < 18)
       return {
         text: "Boa tarde",
-        icon: <FiSun className="w-5 h-5 text-orange-500" />,
+        icon: <Sun className="w-5 h-5 text-orange-500" />,
       };
     return {
       text: "Boa noite",
-      icon: <FiMoon className="w-5 h-5 text-blue-500" />,
+      icon: <Moon className="w-5 h-5 text-blue-500" />,
     };
   };
 
@@ -36,19 +36,28 @@ export function WelcomeHeader({ user }: WelcomeHeaderProps) {
 
   // Mensagens personalizadas baseadas no perfil
   const getPersonalizedMessage = () => {
+    if (user.isAdmin) {
+      return {
+        primary: "Acompanhe a saúde e performance da empresa",
+        secondary:
+          "Visão executiva completa de todos os times, métricas críticas e insights estratégicos",
+        icon: <Building2 className="w-5 h-5 text-brand-600" />,
+      };
+    }
+
     if (user.isManager) {
       return {
         primary: "Acompanhe o desenvolvimento da sua equipe",
         secondary:
           "Visualize métricas, progresso de PDI e conquistas dos seus subordinados",
-        icon: <FiUsers className="w-5 h-5 text-brand-600" />,
+        icon: <Users className="w-5 h-5 text-brand-600" />,
       };
     }
 
     return {
       primary: "Continue sua jornada de desenvolvimento",
       secondary: "Acompanhe seu progresso, conquistas e evolução profissional",
-      icon: <FiTarget className="w-5 h-5 text-brand-600" />,
+      icon: <Target className="w-5 h-5 text-brand-600" />,
     };
   };
 
@@ -93,7 +102,7 @@ export function WelcomeHeader({ user }: WelcomeHeaderProps) {
 
             {/* Data atual */}
             <div className="flex items-center gap-2 mb-4">
-              <FiClock className="w-4 h-4 text-surface-500" />
+              <Clock className="w-4 h-4 text-surface-500" />
               <span className="text-sm text-surface-600 capitalize">
                 {currentDate}
               </span>
@@ -114,19 +123,26 @@ export function WelcomeHeader({ user }: WelcomeHeaderProps) {
             <div className="mt-6">
               <span
                 className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
-                  user.isManager
+                  user.isAdmin
+                    ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    : user.isManager
                     ? "bg-purple-100 text-purple-800 border border-purple-200"
                     : "bg-blue-100 text-blue-800 border border-blue-200"
                 }`}
               >
-                {user.isManager ? (
+                {user.isAdmin ? (
                   <>
-                    <FiUsers className="w-4 h-4 mr-2" />
+                    <Building2 className="w-4 h-4 mr-2" />
+                    CEO / Administrador
+                  </>
+                ) : user.isManager ? (
+                  <>
+                    <Users className="w-4 h-4 mr-2" />
                     Gestor de Equipe
                   </>
                 ) : (
                   <>
-                    <FiTarget className="w-4 h-4 mr-2" />
+                    <Target className="w-4 h-4 mr-2" />
                     Colaborador
                   </>
                 )}

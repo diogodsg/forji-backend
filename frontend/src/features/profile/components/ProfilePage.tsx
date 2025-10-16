@@ -3,12 +3,9 @@ import { useParams } from "react-router-dom";
 import { ProfileHeader } from "./ProfileHeader";
 import { ProfileTabNavigation } from "./ProfileTabNavigation";
 import { GamificationTab } from "./GamificationTab";
-import { PDITab } from "./PDITab";
-import { TimelineSection } from "./TimelineSection";
-import { ConfigurationTab } from "./ConfigurationTab";
 import { useProfile } from "../hooks/useProfile";
-import { useProfileTimeline } from "../hooks/useProfileTimeline";
 import { usePlayerProfile } from "@/features/gamification";
+import { CurrentCyclePageOptimized } from "@/features/cycles";
 import type { ProfileTab } from "../types/profile";
 
 export function ProfilePage() {
@@ -22,18 +19,8 @@ export function ProfilePage() {
     error: profileError,
     isCurrentUser,
     canEdit,
-    updatePrivacySettings,
     updateAvatar,
   } = useProfile(userId);
-
-  // Fetch timeline data
-  const {
-    timeline,
-    loading: timelineLoading,
-    loadMore,
-    hasMore,
-    getPublicTimeline,
-  } = useProfileTimeline(userId);
 
   // Fetch gamification data
   const { profile: gamificationProfile, loading: gamificationLoading } =
@@ -106,9 +93,8 @@ export function ProfilePage() {
     );
   }
 
-  const { profile, stats, privacySettings } = profileData;
+  const { profile, stats } = profileData;
   const isPublic = !isCurrentUser && !canEdit;
-  const displayTimeline = isPublic ? getPublicTimeline() : timeline;
 
   return (
     <div className="min-h-screen bg-surface-50">
@@ -144,27 +130,7 @@ export function ProfilePage() {
               />
             )}
 
-            {activeTab === "pdi" && (
-              <PDITab stats={stats} loading={profileLoading} />
-            )}
-
-            {activeTab === "timeline" && (
-              <TimelineSection
-                timeline={displayTimeline}
-                isPublic={isPublic}
-                loading={timelineLoading}
-                onLoadMore={loadMore}
-                hasMore={hasMore}
-              />
-            )}
-
-            {activeTab === "settings" && isCurrentUser && privacySettings && (
-              <ConfigurationTab
-                privacySettings={privacySettings}
-                onUpdateSettings={updatePrivacySettings}
-                loading={profileLoading}
-              />
-            )}
+            {activeTab === "pdi" && <CurrentCyclePageOptimized />}
           </div>
         </div>
       </div>

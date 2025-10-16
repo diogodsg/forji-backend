@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { FiArrowLeft, FiUser, FiKey } from "react-icons/fi";
 import { UserProfileEditor } from "@/features/settings/components/UserProfileEditor";
-import { AdminAccountSection } from "@/features/admin/components/AdminAccountSection";
+// import { AdminAccountSection } from "@/features/admin/components/AdminAccountSection";
 import { useAdminUsers } from "@/features/admin";
 import type { UserProfile } from "@/features/settings/types/settings";
 
@@ -25,13 +25,12 @@ export function AdminUserEditPage() {
       // Compare as string since API returns IDs as strings
       const user = users.find((u) => String(u.id) === userId);
       if (user) {
-        const profile: UserProfile = {
+        const profile = {
           id: user.id,
           name: user.name,
           email: user.email,
           position: (user as any).position || "",
           bio: (user as any).bio || "",
-          githubId: user.githubId || undefined,
         };
         setUserProfile(profile);
         console.log("User found and profile set:", profile);
@@ -69,10 +68,11 @@ export function AdminUserEditPage() {
         );
       case "account":
         return (
-          <AdminAccountSection
-            userId={userProfile.id}
-            userName={userProfile.name}
-          />
+          <div className="p-6 bg-surface-50 rounded-lg">
+            <p className="text-gray-500">
+              Seção de conta temporariamente indisponível
+            </p>
+          </div>
         );
       default:
         return null;

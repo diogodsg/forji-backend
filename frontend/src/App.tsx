@@ -11,24 +11,6 @@ import { ErrorBoundary } from "./lib/ErrorBoundary";
  * Core pages are lazy-loaded to reduce the initial bundle size.
  * Only providers + the flow shell (InnerApp) are eagerly loaded.
  */
-const ManagerDashboardPage = lazy(() =>
-  import("./pages/ManagerDashboardPage").then((m) => ({
-    default: m.ManagerDashboardPage,
-  }))
-);
-const ManagerUserEditPage = lazy(() =>
-  import("./pages/ManagerUserEditPage").then((m) => ({
-    default: m.ManagerUserEditPage,
-  }))
-);
-const MyPdiPage = lazy(() =>
-  import("./pages/MyPdiPage").then((m) => ({ default: m.MyPdiPage }))
-);
-const DevelopmentHubPage = lazy(() =>
-  import("./pages/DevelopmentHubPage").then((m) => ({
-    default: m.DevelopmentHubPage,
-  }))
-);
 const LeaderboardPage = lazy(() =>
   import("./pages/LeaderboardPage").then((m) => ({
     default: m.LeaderboardPage,
@@ -39,29 +21,14 @@ const GamificationGuidePage = lazy(() =>
     default: m.GamificationGuidePage,
   }))
 );
-const GamificationSystemPage = lazy(() =>
-  import("./pages/GamificationSystemPage").then((m) => ({
-    default: m.GamificationSystemPage,
-  }))
-);
 const SettingsPage = lazy(() =>
   import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage }))
 );
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const AdminAccessPage = lazy(() => import("./pages/AdminAccessPage"));
-const AdminUserEditPage = lazy(() =>
-  import("./pages/AdminUserEditPage").then((m) => ({
-    default: m.AdminUserEditPage,
-  }))
-);
-const PdiTimelinePage = lazy(() =>
-  import("./pages/PdiTimelinePage").then((m) => ({
-    default: m.PdiTimelinePage,
-  }))
-);
-const UserSearchPage = lazy(() =>
-  import("./pages/UserSearchPage").then((m) => ({
-    default: m.UserSearchPage,
+const CurrentCyclePageOptimized = lazy(() =>
+  import("./pages/CurrentCyclePageOptimized").then((m) => ({
+    default: m.CurrentCyclePageOptimized,
   }))
 );
 const ProfilePage = lazy(() =>
@@ -69,6 +36,7 @@ const ProfilePage = lazy(() =>
     default: m.ProfilePage,
   }))
 );
+const TeamsPage = lazy(() => import("./pages/TeamsPage"));
 const HomePage = lazy(() => import("./pages/HomePage"));
 
 /**
@@ -122,62 +90,32 @@ function InnerApp() {
             {/* Dashboard Gamificado como homepage */}
             <Route index element={<HomePage />} />
             <Route path="/home" element={<HomePage />} />
-
             {/* Desenvolvimento (novo hub) */}
-            <Route path="/development" element={<DevelopmentHubPage />} />
-            <Route path="/development/pdi" element={<MyPdiPage />} />
-
-            {/* PDI Timeline */}
-            <Route path="/pdi/timeline" element={<PdiTimelinePage />} />
-            <Route path="/pdi/timeline/:userId" element={<PdiTimelinePage />} />
-
+            <Route
+              path="/development"
+              element={<CurrentCyclePageOptimized />}
+            />
+            {/* Teams (colaboração e gestão de equipes) */}
+            <Route path="/teams" element={<TeamsPage />} />
             {/* Leaderboard (rankings e competição) */}
             <Route path="/leaderboard" element={<LeaderboardPage />} />
 
-            {/* Gamification Guide (página educativa) */}
-            <Route
-              path="/gamification/guide"
-              element={<GamificationGuidePage />}
-            />
-
-            {/* Gamification System (ações manuais e multiplicadores) */}
-            <Route
-              path="/gamification/system"
-              element={<GamificationSystemPage />}
-            />
+            {/* Guide (página educativa) */}
+            <Route path="/guide" element={<GamificationGuidePage />} />
 
             {/* Legacy routes mantidas para compatibilidade */}
-            <Route path="/me/pdi" element={<MyPdiPage />} />
             <Route path="/settings" element={<SettingsPage />} />
 
             {/* User Search & Feedback */}
-            <Route path="/users/search" element={<UserSearchPage />} />
             <Route path="/users/:userId/profile" element={<ProfilePage />} />
 
             {/* New Profile System */}
             <Route path="/me" element={<ProfilePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/:userId" element={<ProfilePage />} />
-            <Route
-              path="/users/:userId/profile-new"
-              element={<ProfilePage />}
-            />
-
-            {/* Management routes */}
-            <Route path="/manager" element={<ManagerDashboardPage />} />
-            <Route
-              path="/manager/users/:userId"
-              element={<ManagerUserEditPage />}
-            />
 
             {/* Admin routes */}
             {user.isAdmin && (
               <>
                 <Route path="/admin" element={<AdminAccessPage />} />
-                <Route
-                  path="/admin/users/:userId"
-                  element={<AdminUserEditPage />}
-                />
               </>
             )}
             <Route path="*" element={<NotFoundPage />} />

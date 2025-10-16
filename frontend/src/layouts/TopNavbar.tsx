@@ -5,7 +5,6 @@ import {
   FiUser,
   FiX,
   FiLoader,
-  FiBell,
   FiSettings,
   FiChevronDown,
   FiLogOut,
@@ -386,13 +385,13 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
               <div className="flex items-center gap-2">
                 {/* Notifications */}
                 <div className="relative" ref={notificationsRef}>
-                  <button
+                  {/* <button
                     onClick={() => setNotificationsOpen(!notificationsOpen)}
                     className="relative p-3 text-gray-500 hover:text-brand-600 hover:bg-surface-100 rounded-xl transition-all duration-150 hover:scale-105 group"
                   >
                     <FiBell className="w-5 h-5 transition-transform duration-150 group-hover:scale-110" />
                     <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-surface-0 animate-pulse-soft"></span>
-                  </button>
+                  </button> */}
 
                   {notificationsOpen && (
                     <div className="absolute top-full right-0 mt-2 w-80 bg-surface-0 border border-surface-300 rounded-2xl shadow-xl z-50 overflow-hidden">
