@@ -1,24 +1,35 @@
-import { Module } from "@nestjs/common";
-import { AuthModule } from "./auth/auth.module";
-import { PrsModule } from "./prs/prs.module";
-import { PdiModule } from "./pdi/pdi.module";
-import { PrismaModule } from "./core/prisma/prisma.module";
-import { PermissionsModule } from "./core/permissions/permissions.module";
-import { TeamsModule } from "./teams/teams.module";
-import { ManagementModule } from "./management/management.module"; // Temporarily disabled
-import { GamificationModule } from "./gamification/gamification.module";
+import { Module } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
+import { WorkspacesModule } from './workspaces/workspaces.module';
+import { UsersModule } from './users/users.module';
+import { TeamsModule } from './teams/teams.module';
+import { ManagementModule } from './management/management.module';
 
 @Module({
-  // PrismaModule é global; ainda assim manter import explícito para clareza.
   imports: [
+    // Rate limiting: 10 requests per 10 seconds
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 10,
+      },
+    ]),
     PrismaModule,
-    PermissionsModule,
     AuthModule,
-    PrsModule,
-    PdiModule,
+    WorkspacesModule,
+    UsersModule,
     TeamsModule,
-    ManagementModule, // Keep disabled until deadlock issue is resolved
-    GamificationModule,
+    ManagementModule,
+  ],
+  controllers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

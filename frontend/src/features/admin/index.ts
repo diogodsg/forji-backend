@@ -1,7 +1,8 @@
-export * from "./types"; // keeps existing barrel (will update types barrel next)
+export * from "./types";
 export * from "./hooks/useAdminUsers";
 export * from "./hooks/useMyReports";
-export * from "./hooks/useAdminTeams";
+export * from "./hooks/useTeamManagement";
 export * from "./components";
-export * from "./services/adminApi";
-export * from "./services/teamsApi";
+// API services deprecated - using mock data only
+// export * from "./services/adminApi";
+// export * from "./services/teamsApi";

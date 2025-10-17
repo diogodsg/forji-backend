@@ -1,168 +1,254 @@
-import { Injectable, ConflictException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcryptjs";
-import { PrismaService } from "../core/prisma/prisma.service";
-import { handlePrismaUniqueError } from "../common/prisma/unique-error.util";
-import { logger } from "../common/logger/pino";
-import { UpdateProfileDto } from "../dto/auth.dto";
-import { SoftDeleteService } from "../common/prisma/soft-delete.extension";
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { PrismaService } from '../prisma/prisma.service';
+import { RegisterDto, LoginDto, AuthResponseDto } from './dto';
+import { UserEntity, UserUtils } from './entities/user.entity';
 
 @Injectable()
-export class AuthService extends SoftDeleteService {
-  constructor(private jwtService: JwtService, prisma: PrismaService) {
-    super(prisma);
-  }
+export class AuthService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  async validateUser(email: string, pass: string) {
-    const normEmail = email.trim().toLowerCase();
-    const user = await this.prisma.user.findFirst({
-      where: this.addSoftDeleteFilter({ email: normEmail }),
+  /**
+   * Register a new user
+   */
+  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
+    const { email, password, name, position, bio } = registerDto;
+
+    // Check if user already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
     });
-    if (user && (await bcrypt.compare(pass, user.password))) {
-      logger.debug(
-        { email: normEmail, userId: user.id },
-        "auth.validateUser.success"
-      );
-      const { password, ...result } = user as any;
-      return result;
+
+    if (existingUser) {
+      throw new ConflictException('Email already registered');
     }
-    logger.debug({ email: normEmail }, "auth.validateUser.fail");
-    return null;
-  }
 
-  async login(user: any) {
-    const payload = {
-      email: user.email,
-      sub: user.id?.toString?.() ?? String(user.id),
-    };
-    const token = this.jwtService.sign(payload);
-    logger.info({ userId: user.id, email: user.email }, "auth.login");
-    return { access_token: token };
-  }
+    // Hash password
+    const hashedPassword = await this.hashPassword(password);
 
-  async register(email: string, password: string, name: string) {
-    const hash = await bcrypt.hash(password, 10);
-    const userCount = await this.prisma.user.count();
-    const normEmail = email.trim().toLowerCase();
-    try {
-      const user = await this.prisma.user.create({
+    // Create user, workspace and membership in a transaction
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Create user
+      const user = await tx.user.create({
         data: {
-          email: normEmail,
-          password: hash,
+          email,
+          password: hashedPassword,
           name,
-          isAdmin: userCount === 0,
-        } as any,
+          position,
+          bio,
+        },
       });
-      logger.info({ userId: user.id, isAdmin: user.isAdmin }, "auth.register");
-      return user;
-    } catch (e: any) {
-      const mapped = handlePrismaUniqueError(e, {
-        email: "Email já está em uso",
+
+      // Generate workspace slug from user name
+      const workspaceSlug = `${name.toLowerCase().replace(/\s+/g, '-')}-workspace-${Date.now()}`;
+
+      // Create default workspace
+      const workspace = await tx.workspace.create({
+        data: {
+          name: `${name}'s Workspace`,
+          slug: workspaceSlug,
+          description: 'Personal workspace',
+          status: 'ACTIVE',
+        },
       });
-      if (mapped) logger.warn({ email: normEmail }, "auth.register.duplicate");
-      if (mapped) throw mapped;
-      throw e;
-    }
-  }
 
-  async getProfile(userId: any) {
-    const u = await this.prisma.user.findFirst({
-      where: this.addSoftDeleteFilter({ id: BigInt(userId) }),
+      // Add user as workspace owner
+      await tx.workspaceMember.create({
+        data: {
+          userId: user.id,
+          workspaceId: workspace.id,
+          role: 'OWNER',
+        },
+      });
+
+      return { user, workspace };
     });
-    if (!u) {
-      logger.debug({ userId }, "auth.profile.not_found");
-      return null;
-    }
 
-    // Check if user is a manager by looking at management rules
-    const managementRules = await this.prisma.managementRule.findMany({
-      where: this.addSoftDeleteFilter({ managerId: BigInt(userId) }),
-    });
-    const isManager = managementRules.length > 0;
+    // Transform to camelCase entity
+    const userEntity = result.user;
 
-    const { password, ...rest } = u as any;
+    // Generate JWT token with workspace context
+    const accessToken = this.generateToken(userEntity, result.workspace.id, 'OWNER');
+
     return {
-      ...rest,
-      isManager,
-      isAdmin: !!(u as any).isAdmin,
+      user: UserUtils.toSafeUser(userEntity),
+      accessToken,
+      workspaces: [
+        {
+          id: result.workspace.id,
+          name: result.workspace.name,
+          slug: result.workspace.slug,
+          role: 'OWNER',
+        },
+      ],
     };
   }
 
-  async updateProfile(userId: any, data: UpdateProfileDto) {
-    try {
-      const updated = await this.prisma.user.update({
-        where: { id: userId },
-        data: {
-          ...(data.name && { name: data.name.trim() }),
-          ...(data.position !== undefined && {
-            position: data.position?.trim() || null,
-          }),
-          ...(data.bio !== undefined && { bio: data.bio?.trim() || null }),
-          ...(data.githubId !== undefined && {
-            githubId: data.githubId?.trim() || null,
-          }),
-        } as any,
-      });
+  /**
+   * Login user with email and password
+   */
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+    const { email, password } = loginDto;
 
-      logger.info({ userId, updates: Object.keys(data) }, "auth.updateProfile");
+    // Validate user credentials
+    const user = await this.validateUser(email, password);
 
-      const { password, ...rest } = updated as any;
-      return {
-        ...rest,
-        isManager: false, // Temporarily disabled until relations are fixed
-        isAdmin: !!updated.isAdmin,
-      };
-    } catch (e: any) {
-      const mapped = handlePrismaUniqueError(e, {
-        githubId: "GitHub ID já está em uso por outro usuário",
-      });
-      if (mapped) {
-        logger.warn(
-          { userId, githubId: data.githubId },
-          "auth.updateProfile.duplicate"
-        );
-        throw mapped;
-      }
-      throw e;
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
+
+    // Get user's workspaces
+    const workspaceMemberships = await this.prisma.workspaceMember.findMany({
+      where: { userId: user.id },
+      include: {
+        workspace: true,
+      },
+    });
+
+    if (workspaceMemberships.length === 0) {
+      throw new UnauthorizedException('User has no workspace access');
+    }
+
+    // Transform to camelCase entity
+    const userEntity = user;
+
+    // Use first workspace as default
+    const defaultWorkspace = workspaceMemberships[0];
+
+    // Generate JWT token with default workspace context
+    const accessToken = this.generateToken(
+      userEntity,
+      defaultWorkspace.workspaceId,
+      defaultWorkspace.role,
+    );
+
+    return {
+      user: UserUtils.toSafeUser(userEntity),
+      accessToken,
+      workspaces: workspaceMemberships.map((wm) => ({
+        id: wm.workspace.id,
+        name: wm.workspace.name,
+        slug: wm.workspace.slug,
+        role: wm.role,
+      })),
+    };
   }
 
-  async changePassword(
-    userId: any,
-    currentPassword: string,
-    newPassword: string
-  ): Promise<boolean> {
-    // Buscar usuário atual para validar senha
+  /**
+   * Validate user credentials (used by LocalStrategy)
+   */
+  async validateUser(email: string, password: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { password: true },
+      where: { email },
     });
 
     if (!user) {
-      logger.debug({ userId }, "auth.changePassword.user_not_found");
-      return false;
+      return null;
     }
 
-    // Verificar senha atual
-    const isCurrentPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.password
-    );
-    if (!isCurrentPasswordValid) {
-      logger.warn({ userId }, "auth.changePassword.invalid_current_password");
-      return false;
+    const isPasswordValid = await this.comparePassword(password, user.password);
+
+    if (!isPasswordValid) {
+      return null;
     }
 
-    // Hash da nova senha
-    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    return user;
+  }
 
-    // Atualizar senha
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { password: newPasswordHash } as any,
+  /**
+   * Get user by ID (for JWT strategy)
+   */
+  async getUserById(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
     });
 
-    logger.info({ userId }, "auth.changePassword.success");
-    return true;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
+  }
+
+  /**
+   * Hash password using bcrypt
+   */
+  private async hashPassword(password: string): Promise<string> {
+    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10);
+    return bcrypt.hash(password, saltRounds);
+  }
+
+  /**
+   * Compare plain password with hashed password
+   */
+  private async comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  /**
+   * Generate JWT access token with workspace context
+   */
+  /**
+   * Switch to a different workspace
+   */
+  async switchWorkspace(userId: string, workspaceId: string) {
+    // Check if user has access to this workspace
+    const membership = await this.prisma.workspaceMember.findUnique({
+      where: {
+        unique_user_workspace: {
+          userId: userId,
+          workspaceId: workspaceId,
+        },
+      },
+      include: {
+        workspace: true,
+        user: true,
+      },
+    });
+
+    if (!membership) {
+      throw new UnauthorizedException('You do not have access to this workspace');
+    }
+
+    // Transform user to camelCase entity
+    const userEntity = membership.user;
+
+    // Generate new JWT with new workspace context
+    const accessToken = this.generateToken(userEntity, workspaceId, membership.role);
+
+    return {
+      user: UserUtils.toSafeUser(userEntity),
+      accessToken,
+      workspace: {
+        id: membership.workspace.id,
+        name: membership.workspace.name,
+        slug: membership.workspace.slug,
+        role: membership.role,
+      },
+    };
+  }
+
+  private generateToken(
+    user: UserEntity,
+    workspaceId: string,
+    workspaceRole: 'OWNER' | 'ADMIN' | 'MEMBER',
+  ): string {
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      workspaceId,
+      workspaceRole,
+    };
+
+    return this.jwtService.sign(payload);
   }
 }

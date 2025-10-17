@@ -1,15 +1,6 @@
 import React, { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import {
-  FiHome,
-  FiTarget,
-  FiUsers,
-  FiShield,
-  FiTrendingUp,
-  FiAward,
-  FiStar,
-  FiInfo,
-} from "react-icons/fi";
+import { FiTarget, FiShield, FiAward, FiStar, FiLock } from "react-icons/fi";
 import { usePlayerProfile } from "@/features/gamification/hooks/useGamification";
 
 interface GamifiedNavbarProps {
@@ -21,6 +12,7 @@ interface NavItemDef {
   label: string;
   icon: React.ReactNode;
   badge?: string | number;
+  locked?: boolean;
 }
 
 const mockPlayerProfile = {
@@ -56,30 +48,35 @@ export function GamifiedNavbar({ showAdmin }: GamifiedNavbarProps) {
   const navItems = useMemo(() => {
     const items: NavItemDef[] = [
       {
-        to: "/",
-        label: "Início",
-        icon: <FiHome className="w-5 h-5" />,
-      },
-      {
         to: "/development",
         label: "Desenvolvimento",
         icon: <FiTarget className="w-5 h-5" />,
+        locked: false,
+      },
+      {
+        to: "/",
+        label: "Início",
+        icon: <FiLock className="w-5 h-5" />,
+        locked: true,
       },
       {
         to: "/teams",
         label: "Equipe",
-        icon: <FiUsers className="w-5 h-5" />,
+        icon: <FiLock className="w-5 h-5" />,
+        locked: true,
       },
       {
         to: "/leaderboard",
         label: "Classificação",
-        icon: <FiTrendingUp className="w-5 h-5" />,
+        icon: <FiLock className="w-5 h-5" />,
         badge: playerData.rank > 0 ? playerData.rank : undefined,
+        locked: true,
       },
       {
         to: "/guide",
         label: "Sistema",
-        icon: <FiInfo className="w-5 h-5" />,
+        icon: <FiLock className="w-5 h-5" />,
+        locked: true,
       },
     ];
 
@@ -101,45 +98,64 @@ export function GamifiedNavbar({ showAdmin }: GamifiedNavbarProps) {
     icon,
     badge,
     active,
-  }: NavItemDef & { active: boolean }) => (
-    <NavLink
-      to={to}
-      className={({ isActive }) => {
-        const activeState = isActive || active;
-        return `group flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-150 ${
-          activeState
-            ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg hover:shadow-glow transform hover:scale-[1.02]"
-            : "text-gray-600 hover:bg-surface-100 hover:text-gray-900 hover:scale-[1.01] hover:shadow-soft"
-        }`;
-      }}
-    >
-      <div className="flex items-center min-w-0 flex-1">
-        <div
-          className={`flex-shrink-0 transition-transform duration-150 group-hover:scale-110 ${
-            location.pathname === to ||
-            (to !== "/" && location.pathname.startsWith(to))
-              ? "text-white drop-shadow-sm"
-              : "text-gray-500 group-hover:text-brand-600"
-          }`}
-        >
-          {icon}
+    locked,
+  }: NavItemDef & { active: boolean }) => {
+    if (locked) {
+      return (
+        <div className="group flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-150 text-gray-400 bg-surface-50 cursor-not-allowed opacity-60">
+          <div className="flex items-center min-w-0 flex-1">
+            <div className="flex-shrink-0 text-gray-400">{icon}</div>
+            <span className="ml-3 truncate font-medium">{label}</span>
+          </div>
+          {badge && (
+            <span className="ml-3 px-2.5 py-1 text-xs font-bold rounded-full flex-shrink-0 bg-gray-200 text-gray-400">
+              #{badge}
+            </span>
+          )}
         </div>
-        <span className="ml-3 truncate font-medium">{label}</span>
-      </div>
-      {badge && (
-        <span
-          className={`ml-3 px-2.5 py-1 text-xs font-bold rounded-full flex-shrink-0 transition-all duration-150 ${
-            location.pathname === to ||
-            (to !== "/" && location.pathname.startsWith(to))
-              ? "bg-white/20 text-white shadow-sm"
-              : "bg-brand-50 text-brand-600 group-hover:bg-brand-100"
-          }`}
-        >
-          #{badge}
-        </span>
-      )}
-    </NavLink>
-  );
+      );
+    }
+
+    return (
+      <NavLink
+        to={to}
+        className={({ isActive }) => {
+          const activeState = isActive || active;
+          return `group flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-150 ${
+            activeState
+              ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg hover:shadow-glow transform hover:scale-[1.02]"
+              : "text-gray-600 hover:bg-surface-100 hover:text-gray-900 hover:scale-[1.01] hover:shadow-soft"
+          }`;
+        }}
+      >
+        <div className="flex items-center min-w-0 flex-1">
+          <div
+            className={`flex-shrink-0 transition-transform duration-150 group-hover:scale-110 ${
+              location.pathname === to ||
+              (to !== "/" && location.pathname.startsWith(to))
+                ? "text-white drop-shadow-sm"
+                : "text-gray-500 group-hover:text-brand-600"
+            }`}
+          >
+            {icon}
+          </div>
+          <span className="ml-3 truncate font-medium">{label}</span>
+        </div>
+        {badge && (
+          <span
+            className={`ml-3 px-2.5 py-1 text-xs font-bold rounded-full flex-shrink-0 transition-all duration-150 ${
+              location.pathname === to ||
+              (to !== "/" && location.pathname.startsWith(to))
+                ? "bg-white/20 text-white shadow-sm"
+                : "bg-brand-50 text-brand-600 group-hover:bg-brand-100"
+            }`}
+          >
+            #{badge}
+          </span>
+        )}
+      </NavLink>
+    );
+  };
 
   return (
     <aside className="hidden md:flex h-screen flex-col flex-none w-64 border-r border-surface-300 bg-surface-0 fixed left-0 top-0 z-30 shadow-soft">
@@ -166,7 +182,14 @@ export function GamifiedNavbar({ showAdmin }: GamifiedNavbarProps) {
           const active =
             location.pathname === item.to ||
             (item.to !== "/" && location.pathname.startsWith(item.to));
-          return <NavItem key={item.to} {...item} active={active} />;
+          return (
+            <NavItem
+              key={item.to}
+              {...item}
+              active={active}
+              locked={item.locked}
+            />
+          );
         })}
       </nav>
 

@@ -5,163 +5,120 @@ import {
   Delete,
   Body,
   Param,
-  UseGuards,
-  Request,
-  ParseIntPipe,
   Query,
-  BadRequestException,
-} from "@nestjs/common";
-import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
-import { AdminGuard } from "../common/guards/admin.guard";
-import { ManagementService, ManagementRuleDto } from "./management.service";
+  UseGuards,
+  ParseBoolPipe,
+  ParseEnumPipe,
+} from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ManagementService } from './management.service';
+import { CreateRuleDto } from './dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ManagementRuleType } from '@prisma/client';
 
-@Controller("management")
+interface JwtPayload {
+  sub: string;
+  email: string;
+  workspaceId: string;
+  workspaceRole: string;
+}
+
+@ApiTags('management')
+@Controller('management')
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class ManagementController {
-  constructor(private managementService: ManagementService) {}
+  constructor(private readonly managementService: ManagementService) {}
 
-  // Criar uma nova regra de gerenciamento
-  @Post("rules")
-  async createRule(@Request() req: any, @Body() rule: ManagementRuleDto) {
-    const managerId = req.user?.id;
-    if (!managerId) {
-      throw new Error("User not authenticated");
-    }
-    return this.managementService.createRule(managerId, rule);
+  /**
+   * GET /management/test
+   * Test endpoint
+   */
+  @Get('test')
+  async test() {
+    return { message: 'Management module is working!' };
   }
 
-  // Listar todas as regras do gerente atual
-  @Get("rules")
-  async getMyRules(@Request() req: any) {
-    const managerId = req.user?.id;
-    if (!managerId) {
-      throw new Error("User not authenticated");
-    }
-    return this.managementService.getManagerRules(managerId);
-  }
-
-  // Remover uma regra
-  @Delete("rules/:id")
-  async removeRule(
-    @Request() req: any,
-    @Param("id", ParseIntPipe) ruleId: number
+  /**
+   * GET /management/subordinates
+   * Get all subordinates for the current user
+   */
+  @Get('subordinates')
+  async getMySubordinates(
+    @CurrentUser() user: JwtPayload,
+    @Query('includeTeamMembers', new ParseBoolPipe({ optional: true }))
+    includeTeamMembers = false,
   ) {
-    const managerId = req.user?.id;
-    if (!managerId) {
-      throw new Error("User not authenticated");
-    }
-    return this.managementService.removeRule(managerId, ruleId);
+    return this.managementService.getMySubordinates(user.sub, user.workspaceId, includeTeamMembers);
   }
 
-  // Obter todos os subordinados efetivos
-  @Get("subordinates")
-  async getMySubordinates(@Request() req: any) {
-    const managerId = req.user?.id;
-    if (!managerId) {
-      throw new Error("User not authenticated");
-    }
-    return this.managementService.getEffectiveSubordinates(managerId);
+  /**
+   * GET /management/teams
+   * Get all teams managed by the current user
+   */
+  @Get('teams')
+  async getMyTeams(@CurrentUser() user: JwtPayload) {
+    return this.managementService.getMyTeams(user.sub, user.workspaceId);
   }
 
-  // Verificar se alguém é subordinado
-  @Get("subordinates/:userId/check")
-  async checkSubordinate(
-    @Request() req: any,
-    @Param("userId", ParseIntPipe) userId: number
+  /**
+   * GET /management/rules
+   * Get all management rules (admin only)
+   */
+  @Get('rules')
+  async getAllRules(
+    @CurrentUser() user: JwtPayload,
+    @Query('managerId') managerId?: string,
+    @Query('type', new ParseEnumPipe(ManagementRuleType, { optional: true }))
+    type?: ManagementRuleType,
   ) {
-    const managerId = req.user?.id;
-    if (!managerId) {
-      throw new Error("User not authenticated");
-    }
-    const isSubordinate = await this.managementService.isSubordinate(
+    return this.managementService.getAllRules(
+      user.workspaceId,
+      user.workspaceRole as any,
       managerId,
-      userId
+      type,
     );
-    return { isSubordinate };
   }
 
-  // Obter detalhes sobre por que alguém é subordinado
-  @Get("subordinates/:userId/source")
-  async getSubordinateSource(
-    @Request() req: any,
-    @Param("userId", ParseIntPipe) userId: number
-  ) {
-    const managerId = req.user?.id;
-    if (!managerId) {
-      throw new Error("User not authenticated");
-    }
-    return this.managementService.getSubordinateSource(managerId, userId);
+  /**
+   * POST /management/rules
+   * Create a new management rule (admin only)
+   */
+  @Post('rules')
+  async createRule(@CurrentUser() user: JwtPayload, @Body() createRuleDto: CreateRuleDto) {
+    return this.managementService.createRule(
+      user.workspaceId,
+      user.workspaceRole as any,
+      createRuleDto,
+    );
   }
 
-  // Obter dados completos do dashboard do manager
-  @Get("dashboard")
-  async getManagerDashboard(@Request() req: any) {
-    const managerId = req.user?.id;
-    if (!managerId) {
-      throw new Error("User not authenticated");
-    }
-    return this.managementService.getManagerDashboard(managerId);
+  /**
+   * DELETE /management/rules/:id
+   * Delete a management rule
+   */
+  @Delete('rules/:id')
+  async deleteRule(@CurrentUser() user: JwtPayload, @Param('id') ruleId: string) {
+    return this.managementService.deleteRule(
+      ruleId,
+      user.sub,
+      user.workspaceId,
+      user.workspaceRole as any,
+    );
   }
 
-  // Obter dados consolidados do dashboard + times do manager
-  @Get("dashboard/complete")
-  async getManagerDashboardComplete(@Request() req: any) {
-    const managerId = req.user?.id;
-    if (!managerId) {
-      throw new Error("User not authenticated");
-    }
-    return this.managementService.getManagerDashboardComplete(managerId);
-  }
-
-  // ============ ADMIN ENDPOINTS ============
-
-  // Admin: Criar regra para qualquer usuário
-  @Post("admin/rules")
-  @UseGuards(AdminGuard)
-  async adminCreateRule(
-    @Body() data: ManagementRuleDto & { managerId: number }
-  ) {
-    const { managerId, ...rule } = data;
-    return this.managementService.createRule(managerId, rule);
-  }
-
-  // Admin: Listar regras de qualquer usuário
-  @Get("admin/rules")
-  @UseGuards(AdminGuard)
-  async adminGetRules(@Query("managerId") managerId?: string) {
-    if (managerId) {
-      const managerIdNum = parseInt(managerId, 10);
-      if (isNaN(managerIdNum)) {
-        throw new BadRequestException("Invalid managerId parameter");
-      }
-      return this.managementService.getManagerRules(managerIdNum);
-    }
-    // Se não especificar managerId, retorna todas as regras do sistema
-    return this.managementService.getAllRules();
-  }
-
-  // Admin: Remover regra de qualquer usuário
-  @Delete("admin/rules/:id")
-  @UseGuards(AdminGuard)
-  async adminRemoveRule(@Param("id", ParseIntPipe) ruleId: number) {
-    return this.managementService.adminRemoveRule(ruleId);
-  }
-
-  // Admin: Listar subordinados de qualquer usuário
-  @Get("admin/subordinates")
-  @UseGuards(AdminGuard)
-  async adminGetSubordinates(
-    @Query("managerId", ParseIntPipe) managerId: number
-  ) {
-    return this.managementService.getEffectiveSubordinates(managerId);
-  }
-
-  // Admin: Obter dashboard de qualquer manager
-  @Get("admin/dashboard")
-  @UseGuards(AdminGuard)
-  async adminGetManagerDashboard(
-    @Query("managerId", ParseIntPipe) managerId: number
-  ) {
-    return this.managementService.getManagerDashboard(managerId);
+  /**
+   * GET /management/check/:userId
+   * Check if a user is managed by the current user
+   */
+  @Get('check/:userId')
+  async checkIfManaged(@CurrentUser() user: JwtPayload, @Param('userId') userId: string) {
+    const isManaged = await this.managementService.isUserManagedBy(
+      userId,
+      user.sub,
+      user.workspaceId,
+    );
+    return { isManaged };
   }
 }

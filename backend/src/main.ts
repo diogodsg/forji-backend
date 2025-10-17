@@ -1,78 +1,87 @@
-import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
-import type { NestExpressApplication } from "@nestjs/platform-express";
-import { AppModule } from "./app.module";
-import { BigIntSerializationInterceptor } from "./common/interceptors/bigint-serialization.interceptor";
-import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
-import { RequestContextMiddleware } from "./common/middleware/request-context.middleware";
-import { httpLogger, logger } from "./common/logger/pino";
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
+import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
-  const t0 = Date.now();
-  console.log("[BOOT] Creating Nest application instance...");
-  let created = false;
-  const watchdog = setTimeout(() => {
-    if (!created) {
-      // eslint-disable-next-line no-console
-      console.error(
-        "[BOOT][WATCHDOG] App creation still pending after 5000ms (possível deadlock em provider)."
-      );
-    }
-  }, 5000);
-  try {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-      logger: false,
-    });
-    created = true;
-    clearTimeout(watchdog);
-    console.log(`[BOOT] App created in ${Date.now() - t0}ms`);
-    app.use(httpLogger);
-    app.use(new RequestContextMiddleware().use);
-    const defaultOrigins = [
-      "https://forge.driva.io",
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-    ];
-    const envOrigins = process.env.CORS_ORIGINS
-      ? process.env.CORS_ORIGINS.split(",")
-          .map((o) => o.trim())
-          .filter(Boolean)
-      : [];
-    const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
-    app.enableCors({
-      origin: (origin, callback) => {
-        // Allow non-browser clients (no origin) and whitelisted domains
-        if (!origin || allowedOrigins.includes(origin)) {
-          return callback(null, true);
-        }
-        // eslint-disable-next-line no-console
-        console.warn(`[CORS] Origin not allowed: ${origin}`);
-        return callback(new Error("Not allowed by CORS"));
+  const app = await NestFactory.create(AppModule);
+
+  // Global exception filter
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // Global logging interceptor
+  app.useGlobalInterceptors(new LoggingInterceptor());
+
+  // Security headers with Swagger exception
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [`'self'`],
+          styleSrc: [`'self'`, `'unsafe-inline'`],
+          scriptSrc: [`'self'`, `'unsafe-inline'`, `'unsafe-eval'`],
+          imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
+        },
       },
-      credentials: true,
-    });
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-      })
-    );
-    console.log("[BOOT] Global pipes set");
-    app.useGlobalInterceptors(
-      new LoggingInterceptor(),
-      new BigIntSerializationInterceptor()
-    );
-    const port = process.env.PORT || 3000;
-    await app.listen(port);
-    logger.info({ port }, "API listening");
-  } catch (err: any) {
-    clearTimeout(watchdog);
-    // eslint-disable-next-line no-console
-    console.error("[BOOT] Erro ao criar aplicação:", err);
-    process.exit(1);
-  }
+    }),
+  );
+
+  // Enable CORS
+  app.enableCors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+  });
+
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  // Global prefix for all routes
+  app.setGlobalPrefix('api');
+
+  // Swagger/OpenAPI configuration
+  const config = new DocumentBuilder()
+    .setTitle('Forge API')
+    .setDescription('Backend API for Forge - Team Management & Gamification Platform')
+    .setVersion('1.0')
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('workspaces', 'Workspace management')
+    .addTag('users', 'User management')
+    .addTag('teams', 'Team management')
+    .addTag('management', 'Hierarchical management rules')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
+  const port = process.env.PORT || 8000;
+  await app.listen(port);
+
+  console.log(`🚀 Forge Backend running on: http://localhost:${port}`);
+  console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
 }
+
 bootstrap();

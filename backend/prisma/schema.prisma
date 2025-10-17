@@ -7,311 +7,191 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// WORKSPACES: Multi-tenant System
+// ============================================
+
+model Workspace {
+  id            String          @id @default(uuid()) @db.Uuid
+  name          String
+  slug          String          @unique
+  description   String?
+  avatarUrl     String?         @map("avatar_url")
+  status        WorkspaceStatus @default(ACTIVE)
+  
+  // Timestamps
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  deletedAt     DateTime?       @map("deleted_at")
+  
+  // Relations
+  members           WorkspaceMember[]
+  teams             Team[]
+  managementRules   ManagementRule[]
+  
+  @@index([slug])
+  @@index([status])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String        @map("user_id") @db.Uuid
+  workspaceId   String        @map("workspace_id") @db.Uuid
+  role          WorkspaceRole @default(MEMBER)
+  
+  // Timestamps
+  joinedAt      DateTime      @default(now()) @map("joined_at")
+  deletedAt     DateTime?     @map("deleted_at")
+  
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId, workspaceId], name: "unique_user_workspace")
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([role])
+  @@map("workspace_members")
+}
+
+enum WorkspaceStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum WorkspaceRole {
+  OWNER      // Criador do workspace, full access
+  ADMIN      // Admin do workspace
+  MEMBER     // Membro regular
+}
+
+// ============================================
+// CORE: Users & Authentication
+// ============================================
+
+model User {
+  id            String      @id @default(uuid()) @db.Uuid
+  email         String      @unique
+  password      String
+  name          String
+  position      String?
+  bio           String?
+  
+  // Timestamps
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  deletedAt     DateTime?   @map("deleted_at")
+  
+  // Relations - Workspaces
+  workspaceMemberships                  WorkspaceMember[]
+  
+  // Relations - Teams
+  teamMemberships                       TeamMember[]
+  
+  // Relations - Management
+  managementRulesAsManager              ManagementRule[] @relation("ManagerRules")
+  managementRulesAsSubordinate          ManagementRule[] @relation("SubordinateRules")
+  
+  @@map("users")
+}
+
+// ============================================
+// TEAMS: Organization Structure
+// ============================================
+
+model Team {
+  id              String      @id @default(uuid()) @db.Uuid
+  workspaceId     String      @map("workspace_id") @db.Uuid
+  name            String
+  description     String?
+  status          TeamStatus  @default(ACTIVE)
+  
+  // Timestamps
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  deletedAt       DateTime?   @map("deleted_at")
+  
+  // Relations
+  workspace         Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members           TeamMember[]
+  managementRules   ManagementRule[]
+  
+  // Constraints
+  @@unique([workspaceId, name], name: "unique_workspace_team_name")
+  @@index([workspaceId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @map("user_id") @db.Uuid
+  teamId      String      @map("team_id") @db.Uuid
+  role        TeamRole    @default(MEMBER)
+  
+  // Timestamps
+  joinedAt    DateTime    @default(now()) @map("joined_at")
+  deletedAt   DateTime?   @map("deleted_at")
+  
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team        Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId, teamId], name: "unique_user_team")
+  @@index([teamId])
+  @@index([userId])
+  @@index([role])
+  @@map("team_members")
+}
+
+enum TeamStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TeamRole {
+  MANAGER
+  MEMBER
+}
+
+// ============================================
+// MANAGEMENT: Hierarchy System
+// ============================================
+
 model ManagementRule {
-  id                                      BigInt             @id @default(autoincrement())
-  managerId                               BigInt
-  teamId                                  BigInt?
-  subordinateId                           BigInt?
-  createdAt                               DateTime           @default(now())
-  updatedAt                               DateTime           @updatedAt
-  ruleType                                ManagementRuleType
-  deleted_at                              DateTime?
-  User_ManagementRule_managerIdToUser     User               @relation("ManagementRule_managerIdToUser", fields: [managerId], references: [id], onDelete: Cascade)
-  User_ManagementRule_subordinateIdToUser User?              @relation("ManagementRule_subordinateIdToUser", fields: [subordinateId], references: [id], onDelete: Cascade)
-  Team                                    Team?              @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  @@unique([managerId, subordinateId, ruleType])
-  @@unique([managerId, teamId, ruleType])
+  id                String              @id @default(uuid()) @db.Uuid
+  workspaceId       String              @map("workspace_id") @db.Uuid
+  ruleType          ManagementRuleType  @map("rule_type")
+  managerId         String              @map("manager_id") @db.Uuid
+  teamId            String?             @map("team_id") @db.Uuid
+  subordinateId     String?             @map("subordinate_id") @db.Uuid
+  
+  // Timestamps
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  deletedAt         DateTime?           @map("deleted_at")
+  
+  // Relations
+  workspace         Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  manager           User                @relation("ManagerRules", fields: [managerId], references: [id], onDelete: Cascade)
+  subordinate       User?               @relation("SubordinateRules", fields: [subordinateId], references: [id], onDelete: Cascade)
+  team              Team?               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([workspaceId, managerId, subordinateId, ruleType], name: "unique_workspace_manager_subordinate_rule")
+  @@unique([workspaceId, managerId, teamId, ruleType], name: "unique_workspace_manager_team_rule")
+  @@index([workspaceId])
   @@index([managerId])
   @@index([subordinateId])
   @@index([teamId])
   @@index([ruleType])
-}
-
-model PdiPlan {
-  id           BigInt    @id @default(autoincrement())
-  userId       BigInt    @unique
-  competencies String[]
-  milestones   Json
-  krs          Json?
-  records      Json
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deleted_at   DateTime?
-  User         User      @relation(fields: [userId], references: [id])
-}
-
-model Team {
-  id             BigInt           @id @default(autoincrement())
-  name           String           @unique
-  description    String?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  deleted_at     DateTime?
-  ManagementRule ManagementRule[]
-  TeamMembership TeamMembership[]
-}
-
-model TeamMembership {
-  id         BigInt    @id @default(autoincrement())
-  teamId     BigInt
-  userId     BigInt
-  role       TeamRole  @default(MEMBER)
-  createdAt  DateTime  @default(now())
-  deleted_at DateTime?
-  Team       Team      @relation(fields: [teamId], references: [id])
-  User       User      @relation(fields: [userId], references: [id])
-
-  @@unique([teamId, userId])
-  @@index([teamId, role])
-  @@index([userId])
-}
-
-model User {
-  id                                                BigInt           @id @default(autoincrement())
-  email                                             String           @unique
-  password                                          String
-  name                                              String
-  createdAt                                         DateTime         @default(now())
-  updatedAt                                         DateTime         @updatedAt
-  isAdmin                                           Boolean          @default(false)
-  github_id                                         String?          @unique
-  bio                                               String?
-  position                                          String?
-  deleted_at                                        DateTime?
-  ManagementRule_ManagementRule_managerIdToUser     ManagementRule[] @relation("ManagementRule_managerIdToUser")
-  ManagementRule_ManagementRule_subordinateIdToUser ManagementRule[] @relation("ManagementRule_subordinateIdToUser")
-  PdiPlan                                           PdiPlan?
-  TeamMembership                                    TeamMembership[]
-  pull_requests                                     pull_requests[]
-  User_A                                            User[]           @relation("UserManagers")
-  User_B                                            User[]           @relation("UserManagers")
-  pdiCycles                                         PdiCycle[]
-  gamificationProfile                               GamificationProfile?
-  
-  // Gamification - Action System
-  actionSubmissions                                 ActionSubmission[] @relation("ActionSubmissionUser")
-  validatedSubmissions                              ActionSubmission[] @relation("ActionSubmissionValidator")
-  actionCooldowns                                   ActionCooldown[]
-  weeklyCaps                                        WeeklyCap[]
-}
-
-model file_changes {
-  sha           String         @id
-  filename      String?
-  status        String?
-  additions     BigInt?
-  deletions     BigInt?
-  changes       BigInt?
-  patch         String?
-  pr_id         BigInt?
-  deleted_at    DateTime?
-  pull_requests pull_requests? @relation(fields: [pr_id], references: [id])
-
-  @@index([pr_id])
-}
-
-model pull_requests {
-  id               BigInt         @id
-  number           BigInt?
-  node_id          String?
-  user             String?
-  title            String?
-  created_at       DateTime?
-  updated_at       DateTime?
-  closed_at        DateTime?
-  merged_at        DateTime?
-  body             String?
-  repo             String?
-  last_reviewed_at DateTime?
-  review_text      String?
-  total_additions  BigInt?
-  total_deletions  BigInt?
-  total_changes    BigInt?
-  ownerUserId      BigInt?
-  state            PrState?
-  deleted_at       DateTime?
-  file_changes     file_changes[]
-  User             User?          @relation(fields: [ownerUserId], references: [id])
-
-  @@index([ownerUserId], map: "pull_req_owner_user_id_idx")
-  @@index([repo], map: "pull_req_repo_idx")
-  @@index([state], map: "pull_req_state_idx")
-  @@index([title], map: "pull_req_title_idx")
-  @@index([user], map: "pull_req_user_idx")
-  @@index([created_at])
-  @@index([merged_at])
+  @@map("management_rules")
 }
 
 enum ManagementRuleType {
-  TEAM
   INDIVIDUAL
-}
-
-enum PrState {
-  open
-  closed
-  merged
-}
-
-enum TeamRole {
-  MEMBER
-  MANAGER
-}
-
-enum PdiCycleStatus {
-  PLANNED
-  ACTIVE
-  PAUSED
-  COMPLETED
-  ARCHIVED
-}
-
-enum ActionSubmissionStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  REQUIRES_EVIDENCE
-}
-
-model PdiCycle {
-  id           BigInt         @id @default(autoincrement())
-  userId       BigInt
-  title        String
-  description  String?
-  startDate    DateTime
-  endDate      DateTime
-  status       PdiCycleStatus @default(PLANNED)
-  competencies String[]
-  krs          Json?
-  milestones   Json
-  records      Json
-  progressMeta Json?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deleted_at   DateTime?
-  User         User           @relation(fields: [userId], references: [id])
-
-  @@index([userId, status])
-  @@index([startDate])
-  @@index([endDate])
-}
-
-// Gamificação - Perfil do jogador
-model GamificationProfile {
-  id               BigInt      @id @default(autoincrement())
-  userId           BigInt      @unique
-  totalXP          Int         @default(0)
-  weeklyXP         Int         @default(0)
-  lastActivityDate DateTime    @default(now())
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  User             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  badges           UserBadge[]
-  xpHistory        XpHistory[]
-
-  @@index([totalXP])
-  @@index([weeklyXP])
-}
-
-// Badges dos usuários
-model UserBadge {
-  id          BigInt               @id @default(autoincrement())
-  userId      BigInt
-  badgeId     String
-  name        String
-  description String
-  icon        String
-  rarity      String // 'common', 'rare', 'epic', 'legendary'
-  category    String
-  progress    Int?
-  maxProgress Int?
-  unlockedAt  DateTime             @default(now())
-  profile     GamificationProfile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@unique([userId, badgeId])
-  @@index([userId])
-  @@index([badgeId])
-  @@index([category])
-  @@index([rarity])
-}
-
-// Histórico de XP
-model XpHistory {
-  id          BigInt              @id @default(autoincrement())
-  userId      BigInt
-  action      String
-  points      Int
-  category    String
-  description String?
-  createdAt   DateTime            @default(now())
-  profile     GamificationProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([action])
-  @@index([category])
-  @@index([createdAt])
-}
-
-// Submissões de ações manuais
-model ActionSubmission {
-  id           BigInt   @id @default(autoincrement())
-  userId       BigInt
-  action       String   // meaningful_feedback_given, mentoring_session, etc.
-  points       Int
-  evidence     String?  // URL, texto, ou arquivo de evidência
-  rating       Float?   // Rating de 1-5 para validação
-  validatedBy  BigInt?  // ID do usuário que validou
-  status       ActionSubmissionStatus @default(PENDING)
-  metadata     Json?    // Dados específicos da ação (ex: quem recebeu feedback)
-  description  String?  // Descrição opcional da ação
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relacionamentos
-  user         User     @relation("ActionSubmissionUser", fields: [userId], references: [id], onDelete: Cascade)
-  validator    User?    @relation("ActionSubmissionValidator", fields: [validatedBy], references: [id])
-
-  @@index([userId])
-  @@index([action])
-  @@index([status])
-  @@index([createdAt])
-  @@index([validatedBy])
-}
-
-// Cooldowns para evitar spam de ações
-model ActionCooldown {
-  id             BigInt   @id @default(autoincrement())
-  userId         BigInt
-  action         String   // Tipo de ação em cooldown
-  lastSubmission DateTime
-  expiresAt      DateTime // Quando o cooldown expira
-  createdAt      DateTime @default(now())
-  
-  // Relacionamentos
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, action])
-  @@index([userId])
-  @@index([action])
-  @@index([expiresAt])
-}
-
-// Caps semanais para controle de XP
-model WeeklyCap {
-  id           BigInt   @id @default(autoincrement())
-  userId       BigInt
-  action       String   // Tipo de ação com cap
-  weekStart    DateTime // Início da semana (Monday)
-  count        Int      @default(0) // Quantas vezes a ação foi executada na semana
-  maxCount     Int      // Máximo permitido por semana
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relacionamentos
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, action, weekStart])
-  @@index([userId])
-  @@index([action])
-  @@index([weekStart])
+  TEAM
 }

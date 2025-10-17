@@ -114,12 +114,128 @@ export function getMockUserById(id: number): AdminUser | undefined {
 // Times e Regras de Gestão (mock)
 // ------------------------------
 
-const mockTeams = [
-  { id: 101, name: "Frontend" },
-  { id: 102, name: "Backend" },
-  { id: 103, name: "Produto" },
-  { id: 104, name: "QA" },
+import type { TeamSummary, TeamDetail, TeamMetrics } from "../types/team";
+
+export const mockTeams: TeamSummary[] = [
+  {
+    id: 101,
+    name: "Frontend",
+    description: "Equipe responsável pelo desenvolvimento da interface",
+    members: 5,
+    managers: 1,
+    createdAt: "2024-01-10T10:00:00Z",
+  },
+  {
+    id: 102,
+    name: "Backend",
+    description: "Equipe de desenvolvimento de APIs e serviços",
+    members: 4,
+    managers: 1,
+    createdAt: "2024-01-11T10:00:00Z",
+  },
+  {
+    id: 103,
+    name: "Produto",
+    description: "Equipe de gestão de produto e estratégia",
+    members: 3,
+    managers: 1,
+    createdAt: "2024-01-12T10:00:00Z",
+  },
+  {
+    id: 104,
+    name: "QA",
+    description: "Equipe de qualidade e testes",
+    members: 2,
+    managers: 0,
+    createdAt: "2024-01-13T10:00:00Z",
+  },
 ];
+
+export const mockTeamDetails: Record<number, TeamDetail> = {
+  101: {
+    id: 101,
+    name: "Frontend",
+    description: "Equipe responsável pelo desenvolvimento da interface",
+    memberships: [
+      {
+        user: {
+          id: 1,
+          name: "Diego Santos",
+          email: "diego@forge.com",
+        },
+        role: "MANAGER",
+      },
+      {
+        user: {
+          id: 3,
+          name: "Ana Silva",
+          email: "ana@forge.com",
+        },
+        role: "MEMBER",
+      },
+      {
+        user: {
+          id: 4,
+          name: "Carlos Oliveira",
+          email: "carlos@forge.com",
+        },
+        role: "MEMBER",
+      },
+    ],
+  },
+  102: {
+    id: 102,
+    name: "Backend",
+    description: "Equipe de desenvolvimento de APIs e serviços",
+    memberships: [
+      {
+        user: {
+          id: 1,
+          name: "Diego Santos",
+          email: "diego@forge.com",
+        },
+        role: "MANAGER",
+      },
+    ],
+  },
+  103: {
+    id: 103,
+    name: "Produto",
+    description: "Equipe de gestão de produto e estratégia",
+    memberships: [
+      {
+        user: {
+          id: 2,
+          name: "Maria da Silva Sauro",
+          email: "maria@forge.com",
+        },
+        role: "MANAGER",
+      },
+      {
+        user: {
+          id: 5,
+          name: "Paula Souza",
+          email: "paula@forge.com",
+        },
+        role: "MEMBER",
+      },
+    ],
+  },
+  104: {
+    id: 104,
+    name: "QA",
+    description: "Equipe de qualidade e testes",
+    memberships: [],
+  },
+};
+
+export const mockTeamMetrics: TeamMetrics = {
+  totalTeams: 4,
+  totalManagers: 3,
+  totalMembers: 6,
+  usersWithoutTeam: 3,
+  lastTeamCreatedAt: "2024-01-13T10:00:00Z",
+};
 
 // Regras por equipe pré-definidas
 const teamRulesByManager: Record<number, number[]> = {
@@ -177,6 +293,15 @@ export function getMockManagementRulesByManagerId(
   ];
 }
 
-export function getMockTeams() {
-  return mockTeams;
+export function getMockTeams(): TeamSummary[] {
+  return JSON.parse(JSON.stringify(mockTeams));
+}
+
+export function getMockTeamById(id: number): TeamDetail | undefined {
+  const team = mockTeamDetails[id];
+  return team ? JSON.parse(JSON.stringify(team)) : undefined;
+}
+
+export function getMockTeamMetrics(): TeamMetrics {
+  return JSON.parse(JSON.stringify(mockTeamMetrics));
 }

@@ -16,7 +16,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
   const [loading, setLoading] = useState(false);
 
   const inputBase =
-    "w-full px-3 py-2 rounded border border-surface-300 bg-white/90 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 transition text-sm";
+    "w-full px-3 py-2.5 rounded-lg border border-surface-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-150 text-sm placeholder:text-gray-400";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,21 +46,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className={`relative bg-white/80 backdrop-blur-sm border border-surface-300 rounded-xl shadow-sm p-8 flex flex-col gap-5 ${className}`}
+      className={`relative bg-white border border-surface-300 rounded-xl shadow-lg p-8 flex flex-col gap-5 ${className}`}
     >
-      <div className="space-y-1 text-center mb-2">
-        <h2 className="text-xl font-semibold">
+      <div className="space-y-1.5 text-center mb-2">
+        <h2 className="text-2xl font-bold text-gray-900">
           {mode === "login" ? "Entrar" : "Criar conta"}
         </h2>
-        <p className="text-xs text-gray-500">
-          {mode === "login"
-            ? "Entre com suas credenciais"
-            : "Registre para continuar"}
+        <p className="text-sm text-gray-500">
+          {mode === "login" ? "Acesse sua conta" : "Comece sua jornada"}
         </p>
       </div>
       {mode === "register" && (
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+        <div className="space-y-2">
+          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide">
             Nome
           </label>
           <input
@@ -68,13 +66,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
             className={inputBase}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Seu nome"
+            placeholder="Seu nome completo"
             aria-label="Nome"
           />
         </div>
       )}
-      <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+      <div className="space-y-2">
+        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide">
           Email
         </label>
         <input
@@ -87,8 +85,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
           aria-label="Email"
         />
       </div>
-      <div className="space-y-1">
-        <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+      <div className="space-y-2">
+        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide">
           Senha
         </label>
         <div className="relative">
@@ -103,7 +101,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
           <button
             type="button"
             onClick={() => setShowPassword((s) => !s)}
-            className="absolute inset-y-0 right-0 px-2 text-xs text-indigo-600 hover:text-indigo-700 focus:outline-none"
+            className="absolute inset-y-0 right-0 px-3 text-xs font-medium text-brand-600 hover:text-brand-700 focus:outline-none transition-colors"
             aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
           >
             {showPassword ? "Ocultar" : "Mostrar"}
@@ -112,7 +110,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
       </div>
       {error && (
         <div
-          className="text-red-600 text-[11px] font-medium bg-red-50 border border-red-200 rounded px-2 py-1"
+          className="text-error-700 text-xs font-medium bg-error-50 border border-error-200 rounded-lg px-3 py-2"
           role="alert"
         >
           {error}
@@ -121,7 +119,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
       <button
         type="submit"
         disabled={loading}
-        className="relative inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 hover:bg-indigo-700 transition text-white text-sm font-medium h-10 disabled:opacity-60 disabled:cursor-not-allowed shadow focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        className="relative inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 transition-all duration-150 text-white text-sm font-semibold h-11 disabled:opacity-60 disabled:cursor-not-allowed shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:ring-offset-2"
       >
         {loading && (
           <span className="w-4 h-4 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />
@@ -134,21 +132,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
           ? "Entrar"
           : "Registrar"}
       </button>
-      <div className="pt-2 text-[10px] text-gray-400 text-center space-y-2">
-        <div>
-          {mode === "login"
-            ? "Autenticação via API."
-            : "Registro cria usuário no banco."}
-        </div>
+      <div className="pt-3 text-center">
         <button
           type="button"
           onClick={() => {
             setMode((m) => (m === "login" ? "register" : "login"));
             setError("");
           }}
-          className="text-indigo-600 hover:text-indigo-700 text-[10px] font-medium"
+          className="text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors hover:underline"
         >
-          {mode === "login" ? "Criar conta" : "Já tenho conta"}
+          {mode === "login" ? "Criar uma conta" : "Já tenho conta"}
         </button>
       </div>
     </form>

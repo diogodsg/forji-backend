@@ -1,30 +1,37 @@
-// Core admin components currently in use
-export * from "./AccessDeniedPanel";
-export * from "./RequireAdminRoute";
+/**
+ * Admin Components - Organized by Domain
+ *
+ * Estrutura modular por responsabilidade:
+ * - layout/ - Componentes de layout e controle de acesso
+ * - user-management/ - Gerenciamento de usuários e subordinados
+ * - team-management/ - Gerenciamento de equipes
+ * - hierarchy/ - Visualização de hierarquia organizacional
+ * - modals/ - Modais genéricos
+ * - cards/ - Cards reutilizáveis
+ * - shared/ - Componentes compartilhados
+ * - onboarding/ - Sistema de onboarding modular
+ */
 
-// People management (WorkflowPeopleTab)
-export * from "./WorkflowPeopleTab";
-export * from "./ModernPersonCard";
-export * from "./OnboardingModal";
-export * from "./SimplifiedUsersTable";
-export * from "./EnhancedUsersToolbar";
-export * from "./AdminSubordinatesManagement";
-export * from "./AdminCreateRuleModal";
+// ===== Layout & Access Control =====
+export * from "./layout";
 
-// Teams management
-export * from "./TeamsManagement";
+// ===== User Management =====
+export * from "./user-management";
 
-// Organization management (OrganizationTab) - Legacy
-export * from "./OrganizationTab";
-export * from "./AdminTeamsToolbar";
-export * from "./AdminTeamsTable";
-export * from "./CreateTeamModal";
-export * from "./TeamDetailPanel";
-export * from "./TeamMetricsCards";
+// ===== Team Management =====
+export * from "./team-management";
 
-// Internal utilities (not exported)
-// - FormField (used internally by modals)
-// - ManagerPickerPopover (used internally)
-// - ManagerDrawer (used internally)
-// - ChangePasswordModal (used internally)
-// - QuickActions (used internally)
+// ===== Hierarchy =====
+export * from "./hierarchy";
+
+// ===== Modals =====
+export * from "./modals";
+
+// ===== Cards =====
+export * from "./cards";
+
+// ===== Shared Components =====
+export * from "./shared";
+
+// ===== Onboarding System =====
+export * from "./onboarding";

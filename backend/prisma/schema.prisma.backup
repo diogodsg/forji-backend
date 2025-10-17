@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CORE: Users & Authentication
+// ============================================
+
+model User {
+  id            String      @id @default(uuid()) @db.Uuid
+  email         String      @unique
+  password      String
+  name          String
+  position      String?
+  bio           String?
+  is_admin      Boolean     @default(false)
+  is_manager    Boolean     @default(false)
+  
+  // Timestamps
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+  deleted_at    DateTime?
+  
+  // Relations
+  team_memberships                      TeamMember[]
+  management_rules_as_manager           ManagementRule[] @relation("ManagerRules")
+  management_rules_as_subordinate       ManagementRule[] @relation("SubordinateRules")
+  
+  @@map("users")
+}
+
+// ============================================
+// TEAMS: Organization Structure
+// ============================================
+
+model Team {
+  id              String      @id @default(uuid()) @db.Uuid
+  name            String      @unique
+  description     String?
+  status          TeamStatus  @default(ACTIVE)
+  
+  // Timestamps
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  deleted_at      DateTime?
+  
+  // Relations
+  members           TeamMember[]
+  management_rules  ManagementRule[]
+  
+  @@map("teams")
+}
+
+model TeamMember {
+  id          String      @id @default(uuid()) @db.Uuid
+  user_id     String      @db.Uuid
+  team_id     String      @db.Uuid
+  role        TeamRole    @default(MEMBER)
+  
+  // Timestamps
+  joined_at   DateTime    @default(now())
+  deleted_at  DateTime?
+  
+  // Relations
+  user        User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  team        Team        @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([user_id, team_id], name: "unique_user_team")
+  @@index([team_id])
+  @@index([user_id])
+  @@index([role])
+  @@map("team_members")
+}
+
+enum TeamStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TeamRole {
+  MANAGER
+  MEMBER
+}
+
+// ============================================
+// MANAGEMENT: Hierarchy System
+// ============================================
+
+model ManagementRule {
+  id                String              @id @default(uuid()) @db.Uuid
+  rule_type         ManagementRuleType
+  manager_id        String              @db.Uuid
+  team_id           String?             @db.Uuid
+  subordinate_id    String?             @db.Uuid
+  
+  // Timestamps
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  deleted_at        DateTime?
+  
+  // Relations
+  manager           User                @relation("ManagerRules", fields: [manager_id], references: [id], onDelete: Cascade)
+  subordinate       User?               @relation("SubordinateRules", fields: [subordinate_id], references: [id], onDelete: Cascade)
+  team              Team?               @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([manager_id, subordinate_id, rule_type], name: "unique_manager_subordinate_rule")
+  @@unique([manager_id, team_id, rule_type], name: "unique_manager_team_rule")
+  @@index([manager_id])
+  @@index([subordinate_id])
+  @@index([team_id])
+  @@index([rule_type])
+  @@map("management_rules")
+}
+
+enum ManagementRuleType {
+  INDIVIDUAL
+  TEAM
+}

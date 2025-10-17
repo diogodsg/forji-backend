@@ -1,11 +1,10 @@
-import { Module, forwardRef } from "@nestjs/common";
-import { ManagementController } from "./management.controller";
-import { ManagementService } from "./management.service";
-import { AuthModule } from "src/auth/auth.module";
-import { PermissionsModule } from "../core/permissions/permissions.module";
+import { Module } from '@nestjs/common';
+import { ManagementController } from './management.controller';
+import { ManagementService } from './management.service';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [AuthModule, forwardRef(() => PermissionsModule)],
+  imports: [PrismaModule],
   controllers: [ManagementController],
   providers: [ManagementService],
   exports: [ManagementService],
