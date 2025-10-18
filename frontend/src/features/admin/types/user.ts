@@ -1,5 +1,5 @@
 export interface UserRow {
-  id: number;
+  id: string; // UUID
   email: string;
   name: string;
   isAdmin?: boolean;
@@ -7,6 +7,6 @@ export interface UserRow {
   bio?: string | null;
   createdAt: string;
   updatedAt: string;
-  managers: { id: number }[];
-  reports: { id: number }[];
+  managers: { id: string }[]; // UUID[]
+  reports: { id: string }[]; // UUID[]
 }

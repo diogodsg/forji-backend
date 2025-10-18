@@ -44,7 +44,7 @@ export function TeamsManagement() {
     setViewMode("edit");
   };
 
-  const handleDeleteTeam = async (teamId: number) => {
+  const handleDeleteTeam = async (teamId: string) => {
     try {
       await deleteTeam(teamId);
       refresh();
@@ -69,7 +69,7 @@ export function TeamsManagement() {
 
   // Se estiver no modo de criação, mostrar a tela de criação
   if (viewMode === "create") {
-    return <TeamCreateView onBack={handleBackToList} />;
+    return <TeamCreateView onBack={handleBackToList} onCreated={refresh} />;
   }
 
   // Vista principal da lista de equipes

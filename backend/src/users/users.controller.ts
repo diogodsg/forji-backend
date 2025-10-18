@@ -14,6 +14,7 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreateUserDto, UpdateUserDto, UpdatePasswordDto } from './dto';
+import { CreateUserOnboardingDto } from './dto/create-user-onboarding.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -51,6 +52,18 @@ export class UsersController {
   @Post()
   create(@Body() createUserDto: CreateUserDto, @CurrentUser() user: any) {
     return this.usersService.create(createUserDto, user.id);
+  }
+
+  /**
+   * POST /users/onboarding - Create new user with full onboarding setup
+   * Allows setting manager, team, and workspace role in a single request
+   */
+  @Post('onboarding')
+  createWithOnboarding(
+    @Body() createUserOnboardingDto: CreateUserOnboardingDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.usersService.createWithOnboarding(createUserOnboardingDto, user.id);
   }
 
   /**

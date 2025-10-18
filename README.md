@@ -4,27 +4,40 @@ Plataforma gamificada para desenvolvimento de times e evolução de Planos de De
 
 ## 🎯 **Status Atual do Projeto**
 
-**Versão:** v2.6.0 - Mock-First Architecture  
-**Última Atualização:** 16 de outubro de 2025
+**Versão:** v2.7.0 - Backend Integration Ready  
+**Última Atualização:** 17 de outubro de 2025
 
-### 🚀 Desenvolvimento Independente Habilitado
+### 🚀 Próxima Etapa: Integração Backend-Frontend
 
-O frontend agora opera 100% com mock data, permitindo desenvolvimento e testes sem dependência de backend:
+O projeto está pronto para integração completa entre backend e frontend:
 
-- **✅ Auth System**: Context API + Mock Data (5 usuários pré-configurados)
-- **✅ Admin System**: React Hooks + Mock Data (4 times mock, gestão completa)
-- **📚 Documentação**: 5 documentos técnicos completos (1000+ linhas)
-- **🎓 Padrões**: Arquitetura consistente e bem documentada
+- **✅ Backend**: NestJS + Prisma rodando (37 endpoints REST)
+- **✅ Frontend**: React com mock data (100% funcional)
+- **📋 Plano de Integração**: Documentação completa criada
+- **�️ Roadmap**: 8 fases definidas (~4-5 semanas)
+
+**📚 Documentos de Integração Completos:**
+
+- 📊 [**INTEGRATION_OVERVIEW.md**](./INTEGRATION_OVERVIEW.md) - Visão geral em tabelas
+- 📋 [**INTEGRATION_PLAN.md**](./INTEGRATION_PLAN.md) - Plano técnico completo (8 fases)
+- 🔧 [**INTEGRATION_EXAMPLES.md**](./INTEGRATION_EXAMPLES.md) - Código pronto (11 exemplos)
+- 🗺️ [**INTEGRATION_ROADMAP.md**](./INTEGRATION_ROADMAP.md) - Checklist visual (43 tarefas)
+- 🚀 [**INTEGRATION_QUICKSTART.md**](./INTEGRATION_QUICKSTART.md) - Guia de início rápido
+- 📊 [**INTEGRATION_EXECUTIVE_SUMMARY.md**](./INTEGRATION_EXECUTIVE_SUMMARY.md) - Para stakeholders
+- 🏗️ [**INTEGRATION_ARCHITECTURE.md**](./INTEGRATION_ARCHITECTURE.md) - Diagramas visuais
+- 📚 [**INTEGRATION_README.md**](./INTEGRATION_README.md) - Índice de documentação
+- 🔤 [**shared-types/index.ts**](./shared-types/index.ts) - Tipos TypeScript compartilhados
+
+**Total:** 8 documentos (~170 páginas) + tipos compartilhados
 
 **Quick Start para Desenvolvimento:**
 
 ```bash
-# Login como admin
+# Login como admin (mock)
 Email: diego@forge.com
 Senha: qualquer coisa
 
-# Todos os sistemas funcionam com mock data
-# Console logs informativos em todas as operações
+# Próximo passo: Implementar integração seguindo INTEGRATION_PLAN.md
 ```
 
 ## 🚨 **CHANGELOG RECENTE** - Outubro 2025
@@ -1519,6 +1532,50 @@ O Forge evoluiu de uma simples plataforma de PDI para uma **plataforma gamificad
 ---
 
 ## 📚 Documentação Técnica Detalhada
+
+### 🔗 Integração Backend-Frontend (v2.7.0)
+
+#### Plano de Integração Completo
+
+- **[INTEGRATION_PLAN.md](./INTEGRATION_PLAN.md)** - Plano detalhado de integração (8 fases)
+
+  - Setup inicial (API client + tipos)
+  - Auth integration (login, registro, sessão)
+  - Workspaces integration (CRUD + switch)
+  - Users integration (admin system)
+  - Teams integration (gestão completa)
+  - Management integration (hierarquia)
+  - Testing & error handling
+  - Production readiness
+
+- **[INTEGRATION_EXAMPLES.md](./INTEGRATION_EXAMPLES.md)** - Código pronto para implementação
+
+  - API client base completo (Axios + interceptors)
+  - Auth service refatorado (useAuth hook)
+  - Users service (CRUD + paginação)
+  - Teams service (CRUD + membros)
+  - Management service (regras hierárquicas)
+  - Toast notification system
+  - Error handling patterns
+
+- **[INTEGRATION_ROADMAP.md](./INTEGRATION_ROADMAP.md)** - Checklist visual e timeline
+
+  - Progresso por fase (0-100%)
+  - Checklist detalhado (43 tarefas)
+  - Timeline de 4-5 semanas
+  - Milestones e prioridades
+  - Critérios de sucesso
+
+- **[shared-types/index.ts](./shared-types/index.ts)** - Tipos TypeScript compartilhados
+  - Auth types (User, Login, Register)
+  - Workspace types (CRUD + Members)
+  - User types (CRUD + Stats)
+  - Team types (CRUD + Members)
+  - Management types (Rules + Hierarchy)
+  - Enum types (Roles, Status)
+
+**Timeline Estimado:** 4-5 semanas (19-27 dias úteis)  
+**Módulos:** Auth → Workspaces → Users → Teams → Management → Testing → Production
 
 ### 🏗️ Arquitetura & Padrões (v2.6.0)
 

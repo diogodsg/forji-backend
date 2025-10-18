@@ -3,10 +3,11 @@ import type { AuthUser } from "../types/auth";
 /**
  * Mock users para autenticação
  * Senha padrão para todos: "senha123"
+ * IDs agora são UUIDs (string) para compatibilidade com backend
  */
 export const mockAuthUsers: AuthUser[] = [
   {
-    id: 1,
+    id: "550e8400-e29b-41d4-a716-446655440001",
     name: "Diego Santos",
     email: "diego@forge.com",
     isAdmin: true,
@@ -17,7 +18,7 @@ export const mockAuthUsers: AuthUser[] = [
     updatedAt: "2024-01-15T10:00:00Z",
   },
   {
-    id: 2,
+    id: "550e8400-e29b-41d4-a716-446655440002",
     name: "Maria da Silva Sauro",
     email: "maria@forge.com",
     isAdmin: false,
@@ -28,7 +29,7 @@ export const mockAuthUsers: AuthUser[] = [
     updatedAt: "2024-01-16T10:00:00Z",
   },
   {
-    id: 3,
+    id: "550e8400-e29b-41d4-a716-446655440003",
     name: "Ana Silva",
     email: "ana@forge.com",
     isAdmin: false,
@@ -39,7 +40,7 @@ export const mockAuthUsers: AuthUser[] = [
     updatedAt: "2024-01-17T10:00:00Z",
   },
   {
-    id: 4,
+    id: "550e8400-e29b-41d4-a716-446655440004",
     name: "Carlos Oliveira",
     email: "carlos@forge.com",
     isAdmin: false,
@@ -50,7 +51,7 @@ export const mockAuthUsers: AuthUser[] = [
     updatedAt: "2024-01-18T10:00:00Z",
   },
   {
-    id: 5,
+    id: "550e8400-e29b-41d4-a716-446655440005",
     name: "Pedro Costa",
     email: "pedro@forge.com",
     isAdmin: false,
@@ -114,9 +115,13 @@ export function mockRegister(data: {
         return;
       }
 
-      // Criar novo usuário
+      // Criar novo usuário com UUID simulado
+      const newUserId = `550e8400-e29b-41d4-a716-${Date.now()
+        .toString()
+        .slice(-12)
+        .padStart(12, "0")}`;
       const newUser: AuthUser = {
-        id: Math.max(...mockAuthUsers.map((u) => u.id)) + 1,
+        id: newUserId,
         name: data.name,
         email: data.email,
         isAdmin: false,
@@ -146,13 +151,17 @@ export function mockGetUserByToken(token: string): AuthUser | null {
     return null;
   }
 
-  // Extrair ID do token
-  const parts = token.split("_");
-  const userId = parseInt(parts[2], 10);
+  // Extrair UUID do token (formato: mock_token_UUID_timestamp)
+  // Remove o prefixo "mock_token_"
+  const withoutPrefix = token.substring("mock_token_".length);
 
-  if (isNaN(userId)) {
+  // Divide pela última ocorrência de "_" para separar UUID do timestamp
+  const lastUnderscoreIndex = withoutPrefix.lastIndexOf("_");
+  if (lastUnderscoreIndex === -1) {
     return null;
   }
+
+  const userId = withoutPrefix.substring(0, lastUnderscoreIndex);
 
   return mockAuthUsers.find((u) => u.id === userId) || null;
 }

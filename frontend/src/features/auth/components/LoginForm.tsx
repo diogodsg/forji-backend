@@ -25,7 +25,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
       !password.trim() ||
       (mode === "register" && !name.trim())
     ) {
-      setError("Preencha os campos.");
+      setError("Preencha todos os campos obrigatórios.");
       return;
     }
     setError("");
@@ -33,11 +33,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
     try {
       if (mode === "login") {
         await login(email.trim(), password);
+        // O redirect acontece automaticamente quando user muda no AuthContext
       } else {
         await register({ name: name.trim(), email: email.trim(), password });
+        // O redirect acontece automaticamente quando user muda no AuthContext
       }
     } catch (err: any) {
-      setError(err.message || "Erro");
+      // Capturar e exibir mensagem de erro
+      const errorMessage =
+        err?.message ||
+        err?.toString() ||
+        "Erro ao autenticar. Verifique suas credenciais.";
+      setError(errorMessage);
+      console.error("Erro no login/registro:", err);
     } finally {
       setLoading(false);
     }

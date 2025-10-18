@@ -3,8 +3,8 @@ import type { AdminUser } from "../../types";
 
 interface UserSelectionStepProps {
   users: AdminUser[];
-  selectedUsers: number[];
-  onToggleUser: (userId: number) => void;
+  selectedUsers: string[]; // UUID[]
+  onToggleUser: (userId: string) => void; // UUID
 }
 
 export function UserSelectionStep({

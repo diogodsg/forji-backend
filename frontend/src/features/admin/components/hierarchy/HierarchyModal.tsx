@@ -40,7 +40,8 @@ export function HierarchyModal({
     state.setError(null);
   };
 
-  const handleRemoveRule = async (ruleId: number) => {
+  const handleRemoveRule = async (ruleId: string) => {
+    // UUID
     try {
       await removeRule(ruleId);
       state.setConfirmDelete(null);
@@ -59,18 +60,20 @@ export function HierarchyModal({
       if (state.ruleType === "TEAM") {
         for (const teamId of state.selectedTeamIds) {
           const rule: CreateManagementRuleDto = {
-            ruleType: "TEAM",
+            type: "TEAM", // Backend usa 'type'
+            managerId: userId, // Manager que terá o subordinado
             teamId,
           };
-          promises.push(createRule(rule, userId));
+          promises.push(createRule(rule, userId)); // userId é o targetManagerId
         }
       } else {
         for (const subordinateId of state.selectedPersonIds) {
           const rule: CreateManagementRuleDto = {
-            ruleType: "INDIVIDUAL",
+            type: "INDIVIDUAL", // Backend usa 'type'
+            managerId: userId, // Manager que terá o subordinado
             subordinateId,
           };
-          promises.push(createRule(rule, subordinateId));
+          promises.push(createRule(rule, userId)); // userId é o targetManagerId, não subordinateId
         }
       }
 
@@ -84,7 +87,7 @@ export function HierarchyModal({
     }
   };
 
-  const handleToggleTeam = (teamId: number) => {
+  const handleToggleTeam = (teamId: string) => {
     if (state.selectedTeamIds.includes(teamId)) {
       state.setSelectedTeamIds(
         state.selectedTeamIds.filter((id) => id !== teamId)
@@ -94,7 +97,7 @@ export function HierarchyModal({
     }
   };
 
-  const handleTogglePerson = (userId: number) => {
+  const handleTogglePerson = (userId: string) => {
     if (state.selectedPersonIds.includes(userId)) {
       state.setSelectedPersonIds(
         state.selectedPersonIds.filter((id) => id !== userId)

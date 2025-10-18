@@ -7,9 +7,9 @@ interface TeamMembersListProps {
   managers: TeamMembership[];
   members: TeamMembership[];
   onAddMember: () => void;
-  onPromoteMember: (userId: number) => void;
-  onRemoveMember: (userId: number) => void;
-  onChangeRole: (userId: number) => void;
+  onPromoteMember: (userId: string) => void;
+  onRemoveMember: (userId: string) => void;
+  onChangeRole: (userId: string) => void;
 }
 
 export function TeamMembersList({

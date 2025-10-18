@@ -3,19 +3,19 @@ import type { ManagementRuleType } from "@/features/management/types";
 
 interface UseHierarchyStateProps {
   isOpen: boolean;
-  userId: number;
+  userId: string; // UUID
 }
 
 export function useHierarchyState({ isOpen }: UseHierarchyStateProps) {
   const [step, setStep] = useState<"list" | "add">("list");
   const [ruleType, setRuleType] = useState<ManagementRuleType>("INDIVIDUAL");
-  const [selectedTeamIds, setSelectedTeamIds] = useState<number[]>([]);
-  const [selectedPersonIds, setSelectedPersonIds] = useState<number[]>([]);
+  const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]); // UUID[]
+  const [selectedPersonIds, setSelectedPersonIds] = useState<string[]>([]); // UUID[]
   const [teamSearch, setTeamSearch] = useState("");
   const [personSearch, setPersonSearch] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null); // UUID
 
   // Reset states when modal closes/opens
   useEffect(() => {

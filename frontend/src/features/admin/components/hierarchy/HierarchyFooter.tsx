@@ -5,8 +5,8 @@ interface HierarchyFooterProps {
   step: HierarchyStep;
   rulesCount: number;
   ruleType: "INDIVIDUAL" | "TEAM";
-  selectedTeamIds: number[];
-  selectedPersonIds: number[];
+  selectedTeamIds: string[]; // UUID[]
+  selectedPersonIds: string[]; // UUID[]
   creating: boolean;
   onBack: () => void;
   onSubmit: () => void;

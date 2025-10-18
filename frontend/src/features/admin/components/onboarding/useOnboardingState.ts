@@ -2,9 +2,9 @@ import { useState, useMemo } from "react";
 import type { AdminUser } from "../../types";
 import type { OnboardingStep, NewUserData, Assignments } from "./types";
 
-export function useOnboardingState(users: AdminUser[]) {
+export function useOnboardingState(users: AdminUser[], allUsers: AdminUser[]) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]); // UUID[]
   const [assignments, setAssignments] = useState<Assignments>({});
   const [newUserData, setNewUserData] = useState<NewUserData>({
     name: "",
@@ -15,10 +15,9 @@ export function useOnboardingState(users: AdminUser[]) {
 
   const isCreatingNewUser = users.length === 0;
 
-  const allManagers = useMemo(
-    () => users.filter((user) => user.isAdmin || user.reports?.length),
-    [users]
-  );
+  // Todos os usuários do sistema podem ser gerentes
+  // (não precisa já ter subordinados para ser gerente)
+  const allManagers = useMemo(() => allUsers, [allUsers]);
 
   const steps: OnboardingStep[] = useMemo(
     () =>
@@ -80,7 +79,8 @@ export function useOnboardingState(users: AdminUser[]) {
     [isCreatingNewUser, newUserData, selectedUsers, assignments, allManagers]
   );
 
-  const handleUserToggle = (userId: number) => {
+  const handleUserToggle = (userId: string) => {
+    // UUID
     setSelectedUsers((prev) =>
       prev.includes(userId)
         ? prev.filter((id) => id !== userId)
@@ -89,17 +89,30 @@ export function useOnboardingState(users: AdminUser[]) {
   };
 
   const handleAssignment = (
-    userId: number | string,
+    userId: string, // UUID
     field: "manager" | "team",
-    value: string | number
+    value: string // UUID or name for display
   ) => {
-    setAssignments((prev) => ({
-      ...prev,
-      [userId]: {
-        ...prev[userId],
-        [field]: value,
-      },
-    }));
+    setAssignments((prev) => {
+      const updated = { ...prev[userId] };
+
+      if (field === "manager") {
+        // value is manager name for display
+        updated.manager = value;
+        // Find manager ID from users list
+        const manager = users.find((u) => u.name === value);
+        updated.managerId = manager?.id;
+      } else if (field === "team") {
+        // value is team ID (UUID)
+        updated.teamId = value;
+        updated.team = value; // Or we could look up the team name
+      }
+
+      return {
+        ...prev,
+        [userId]: updated,
+      };
+    });
   };
 
   const updateNewUserData = (data: Partial<NewUserData>) => {

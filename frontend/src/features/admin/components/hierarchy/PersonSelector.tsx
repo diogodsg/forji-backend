@@ -3,10 +3,10 @@ import type { User } from "./types";
 
 interface PersonSelectorProps {
   users: User[];
-  selectedPersonIds: number[];
+  selectedPersonIds: string[]; // UUID[]
   searchValue: string;
   onSearchChange: (value: string) => void;
-  onTogglePerson: (userId: number) => void;
+  onTogglePerson: (userId: string) => void; // UUID
 }
 
 export function PersonSelector({

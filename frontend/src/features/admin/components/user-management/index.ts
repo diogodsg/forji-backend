@@ -4,7 +4,7 @@
  * Componentes para gerenciamento de usuários e subordinados
  */
 
-export { AdminSubordinatesManagement } from "./AdminSubordinatesManagement";
+// AdminSubordinatesManagement foi removido - funcionalidade agora está no WorkflowPeopleTab
 export { EnhancedUsersToolbar } from "./EnhancedUsersToolbar";
 export { SimplifiedUsersTable } from "./SimplifiedUsersTable";
 export { WorkflowPeopleTab } from "./WorkflowPeopleTab";

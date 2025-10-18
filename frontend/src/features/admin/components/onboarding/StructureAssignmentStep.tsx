@@ -1,18 +1,20 @@
 import { AlertCircle, User, Users, Building2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { teamsApi, type Team } from "@/lib/api/endpoints/teams";
 import type { AdminUser } from "../../types";
 import type { Assignments, NewUserData } from "./types";
 
 interface StructureAssignmentStepProps {
   isCreatingNewUser: boolean;
   newUserData?: NewUserData;
-  selectedUsers: number[];
+  selectedUsers: string[]; // UUID[]
   users: AdminUser[];
   allManagers: AdminUser[];
   assignments: Assignments;
   onAssignment: (
-    userId: number | string,
+    userId: string, // UUID
     field: "manager" | "team",
-    value: string | number
+    value: string // UUID
   ) => void;
 }
 
@@ -25,6 +27,24 @@ export function StructureAssignmentStep({
   assignments,
   onAssignment,
 }: StructureAssignmentStepProps) {
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(true);
+
+  // Carregar equipes do backend
+  useEffect(() => {
+    async function fetchTeams() {
+      try {
+        const teamsList = await teamsApi.findAll({ includeMemberCount: false });
+        setTeams(teamsList);
+      } catch (err) {
+        console.error("Erro ao carregar equipes:", err);
+      } finally {
+        setLoadingTeams(false);
+      }
+    }
+    fetchTeams();
+  }, []);
+
   return (
     <div>
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
@@ -38,6 +58,8 @@ export function StructureAssignmentStep({
             email={newUserData.email}
             userId="new"
             allManagers={allManagers}
+            teams={teams}
+            loadingTeams={loadingTeams}
             assignments={assignments}
             onAssignment={onAssignment}
           />
@@ -52,6 +74,8 @@ export function StructureAssignmentStep({
                 email={user.email}
                 userId={userId}
                 allManagers={allManagers.filter((m) => m.id !== userId)}
+                teams={teams}
+                loadingTeams={loadingTeams}
                 assignments={assignments}
                 onAssignment={onAssignment}
               />
@@ -66,13 +90,15 @@ export function StructureAssignmentStep({
 interface AssignmentCardProps {
   name: string;
   email: string;
-  userId: number | string;
+  userId: string; // UUID
   allManagers: AdminUser[];
+  teams: Team[];
+  loadingTeams: boolean;
   assignments: Assignments;
   onAssignment: (
-    userId: number | string,
+    userId: string, // UUID
     field: "manager" | "team",
-    value: string | number
+    value: string // UUID
   ) => void;
 }
 
@@ -81,6 +107,8 @@ function AssignmentCard({
   email,
   userId,
   allManagers,
+  teams,
+  loadingTeams,
   assignments,
   onAssignment,
 }: AssignmentCardProps) {
@@ -110,10 +138,12 @@ function AssignmentCard({
           </label>
           {hasManagers ? (
             <select
-              value={assignments[userId]?.manager || ""}
-              onChange={(e) =>
-                onAssignment(userId, "manager", parseInt(e.target.value))
+              value={
+                assignments[userId]?.managerId ||
+                assignments[userId]?.manager ||
+                ""
               }
+              onChange={(e) => onAssignment(userId, "manager", e.target.value)}
               className="w-full px-3 py-2.5 rounded-lg border border-surface-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-500 text-sm transition-all duration-200 hover:border-brand-300"
             >
               <option value="">Selecionar gerente...</option>
@@ -136,18 +166,31 @@ function AssignmentCard({
             <Building2 className="w-4 h-4 text-brand-600" />
             Equipe <span className="text-gray-500 font-normal">(opcional)</span>
           </label>
-          <select
-            value={assignments[userId]?.team || ""}
-            onChange={(e) => onAssignment(userId, "team", e.target.value)}
-            className="w-full px-3 py-2.5 rounded-lg border border-surface-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-500 text-sm transition-all duration-200 hover:border-brand-300"
-          >
-            <option value="">Selecionar equipe...</option>
-            <option value="desenvolvimento">Desenvolvimento</option>
-            <option value="produto">Produto</option>
-            <option value="marketing">Marketing</option>
-            <option value="vendas">Vendas</option>
-            <option value="suporte">Suporte</option>
-          </select>
+          {loadingTeams ? (
+            <div className="w-full px-3 py-2.5 rounded-lg border border-surface-300 bg-surface-50 text-sm text-gray-500">
+              Carregando equipes...
+            </div>
+          ) : teams.length > 0 ? (
+            <select
+              value={
+                assignments[userId]?.teamId || assignments[userId]?.team || ""
+              }
+              onChange={(e) => onAssignment(userId, "team", e.target.value)}
+              className="w-full px-3 py-2.5 rounded-lg border border-surface-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-500 text-sm transition-all duration-200 hover:border-brand-300"
+            >
+              <option value="">Selecionar equipe...</option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="w-full px-3 py-2.5 rounded-lg border border-warning-200 bg-warning-50 text-sm text-warning-700 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>Nenhuma equipe disponível no sistema</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

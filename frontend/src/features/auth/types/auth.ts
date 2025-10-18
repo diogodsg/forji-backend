@@ -1,5 +1,5 @@
 export interface AuthUser {
-  id: number;
+  id: string; // UUID do backend (Prisma)
   email: string;
   name: string;
   createdAt: string;
@@ -19,6 +19,7 @@ export interface AuthContextValue {
     name: string;
     email: string;
     password: string;
+    workspaceName?: string; // Backend exige, mas usamos valor padrão se não fornecido
   }) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;

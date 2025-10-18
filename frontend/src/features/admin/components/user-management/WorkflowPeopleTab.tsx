@@ -5,15 +5,14 @@ import { EnhancedUsersToolbar } from "./EnhancedUsersToolbar";
 import { HierarchyModal } from "@/features/admin/components/hierarchy";
 import { ModernPersonCard } from "@/features/admin/components/cards";
 import type { AdminUser } from "@/features/admin/types";
-import { getMockUsers } from "@/features/admin/data/mockData";
 
 export function WorkflowPeopleTab() {
-  // Temporariamente usando dados mock
-  const mockUsers = getMockUsers();
-  const { error, removeUser: deleteUser, changePassword } = useAdminUsers();
-
-  // FORÇANDO uso dos dados mock para desenvolvimento
-  const users = mockUsers;
+  const {
+    users,
+    error,
+    removeUser: deleteUser,
+    changePassword,
+  } = useAdminUsers();
 
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [onboardingUsers, setOnboardingUsers] = useState<AdminUser[]>([]);
@@ -58,9 +57,9 @@ export function WorkflowPeopleTab() {
   });
 
   // Debug: verificar dados
-  console.log("Mock users count:", mockUsers.length);
+  console.log("Users count:", users.length);
   console.log("Filtered users count:", filteredUsers.length);
-  console.log("First mock user:", mockUsers[0]);
+  console.log("First user:", users[0]);
 
   return (
     <div className="space-y-6">
@@ -163,6 +162,7 @@ export function WorkflowPeopleTab() {
         isOpen={showOnboardingModal}
         onClose={() => setShowOnboardingModal(false)}
         users={onboardingUsers}
+        allUsers={users}
       />
 
       {/* Modal de Hierarquias - Novo Modal Limpo */}

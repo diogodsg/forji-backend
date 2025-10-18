@@ -22,7 +22,7 @@ export const managementApi = {
   },
 
   // Remover uma regra
-  async removeRule(ruleId: number): Promise<void> {
+  async removeRule(ruleId: string): Promise<void> {
     await api(`/management/rules/${ruleId}`, {
       method: "DELETE",
       auth: true,
@@ -35,7 +35,7 @@ export const managementApi = {
   },
 
   // Verificar se alguém é subordinado
-  async checkSubordinate(userId: number): Promise<{ isSubordinate: boolean }> {
+  async checkSubordinate(userId: string): Promise<{ isSubordinate: boolean }> {
     return api<{ isSubordinate: boolean }>(
       `/management/subordinates/${userId}/check`,
       { auth: true }
@@ -43,7 +43,7 @@ export const managementApi = {
   },
 
   // Obter detalhes sobre por que alguém é subordinado
-  async getSubordinateSource(userId: number): Promise<any[]> {
+  async getSubordinateSource(userId: string): Promise<any[]> {
     return api<any[]>(`/management/subordinates/${userId}/source`, {
       auth: true,
     });
@@ -53,37 +53,40 @@ export const managementApi = {
 
   // Admin: Criar regra para qualquer usuário
   async adminCreateRule(
-    managerId: number,
+    managerId: string,
     rule: CreateManagementRuleDto
   ): Promise<ManagementRule> {
-    return api<ManagementRule>("/management/admin/rules", {
+    // Se managerId já está no rule, use-o; caso contrário, use o parâmetro
+    const finalRule = rule.managerId ? rule : { ...rule, managerId };
+
+    return api<ManagementRule>("/management/rules", {
       method: "POST",
-      body: JSON.stringify({ ...rule, managerId }),
+      body: JSON.stringify(finalRule),
       headers: { "Content-Type": "application/json" },
       auth: true,
     });
   },
 
   // Admin: Listar regras de qualquer usuário ou todas as regras
-  async adminGetRules(managerId?: number): Promise<ManagementRule[]> {
+  async adminGetRules(managerId?: string): Promise<ManagementRule[]> {
     const params = managerId ? `?managerId=${managerId}` : "";
-    return api<ManagementRule[]>(`/management/admin/rules${params}`, {
+    return api<ManagementRule[]>(`/management/rules${params}`, {
       auth: true,
     });
   },
 
   // Admin: Remover qualquer regra
-  async adminRemoveRule(ruleId: number): Promise<void> {
-    await api(`/management/admin/rules/${ruleId}`, {
+  async adminRemoveRule(ruleId: string): Promise<void> {
+    await api(`/management/rules/${ruleId}`, {
       method: "DELETE",
       auth: true,
     });
   },
 
   // Admin: Listar subordinados de qualquer usuário
-  async adminGetSubordinates(managerId: number): Promise<SubordinateInfo[]> {
+  async adminGetSubordinates(managerId: string): Promise<SubordinateInfo[]> {
     return api<SubordinateInfo[]>(
-      `/management/admin/subordinates?managerId=${managerId}`,
+      `/management/subordinates?managerId=${managerId}`,
       { auth: true }
     );
   },

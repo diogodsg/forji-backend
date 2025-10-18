@@ -23,31 +23,54 @@ export function UserFormStep({ userData, onUpdate }: UserFormStepProps) {
       </div>
 
       <div className="space-y-5">
-        {/* Nome */}
-        <div>
-          <label
-            htmlFor="user-name"
-            className="flex items-center gap-2 text-sm font-medium text-gray-800 mb-2"
-          >
-            <UserIcon className="w-4 h-4 text-brand-600" />
-            Nome completo <span className="text-error-500">*</span>
-          </label>
-          <input
-            id="user-name"
-            type="text"
-            value={userData.name}
-            onChange={(e) => onUpdate({ name: e.target.value })}
-            className={`w-full px-3 py-2.5 rounded-lg border bg-white focus:outline-none focus:ring-2 text-sm transition-all duration-200 ${
-              userData.name && !isNameValid
-                ? "border-error-300 focus:ring-error-400 focus:border-error-500"
-                : "border-surface-300 focus:ring-brand-400 focus:border-brand-500"
-            }`}
-            placeholder="Ex: Maria da Silva"
-            required
-          />
-          {userData.name && !isNameValid && (
-            <p className="mt-1 text-xs text-error-600">Nome é obrigatório</p>
-          )}
+        {/* Nome e Cargo - mesma linha */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Nome */}
+          <div>
+            <label
+              htmlFor="user-name"
+              className="flex items-center gap-2 text-sm font-medium text-gray-800 mb-2"
+            >
+              <UserIcon className="w-4 h-4 text-brand-600" />
+              Nome completo <span className="text-error-500">*</span>
+            </label>
+            <input
+              id="user-name"
+              type="text"
+              value={userData.name}
+              onChange={(e) => onUpdate({ name: e.target.value })}
+              className={`w-full px-3 py-2.5 rounded-lg border bg-white focus:outline-none focus:ring-2 text-sm transition-all duration-200 ${
+                userData.name && !isNameValid
+                  ? "border-error-300 focus:ring-error-400 focus:border-error-500"
+                  : "border-surface-300 focus:ring-brand-400 focus:border-brand-500"
+              }`}
+              placeholder="Ex: Maria da Silva"
+              required
+            />
+            {userData.name && !isNameValid && (
+              <p className="mt-1 text-xs text-error-600">Nome é obrigatório</p>
+            )}
+          </div>
+
+          {/* Cargo */}
+          <div>
+            <label
+              htmlFor="user-position"
+              className="flex items-center gap-2 text-sm font-medium text-gray-800 mb-2"
+            >
+              <Briefcase className="w-4 h-4 text-brand-600" />
+              Cargo{" "}
+              <span className="text-gray-500 font-normal">(opcional)</span>
+            </label>
+            <input
+              id="user-position"
+              type="text"
+              value={userData.position || ""}
+              onChange={(e) => onUpdate({ position: e.target.value })}
+              className="w-full px-3 py-2.5 rounded-lg border border-surface-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-500 text-sm transition-all duration-200"
+              placeholder="Ex: Desenvolvedora Frontend"
+            />
+          </div>
         </div>
 
         {/* Email */}
@@ -75,25 +98,6 @@ export function UserFormStep({ userData, onUpdate }: UserFormStepProps) {
           {userData.email && !isEmailValid && (
             <p className="mt-1 text-xs text-error-600">Email deve conter @</p>
           )}
-        </div>
-
-        {/* Cargo */}
-        <div>
-          <label
-            htmlFor="user-position"
-            className="flex items-center gap-2 text-sm font-medium text-gray-800 mb-2"
-          >
-            <Briefcase className="w-4 h-4 text-brand-600" />
-            Cargo <span className="text-gray-500 font-normal">(opcional)</span>
-          </label>
-          <input
-            id="user-position"
-            type="text"
-            value={userData.position || ""}
-            onChange={(e) => onUpdate({ position: e.target.value })}
-            className="w-full px-3 py-2.5 rounded-lg border border-surface-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-500 text-sm transition-all duration-200"
-            placeholder="Ex: Desenvolvedora Frontend"
-          />
         </div>
 
         {/* Admin Checkbox */}

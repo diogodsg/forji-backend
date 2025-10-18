@@ -1,7 +1,10 @@
 import { createPortal } from "react-dom";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import type { OnboardingModalProps } from "./types";
 import { useOnboardingState } from "./useOnboardingState";
+import { usersApi } from "@/lib/api/endpoints/users";
+import { useToast } from "@/components/Toast";
+import { extractErrorMessage } from "@/lib/api";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { ProgressSteps } from "./ProgressSteps";
 import { UserFormStep } from "./UserFormStep";
@@ -14,7 +17,11 @@ export function OnboardingModal({
   isOpen,
   onClose,
   users,
+  allUsers,
 }: OnboardingModalProps) {
+  const toast = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     currentStep,
     selectedUsers,
@@ -28,7 +35,7 @@ export function OnboardingModal({
     updateNewUserData,
     nextStep,
     prevStep,
-  } = useOnboardingState(users);
+  } = useOnboardingState(users, allUsers);
 
   // Handle ESC key press
   useEffect(() => {
@@ -64,15 +71,73 @@ export function OnboardingModal({
     [onClose]
   );
 
-  const handleConfirm = useCallback(() => {
-    console.log("Onboarding completed:", {
-      selectedUsers,
-      assignments,
-      newUserData: isCreatingNewUser ? newUserData : undefined,
-    });
-    onClose();
-    // TODO: Chamar API para aplicar as mudanças
-  }, [selectedUsers, assignments, newUserData, isCreatingNewUser, onClose]);
+  const handleConfirm = useCallback(async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      if (isCreatingNewUser) {
+        // Obter dados do assignment para o novo usuário (se houver)
+        const userId = "new-user"; // Placeholder temporário
+        const assignment = assignments[userId];
+
+        // Criar novo usuário via API de onboarding
+        const result = await usersApi.createWithOnboarding({
+          name: newUserData.name,
+          email: newUserData.email,
+          position: newUserData.position,
+          workspaceRole: newUserData.isAdmin ? "ADMIN" : "MEMBER",
+          managerId: assignment?.managerId || undefined,
+          teamId: assignment?.teamId || undefined,
+        });
+
+        console.log("✅ Usuário criado:", result);
+
+        // Mostrar senha gerada se houver
+        if (result.generatedPassword) {
+          toast.success(
+            `Usuário criado! Senha gerada: ${result.generatedPassword}`,
+            "Guarde esta senha",
+            10000 // 10 segundos
+          );
+        } else {
+          toast.success(
+            `Usuário "${result.name}" criado com sucesso!`,
+            "Onboarding concluído"
+          );
+        }
+      } else {
+        // Aplicar assignments para usuários selecionados
+        console.log("Assignments a aplicar:", {
+          selectedUsers,
+          assignments,
+        });
+
+        toast.info(
+          "Funcionalidade de bulk assignments em desenvolvimento",
+          "Aguarde"
+        );
+
+        // TODO: Implementar bulk assignments via API
+      }
+
+      onClose();
+    } catch (err) {
+      console.error("Erro no onboarding:", err);
+      const message = extractErrorMessage(err);
+      toast.error(message, "Erro ao criar usuário");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [
+    isSubmitting,
+    isCreatingNewUser,
+    newUserData,
+    selectedUsers,
+    assignments,
+    toast,
+    onClose,
+  ]);
 
   if (!isOpen) return null;
 
@@ -144,6 +209,7 @@ export function OnboardingModal({
           currentStep={currentStep}
           steps={steps}
           isCreatingNewUser={isCreatingNewUser}
+          isSubmitting={isSubmitting}
           onBack={prevStep}
           onNext={nextStep}
           onConfirm={handleConfirm}

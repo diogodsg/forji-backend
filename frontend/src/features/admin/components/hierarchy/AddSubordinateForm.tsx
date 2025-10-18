@@ -9,14 +9,14 @@ interface AddSubordinateFormProps {
   onRuleTypeChange: (type: ManagementRuleType) => void;
   teams: Team[];
   users: User[];
-  selectedTeamIds: number[];
-  selectedPersonIds: number[];
+  selectedTeamIds: string[]; // UUID[]
+  selectedPersonIds: string[]; // UUID[]
   teamSearch: string;
   personSearch: string;
   onTeamSearchChange: (value: string) => void;
   onPersonSearchChange: (value: string) => void;
-  onToggleTeam: (teamId: number) => void;
-  onTogglePerson: (userId: number) => void;
+  onToggleTeam: (teamId: string) => void; // UUID
+  onTogglePerson: (userId: string) => void; // UUID
 }
 
 export function AddSubordinateForm({

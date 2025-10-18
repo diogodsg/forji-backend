@@ -5,11 +5,11 @@
 export interface HierarchyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userId: number;
+  userId: string; // UUID
   userName: string;
   userPosition?: string;
   allUsers?: Array<{
-    id: number;
+    id: string; // UUID
     name: string;
     email: string;
     isAdmin?: boolean;
@@ -19,20 +19,20 @@ export interface HierarchyModalProps {
 export type HierarchyStep = "list" | "add";
 
 export interface User {
-  id: number;
+  id: string; // UUID
   name: string;
   email: string;
   isAdmin?: boolean;
 }
 
 export interface Team {
-  id: number;
+  id: string; // UUID
   name: string;
   description?: string | null;
 }
 
 export interface ManagementRule {
-  id: number;
+  id: string; // UUID
   ruleType: "INDIVIDUAL" | "TEAM";
   subordinate?: User;
   team?: Team;

@@ -4,11 +4,12 @@ import {
   ConflictException,
   UnauthorizedException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto, UpdatePasswordDto } from './dto';
-import { User } from '@prisma/client';
+import { CreateUserOnboardingDto } from './dto/create-user-onboarding.dto';
 
 @Injectable()
 export class UsersService {
@@ -215,6 +216,136 @@ export class UsersService {
   }
 
   /**
+   * Create new user with full onboarding setup
+   * Allows setting manager, team, and workspace role in a single request
+   */
+  async createWithOnboarding(createUserDto: CreateUserOnboardingDto, creatorId: string) {
+    // Check if email already exists
+    const existing = await this.prisma.user.findUnique({
+      where: { email: createUserDto.email },
+    });
+
+    if (existing) {
+      throw new ConflictException('Email already registered');
+    }
+
+    // Generate password if not provided
+    const password = createUserDto.password || this.generateRandomPassword();
+    const hashedPassword = await this.hashPassword(password);
+
+    // Get creator's workspace to add new user to it
+    const creatorMembership = await this.prisma.workspaceMember.findFirst({
+      where: {
+        userId: creatorId,
+        deletedAt: null,
+      },
+      orderBy: {
+        joinedAt: 'desc',
+      },
+    });
+
+    if (!creatorMembership) {
+      throw new ForbiddenException('Creator has no workspace');
+    }
+
+    const workspaceId = creatorMembership.workspaceId;
+
+    // Validate manager exists in same workspace if provided
+    if (createUserDto.managerId) {
+      const managerMembership = await this.prisma.workspaceMember.findFirst({
+        where: {
+          userId: createUserDto.managerId,
+          workspaceId,
+          deletedAt: null,
+        },
+      });
+
+      if (!managerMembership) {
+        throw new BadRequestException('Manager not found in workspace');
+      }
+    }
+
+    // Validate team exists in same workspace if provided
+    if (createUserDto.teamId) {
+      const team = await this.prisma.team.findFirst({
+        where: {
+          id: createUserDto.teamId,
+          workspaceId,
+          deletedAt: null,
+        },
+      });
+
+      if (!team) {
+        throw new BadRequestException('Team not found in workspace');
+      }
+    }
+
+    // Create user and setup in transaction
+    const result = await this.prisma.$transaction(async (tx) => {
+      // 1. Create user
+      const user = await tx.user.create({
+        data: {
+          email: createUserDto.email,
+          password: hashedPassword,
+          name: createUserDto.name,
+          position: createUserDto.position,
+          bio: createUserDto.bio,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          position: true,
+          bio: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      // 2. Add user to workspace with specified role (default: MEMBER)
+      const workspaceRole = createUserDto.workspaceRole || 'MEMBER';
+      await tx.workspaceMember.create({
+        data: {
+          userId: user.id,
+          workspaceId,
+          role: workspaceRole,
+        },
+      });
+
+      // 3. Add manager relationship if provided
+      if (createUserDto.managerId) {
+        await tx.managementRule.create({
+          data: {
+            managerId: createUserDto.managerId,
+            subordinateId: user.id,
+            workspaceId,
+            ruleType: 'INDIVIDUAL',
+          },
+        });
+      }
+
+      // 4. Add to team if provided
+      if (createUserDto.teamId) {
+        await tx.teamMember.create({
+          data: {
+            teamId: createUserDto.teamId,
+            userId: user.id,
+            role: 'MEMBER', // Default team role
+          },
+        });
+      }
+
+      return {
+        ...user,
+        generatedPassword: createUserDto.password ? undefined : password,
+        workspaceRole,
+      };
+    });
+
+    return result;
+  }
+
+  /**
    * Update user profile
    */
   async update(id: string, updateUserDto: UpdateUserDto, requesterId: string) {
@@ -317,6 +448,19 @@ export class UsersService {
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10);
     return bcrypt.hash(password, saltRounds);
+  }
+
+  /**
+   * Helper: Generate random password
+   */
+  private generateRandomPassword(): string {
+    const length = 12;
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return password;
   }
 
   /**

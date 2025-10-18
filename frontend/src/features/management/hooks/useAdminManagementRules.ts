@@ -7,7 +7,7 @@ import type {
 } from "../types";
 
 interface UseAdminManagementRulesOptions {
-  managerId?: number; // Se especificado, busca regras de um manager específico
+  managerId?: string; // Se especificado, busca regras de um manager específico (UUID)
 }
 
 export function useAdminManagementRules(
@@ -50,7 +50,7 @@ export function useAdminManagementRules(
 
   const createRule = async (
     rule: CreateManagementRuleDto,
-    targetManagerId?: number
+    targetManagerId?: string
   ) => {
     try {
       setError(null);
@@ -68,7 +68,7 @@ export function useAdminManagementRules(
     }
   };
 
-  const removeRule = async (ruleId: number) => {
+  const removeRule = async (ruleId: string) => {
     try {
       setError(null);
       await managementApi.adminRemoveRule(ruleId);

@@ -4,5 +4,5 @@
  * Modais genéricos usados em diferentes contextos do admin
  */
 
-export { AdminCreateRuleModal } from "./AdminCreateRuleModal";
+// AdminCreateRuleModal foi removido - funcionalidade agora está no HierarchyModal
 export { ChangePasswordModal } from "./ChangePasswordModal";

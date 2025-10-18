@@ -9,7 +9,7 @@ interface TeamsListProps {
   searchQuery: string;
   filterBy: string;
   onEdit: (team: TeamSummary) => void;
-  onDelete: (teamId: number) => void;
+  onDelete: (teamId: string) => void;
   onRefresh: () => void;
 }
 

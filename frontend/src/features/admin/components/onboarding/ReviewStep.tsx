@@ -5,7 +5,7 @@ import type { Assignments, NewUserData } from "./types";
 interface ReviewStepProps {
   isCreatingNewUser: boolean;
   newUserData?: NewUserData;
-  selectedUsers: number[];
+  selectedUsers: string[]; // UUID[]
   users: AdminUser[];
   allManagers: AdminUser[];
   assignments: Assignments;

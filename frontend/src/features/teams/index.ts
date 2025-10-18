@@ -10,6 +10,7 @@ export { UpcomingActions } from "./components/UpcomingActions";
 
 // Hooks
 export { useMyTeam, useTeamMembers, useTeamMetrics } from "./hooks";
+export { useTeams } from "./hooks/useTeams"; // API Integration Hook
 export {
   useManagerTeams,
   useAdminCompanyOverview,

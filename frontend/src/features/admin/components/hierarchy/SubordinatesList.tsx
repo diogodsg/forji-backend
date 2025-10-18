@@ -4,10 +4,10 @@ import { SubordinateCard } from "./SubordinateCard";
 
 interface SubordinatesListProps {
   rules: ManagementRule[];
-  confirmDelete: number | null;
-  onDelete: (ruleId: number) => void;
+  confirmDelete: string | null; // UUID
+  onDelete: (ruleId: string) => void; // UUID
   onCancelDelete: () => void;
-  onRequestDelete: (ruleId: number) => void;
+  onRequestDelete: (ruleId: string) => void; // UUID
   onAdd: () => void;
   userName: string;
 }

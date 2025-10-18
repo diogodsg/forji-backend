@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { api } from "../../../lib/apiClient";
 import type {
   PlayerProfile,
   LeaderboardEntry,
@@ -9,6 +8,7 @@ import type {
 } from "../types/gamification";
 
 // Hook para obter perfil do jogador
+// NOTA: Backend não tem módulo de gamificação, usando apenas mock
 export function usePlayerProfile(userId?: number) {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,15 +20,24 @@ export function usePlayerProfile(userId?: number) {
         setLoading(true);
         setError(null);
 
-        const endpoint = userId
-          ? `/gamification/profile/${userId}`
-          : "/gamification/profile";
+        // Backend não tem gamificação, usar mock diretamente
+        console.log(
+          "⚠️ Gamification: Usando dados mock (backend não tem este módulo)"
+        );
 
-        const response = await api<PlayerProfile>(endpoint, { auth: true });
-        setProfile(response);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch player profile");
-        console.error("Error fetching player profile:", err);
+        const mockProfile: PlayerProfile = {
+          userId: userId || 1,
+          level: 1,
+          currentXP: 0,
+          totalXP: 0,
+          nextLevelXP: 100,
+          title: "Iniciante",
+          badges: [],
+          rank: 0,
+        };
+
+        setProfile(mockProfile);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -39,21 +48,28 @@ export function usePlayerProfile(userId?: number) {
 
   const refreshProfile = () => {
     setLoading(true);
-    const endpoint = userId
-      ? `/gamification/profile/${userId}`
-      : "/gamification/profile";
-
-    api<PlayerProfile>(endpoint, { auth: true })
-      .then(setProfile)
-      .catch((err: any) => setError(err.message))
-      .finally(() => setLoading(false));
+    // Mock apenas
+    const mockProfile: PlayerProfile = {
+      userId: userId || 1,
+      level: 1,
+      currentXP: 0,
+      totalXP: 0,
+      nextLevelXP: 100,
+      title: "Iniciante",
+      badges: [],
+      rank: 0,
+    };
+    setProfile(mockProfile);
+    setError(null);
+    setLoading(false);
   };
 
   return { profile, loading, error, refreshProfile };
 }
 
 // Hook para obter leaderboard
-export function useLeaderboard(period: 'week' | 'month' | 'all' = 'week') {
+// NOTA: Backend não tem módulo de gamificação, usando apenas mock
+export function useLeaderboard(period: "week" | "month" | "all" = "week") {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,15 +80,12 @@ export function useLeaderboard(period: 'week' | 'month' | 'all' = 'week') {
         setLoading(true);
         setError(null);
 
-        const queryParams = new URLSearchParams({ period });
-        const response = await api<LeaderboardEntry[]>(
-          `/gamification/leaderboard?${queryParams}`,
-          { auth: true }
+        // Backend não tem gamificação, usar mock diretamente
+        console.log(
+          "⚠️ Gamification: Usando leaderboard mock (backend não tem este módulo)"
         );
-        setLeaderboard(response);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch leaderboard");
-        console.error("Error fetching leaderboard:", err);
+        setLeaderboard([]);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -83,19 +96,21 @@ export function useLeaderboard(period: 'week' | 'month' | 'all' = 'week') {
 
   const refreshLeaderboard = () => {
     setLoading(true);
-    const queryParams = new URLSearchParams({ period });
-    api<LeaderboardEntry[]>(`/gamification/leaderboard?${queryParams}`, { auth: true })
-      .then(setLeaderboard)
-      .catch((err: any) => setError(err.message))
-      .finally(() => setLoading(false));
+    // Mock apenas
+    setLeaderboard([]);
+    setError(null);
+    setLoading(false);
   };
 
   return { leaderboard, loading, error, refreshLeaderboard };
 }
 
 // Hook para obter team leaderboard
-export function useTeamLeaderboard(period: 'week' | 'month' | 'all' = 'week') {
-  const [teamLeaderboard, setTeamLeaderboard] = useState<TeamLeaderboardEntry[]>([]);
+// NOTA: Backend não tem módulo de gamificação, usando apenas mock
+export function useTeamLeaderboard(period: "week" | "month" | "all" = "week") {
+  const [teamLeaderboard, setTeamLeaderboard] = useState<
+    TeamLeaderboardEntry[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -105,15 +120,12 @@ export function useTeamLeaderboard(period: 'week' | 'month' | 'all' = 'week') {
         setLoading(true);
         setError(null);
 
-        const queryParams = new URLSearchParams({ period });
-        const response = await api<TeamLeaderboardEntry[]>(
-          `/gamification/team-leaderboard?${queryParams}`,
-          { auth: true }
+        // Backend não tem gamificação, usar mock diretamente
+        console.log(
+          "⚠️ Gamification: Usando team leaderboard mock (backend não tem este módulo)"
         );
-        setTeamLeaderboard(response);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch team leaderboard");
-        console.error("Error fetching team leaderboard:", err);
+        setTeamLeaderboard([]);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -124,17 +136,17 @@ export function useTeamLeaderboard(period: 'week' | 'month' | 'all' = 'week') {
 
   const refreshTeamLeaderboard = () => {
     setLoading(true);
-    const queryParams = new URLSearchParams({ period });
-    api<TeamLeaderboardEntry[]>(`/gamification/team-leaderboard?${queryParams}`, { auth: true })
-      .then(setTeamLeaderboard)
-      .catch((err: any) => setError(err.message))
-      .finally(() => setLoading(false));
+    // Mock apenas
+    setTeamLeaderboard([]);
+    setError(null);
+    setLoading(false);
   };
 
   return { teamLeaderboard, loading, error, refreshTeamLeaderboard };
 }
 
 // Hook para adicionar XP (para testes)
+// NOTA: Backend não tem módulo de gamificação, retorna mock
 export function useAddXP() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,12 +156,20 @@ export function useAddXP() {
       setLoading(true);
       setError(null);
 
-      const response = await api<XPGain>("/gamification/xp/manual", {
-        method: "POST",
-        body: JSON.stringify(request),
-        auth: true,
-      });
-      return response;
+      // Backend não tem gamificação, retornar mock
+      console.log(
+        "⚠️ Gamification: addXP mock (backend não tem este módulo)",
+        request
+      );
+
+      const mockResponse: XPGain = {
+        action: request.action,
+        points: request.points || 10,
+        category: "development",
+        description: "Mock XP gain",
+      };
+
+      return mockResponse;
     } catch (err: any) {
       setError(err.message || "Failed to add XP");
       console.error("Error adding XP:", err);
@@ -163,6 +183,7 @@ export function useAddXP() {
 }
 
 // Hook para obter desafio semanal
+// NOTA: Backend não tem módulo de gamificação, usando apenas mock
 export function useWeeklyChallenge() {
   const [challenge, setChallenge] = useState<WeeklyChallenge | null>(null);
   const [loading, setLoading] = useState(true);
@@ -174,13 +195,25 @@ export function useWeeklyChallenge() {
         setLoading(true);
         setError(null);
 
-        const response = await api<WeeklyChallenge>("/gamification/weekly-challenge", {
-          auth: true,
-        });
-        setChallenge(response);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch weekly challenge");
-        console.error("Error fetching weekly challenge:", err);
+        // Backend não tem gamificação, usar mock diretamente
+        console.log(
+          "⚠️ Gamification: Usando desafio semanal mock (backend não tem este módulo)"
+        );
+
+        const mockChallenge: WeeklyChallenge = {
+          id: "mock-challenge",
+          title: "Desafio Semanal",
+          description: "Complete suas tarefas esta semana",
+          target: 10,
+          current: 0,
+          reward: "100 XP",
+          progress: 0,
+          isCompleted: false,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        };
+
+        setChallenge(mockChallenge);
+        setError(null);
       } finally {
         setLoading(false);
       }
@@ -191,10 +224,21 @@ export function useWeeklyChallenge() {
 
   const refreshChallenge = () => {
     setLoading(true);
-    api<WeeklyChallenge>("/gamification/weekly-challenge", { auth: true })
-      .then(setChallenge)
-      .catch((err: any) => setError(err.message))
-      .finally(() => setLoading(false));
+    // Mock apenas
+    const mockChallenge: WeeklyChallenge = {
+      id: "mock-challenge",
+      title: "Desafio Semanal",
+      description: "Complete suas tarefas esta semana",
+      target: 10,
+      current: 0,
+      reward: "100 XP",
+      progress: 0,
+      isCompleted: false,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    };
+    setChallenge(mockChallenge);
+    setError(null);
+    setLoading(false);
   };
 
   return { challenge, loading, error, refreshChallenge };

@@ -1,12 +1,42 @@
+import { useState } from "react";
 import { ArrowLeft, Users } from "lucide-react";
+import { useAdminTeams } from "@/features/admin/hooks/useAdminTeams";
 
 interface TeamCreateViewProps {
   onBack: () => void;
+  onCreated?: () => void | Promise<void>;
 }
 
-export function TeamCreateView({ onBack }: TeamCreateViewProps) {
-  const handleCreate = () => {
-    console.log("Create team");
+export function TeamCreateView({ onBack, onCreated }: TeamCreateViewProps) {
+  const { create, creating } = useAdminTeams();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  const handleCreate = async () => {
+    if (!name.trim()) {
+      return;
+    }
+
+    try {
+      // Aguardar criação + refresh antes de voltar
+      await create({
+        name: name.trim(),
+        description: description.trim() || undefined,
+      });
+
+      // Callback para garantir refresh no componente pai
+      if (onCreated) {
+        await onCreated();
+      }
+
+      console.log("✅ Voltando para lista com dados atualizados");
+
+      // Voltar para lista após criação bem-sucedida
+      onBack();
+    } catch (err) {
+      // Erro já tratado pelo hook com toast
+      console.error("Erro ao criar team:", err);
+    }
   };
 
   return (
@@ -55,6 +85,8 @@ export function TeamCreateView({ onBack }: TeamCreateViewProps) {
               <input
                 type="text"
                 placeholder="Ex: Frontend, Backend, DevOps..."
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-2.5 border border-surface-300 rounded-lg focus:ring-2 focus:ring-brand-400 focus:border-brand-500 focus:outline-none transition-all duration-200 text-sm"
               />
               <p className="text-xs text-gray-500 mt-1.5">
@@ -69,6 +101,8 @@ export function TeamCreateView({ onBack }: TeamCreateViewProps) {
               <textarea
                 placeholder="Descreva o propósito, responsabilidades e objetivos da equipe..."
                 rows={4}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-4 py-2.5 border border-surface-300 rounded-lg focus:ring-2 focus:ring-brand-400 focus:border-brand-500 focus:outline-none transition-all duration-200 text-sm resize-none"
               />
               <p className="text-xs text-gray-500 mt-1.5">
@@ -83,10 +117,11 @@ export function TeamCreateView({ onBack }: TeamCreateViewProps) {
             <div className="flex gap-3">
               <button
                 onClick={handleCreate}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold text-sm h-11 px-5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-brand-400 focus:outline-none"
+                disabled={creating || !name.trim()}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold text-sm h-11 px-5 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-brand-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Users className="w-4 h-4" />
-                Criar Equipe
+                {creating ? "Criando..." : "Criar Equipe"}
               </button>
               <button
                 onClick={onBack}

@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import type { AdminUser } from "@/features/admin/types";
-import { getMockManagementRulesByManagerId } from "@/features/admin/data/mockData";
 
 interface ModernPersonCardProps {
   user: AdminUser;
@@ -25,7 +24,7 @@ export function ModernPersonCard({
 
   // Resolver managers para exibir badges (limite 3 + overflow)
   const usersById = useMemo(() => {
-    if (!allUsers) return new Map<number, AdminUser>();
+    if (!allUsers) return new Map<string, AdminUser>(); // UUID
     return new Map(allUsers.map((u) => [u.id, u] as const));
   }, [allUsers]);
 
@@ -38,10 +37,8 @@ export function ModernPersonCard({
   const shownManagers = managerUsers.slice(0, 3);
   const extraManagers = Math.max(managerUsers.length - shownManagers.length, 0);
 
-  // Mock: obter regras de gestão (TEAM e INDIVIDUAL) para exibir badges (limite 3 + overflow)
-  const managementRules = useMemo(() => {
-    return getMockManagementRulesByManagerId(user.id);
-  }, [user.id]);
+  // Management rules temporariamente desabilitado (aguardando endpoint backend)
+  const managementRules: any[] = [];
 
   const ruleBadges = useMemo(() => {
     return managementRules.map((r) => ({

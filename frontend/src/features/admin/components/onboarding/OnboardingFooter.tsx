@@ -5,6 +5,7 @@ interface OnboardingFooterProps {
   currentStep: number;
   steps: OnboardingStep[];
   isCreatingNewUser: boolean;
+  isSubmitting?: boolean;
   onBack: () => void;
   onNext: () => void;
   onConfirm: () => void;
@@ -15,6 +16,7 @@ export function OnboardingFooter({
   currentStep,
   steps,
   isCreatingNewUser,
+  isSubmitting = false,
   onBack,
   onNext,
   onConfirm,
@@ -44,9 +46,15 @@ export function OnboardingFooter({
         ) : (
           <button
             onClick={onConfirm}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-success-500 to-success-600 text-white font-medium text-sm h-10 px-6 transition-all duration-200 hover:opacity-90 focus:ring-2 focus:ring-success-400 focus:outline-none"
+            disabled={isSubmitting}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-success-500 to-success-600 text-white font-medium text-sm h-10 px-6 transition-all duration-200 hover:opacity-90 focus:ring-2 focus:ring-success-400 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isCreatingNewUser ? (
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                {isCreatingNewUser ? "Criando..." : "Aplicando..."}
+              </>
+            ) : isCreatingNewUser ? (
               <>
                 <Sparkles className="w-4 h-4" />
                 Criar e Organizar

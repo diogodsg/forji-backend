@@ -1,5 +1,5 @@
 export interface TeamSummary {
-  id: number;
+  id: string; // UUID do backend
   name: string;
   description?: string | null;
   managers: number; // count
@@ -8,19 +8,19 @@ export interface TeamSummary {
 }
 
 export interface TeamMember {
-  userId: number;
-  id: number; // membership id not returned yet (placeholder)
+  userId: string; // UUID do backend
+  id: string; // membership id
   name: string;
   email: string;
   role: "MEMBER" | "MANAGER";
 }
 
 export interface TeamDetail {
-  id: number;
+  id: string; // UUID do backend
   name: string;
   description?: string | null;
   memberships: Array<{
-    user: { id: number; name: string; email: string };
+    user: { id: string; name: string; email: string }; // UUID do backend
     role: "MEMBER" | "MANAGER";
   }>;
 }
@@ -31,14 +31,14 @@ export interface CreateTeamInput {
 }
 
 export interface AddTeamMemberInput {
-  teamId: number;
-  userId: number;
+  teamId: string; // UUID
+  userId: string; // UUID
   role?: "MEMBER" | "MANAGER";
 }
 
 export interface UpdateTeamMemberRoleInput {
-  teamId: number;
-  userId: number;
+  teamId: string; // UUID
+  userId: string; // UUID
   role: "MEMBER" | "MANAGER";
 }
 

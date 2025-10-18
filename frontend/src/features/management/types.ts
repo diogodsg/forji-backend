@@ -1,27 +1,27 @@
 export type ManagementRuleType = "TEAM" | "INDIVIDUAL";
 
 export interface ManagementRule {
-  id: number;
+  id: string; // UUID
   ruleType: ManagementRuleType;
   createdAt: string;
   updatedAt: string;
-  managerId: number;
-  teamId?: number;
-  subordinateId?: number;
+  managerId: string; // UUID
+  teamId?: string; // UUID
+  subordinateId?: string; // UUID
   team?: {
-    id: number;
+    id: string; // UUID
     name: string;
     description?: string;
   };
   subordinate?: {
-    id: number;
+    id: string; // UUID
     name: string;
     email: string;
   };
 }
 
 export interface SubordinateInfo {
-  id: number;
+  id: string; // UUID
   name: string;
   email: string;
   source: "individual" | "team";
@@ -29,7 +29,8 @@ export interface SubordinateInfo {
 }
 
 export interface CreateManagementRuleDto {
-  ruleType: ManagementRuleType;
-  teamId?: number;
-  subordinateId?: number;
+  type: ManagementRuleType; // Backend usa 'type', não 'ruleType'
+  managerId: string; // UUID - obrigatório no backend
+  teamId?: string; // UUID
+  subordinateId?: string; // UUID
 }

@@ -1,7 +1,9 @@
 import { ArrowLeft, Edit3 } from "lucide-react";
 import { TeamStats } from "./TeamStats";
 import { TeamMembersList } from "./TeamMembersList";
+import { useAdminTeams } from "@/features/admin/hooks/useAdminTeams";
 import type { TeamDetail } from "@/features/admin/types/team";
+import type { TeamMemberRole } from "@/lib/api/endpoints/teams";
 
 interface TeamEditViewProps {
   team: TeamDetail;
@@ -9,28 +11,55 @@ interface TeamEditViewProps {
 }
 
 export function TeamEditView({ team, onBack }: TeamEditViewProps) {
+  const { addMember, removeMember, updateMemberRole } = useAdminTeams();
+
   const managers = team.memberships?.filter((m) => m.role === "MANAGER") || [];
   const members = team.memberships?.filter((m) => m.role === "MEMBER") || [];
 
-  // Handlers (placeholder - implementar lógica real)
+  // Adapter: MANAGER -> LEADER
+  const toApiRole = (role: "MANAGER" | "MEMBER"): TeamMemberRole => {
+    return role === "MANAGER" ? "LEADER" : "MEMBER";
+  };
+
+  // Handlers com integração backend
   const handleAddMember = () => {
-    console.log("Add member");
+    // TODO: Abrir modal de seleção de usuário
+    console.log("Add member - implementar modal de seleção");
   };
 
-  const handlePromoteMember = (userId: number) => {
-    console.log("Promote member:", userId);
+  const handlePromoteMember = async (userId: string) => {
+    try {
+      await updateMemberRole(team.id, userId, "LEADER");
+    } catch (err) {
+      console.error("Erro ao promover membro:", err);
+    }
   };
 
-  const handleRemoveMember = (userId: number) => {
-    console.log("Remove member:", userId);
+  const handleRemoveMember = async (userId: string) => {
+    try {
+      await removeMember(team.id, userId);
+    } catch (err) {
+      console.error("Erro ao remover membro:", err);
+    }
   };
 
-  const handleChangeRole = (userId: number) => {
-    console.log("Change role:", userId);
+  const handleChangeRole = async (userId: string) => {
+    try {
+      // Toggle entre MEMBER e MANAGER
+      const currentMember = [...managers, ...members].find(
+        (m) => m.user.id === userId
+      );
+      const newRole: TeamMemberRole =
+        currentMember?.role === "MANAGER" ? "MEMBER" : "LEADER";
+      await updateMemberRole(team.id, userId, newRole);
+    } catch (err) {
+      console.error("Erro ao mudar role:", err);
+    }
   };
 
   const handleSave = () => {
-    console.log("Save changes");
+    // Salvar mudanças se necessário
+    onBack();
   };
 
   return (

@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { useAuth, AuthProvider } from "@/features/auth";
 import { GamificationProvider } from "@/features/gamification";
+import { ToastProvider, ToastContainer } from "@/components/Toast";
 import { AppLayout } from "./layouts/AppLayout";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ScreenLoading, PageLoading, LoginLoading } from "./lib/fallbacks";
@@ -42,16 +43,22 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 /**
  * Root component: sets up auth + router context.
  * Conditional auth logic lives inside `InnerApp` for testability and clarity.
+ *
+ * IMPORTANTE: ToastProvider deve estar ANTES de AuthProvider
+ * porque useAuth usa useToast internamente
  */
 export default function App() {
   return (
-    <AuthProvider>
-      <GamificationProvider>
-        <BrowserRouter>
-          <InnerApp />
-        </BrowserRouter>
-      </GamificationProvider>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <GamificationProvider>
+          <BrowserRouter>
+            <InnerApp />
+            <ToastContainer />
+          </BrowserRouter>
+        </GamificationProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 
@@ -65,6 +72,8 @@ export default function App() {
  */
 function InnerApp() {
   const { user, logout, loading } = useAuth();
+
+  console.log("🔍 InnerApp render - user:", user, "loading:", loading);
 
   // Loading splash while resolving /auth/me
   if (loading) return <ScreenLoading label="Loading..." />;
@@ -85,6 +94,14 @@ function InnerApp() {
         showManager={!!user.isManager}
         showAdmin={!!user.isAdmin}
       >
+        {/* Debug temporário */}
+        {import.meta.env.DEV && (
+          <div className="fixed bottom-4 right-4 bg-black/80 text-white text-xs p-2 rounded z-50 font-mono">
+            isAdmin: {user.isAdmin ? "true" : "false"} | isManager:{" "}
+            {user.isManager ? "true" : "false"}
+          </div>
+        )}
+
         <Suspense fallback={<PageLoading />}>
           <Routes>
             {/* Dashboard Gamificado como homepage */}

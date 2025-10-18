@@ -3,10 +3,10 @@ import type { Team } from "./types";
 
 interface TeamSelectorProps {
   teams: Team[];
-  selectedTeamIds: number[];
+  selectedTeamIds: string[]; // UUID[]
   searchValue: string;
   onSearchChange: (value: string) => void;
-  onToggleTeam: (teamId: number) => void;
+  onToggleTeam: (teamId: string) => void; // UUID
 }
 
 export function TeamSelector({
