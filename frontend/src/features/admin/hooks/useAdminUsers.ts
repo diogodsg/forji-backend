@@ -3,6 +3,7 @@ import { adminApi } from "../services/adminApi";
 import type { AdminUser, CreateAdminUserInput } from "../types";
 import { useToast } from "@/components/Toast";
 import { extractErrorMessage } from "@/lib/api/client";
+import { useAuth } from "@/features/auth";
 
 interface UseAdminUsersResult {
   users: AdminUser[];
@@ -12,6 +13,10 @@ interface UseAdminUsersResult {
   create: (
     input: CreateAdminUserInput
   ) => Promise<{ id: string; generatedPassword: string }>; // UUID
+  updateUser: (
+    userId: string,
+    data: { name?: string; position?: string; bio?: string }
+  ) => Promise<void>;
   toggleAdmin: (id: string, next: boolean) => Promise<void>; // UUID
   removeUser: (id: string) => Promise<void>; // UUID
   addManager: (userId: string, managerId: string) => Promise<void>; // UUID
@@ -26,10 +31,12 @@ interface UseAdminUsersResult {
     togglingAdmin: Set<string>; // UUID
     managerChange: Set<string>; // UUID
     changingPassword: Set<string>; // UUID
+    updating: Set<string>; // UUID
   };
 }
 
 export function useAdminUsers(): UseAdminUsersResult {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +45,7 @@ export function useAdminUsers(): UseAdminUsersResult {
   const togglingAdmin = useRef(new Set<string>()); // UUID
   const managerChange = useRef(new Set<string>()); // UUID
   const changingPassword = useRef(new Set<string>()); // UUID
+  const updating = useRef(new Set<string>()); // UUID
   const [, force] = useState(0);
   const toast = useToast();
 
@@ -64,11 +72,13 @@ export function useAdminUsers(): UseAdminUsersResult {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Toast é estável, não precisa estar nas dependências
 
   useEffect(() => {
     refresh();
-  }, [refresh]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Só carrega uma vez no mount
 
   const create = useCallback(
     async (input: CreateAdminUserInput) => {
@@ -115,11 +125,16 @@ export function useAdminUsers(): UseAdminUsersResult {
   const removeUser = useCallback(
     async (id: string) => {
       // UUID
+      if (!currentUser?.workspaceId) {
+        toast.error("Workspace não encontrado");
+        throw new Error("Workspace ID not available");
+      }
+
       mark(deleting, id, true);
       try {
-        await adminApi.deleteUser(id);
+        await adminApi.deleteUser(currentUser.workspaceId, id);
         await refresh();
-        toast.success("Usuário removido com sucesso");
+        toast.success("Membro removido do workspace com sucesso");
       } catch (e) {
         const message = extractErrorMessage(e);
         toast.error(message);
@@ -128,7 +143,7 @@ export function useAdminUsers(): UseAdminUsersResult {
         mark(deleting, id, false);
       }
     },
-    [refresh, toast]
+    [currentUser?.workspaceId, refresh, toast]
   );
 
   const addManager = useCallback(
@@ -188,6 +203,27 @@ export function useAdminUsers(): UseAdminUsersResult {
     [toast]
   );
 
+  const updateUser = useCallback(
+    async (
+      userId: string,
+      data: { name?: string; position?: string; bio?: string }
+    ) => {
+      mark(updating, userId, true);
+      try {
+        await adminApi.updateProfile(userId, data);
+        await refresh();
+        toast.success("Usuário atualizado com sucesso");
+      } catch (e) {
+        const message = extractErrorMessage(e);
+        toast.error(message);
+        throw e;
+      } finally {
+        mark(updating, userId, false);
+      }
+    },
+    [refresh, toast]
+  );
+
   const busy = useMemo(
     () => ({
       creating,
@@ -195,6 +231,7 @@ export function useAdminUsers(): UseAdminUsersResult {
       togglingAdmin: togglingAdmin.current,
       managerChange: managerChange.current,
       changingPassword: changingPassword.current,
+      updating: updating.current,
     }),
     [creating]
   );
@@ -205,6 +242,7 @@ export function useAdminUsers(): UseAdminUsersResult {
     error,
     refresh,
     create,
+    updateUser,
     toggleAdmin,
     removeUser,
     addManager,

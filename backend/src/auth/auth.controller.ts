@@ -35,13 +35,16 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'User profile retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@CurrentUser() user: any) {
-    // User is already in camelCase from JwtStrategy
-    // and includes workspaceId and workspaceRole from JWT
+    // Fetch full user data with workspaces
+    const fullUser = await this.authService.getUserById(user.id || user.sub);
+
+    // Add current workspace context from JWT
     return {
       user: {
-        ...UserUtils.toSafeUser(user),
-        workspaceId: user.workspaceId,
-        workspaceRole: user.workspaceRole,
+        ...fullUser,
+        // Current workspace from JWT token
+        currentWorkspaceId: user.workspaceId,
+        currentWorkspaceRole: user.workspaceRole,
       },
     };
   }

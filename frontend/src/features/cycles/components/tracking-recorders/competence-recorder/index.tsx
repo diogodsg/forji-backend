@@ -67,7 +67,7 @@ export function CompetenceRecorder({
 
   // Validation per step
   const canProceedStep1 = Boolean(
-    data.name.trim() !== "" && data.initialLevel && data.targetLevel
+    (data.name?.trim() ?? "") !== "" && data.initialLevel && data.targetLevel
   );
   const canProceedStep2 = isFormValid(data);
 

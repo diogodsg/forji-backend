@@ -43,7 +43,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     // Attach user and workspace context to request (camelCase)
     return {
+      // Keep original user fields (including `id`) and also provide `userId`
+      // to maintain compatibility with controllers that expect `user.userId`.
       ...user,
+      userId: user.id,
       workspaceId: payload.workspaceId,
       workspaceRole: payload.workspaceRole,
     };

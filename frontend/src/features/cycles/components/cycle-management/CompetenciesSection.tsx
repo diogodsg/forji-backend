@@ -12,12 +12,18 @@ import {
 interface Competency {
   id: string;
   name: string;
-  category: "leadership" | "technical" | "behavioral";
+  category:
+    | "leadership"
+    | "technical"
+    | "behavioral"
+    | "LEADERSHIP"
+    | "TECHNICAL"
+    | "BEHAVIORAL";
   currentLevel: number;
   targetLevel: number;
   currentProgress: number;
-  nextMilestone: string;
-  totalXP: number;
+  nextMilestone?: string;
+  totalXP?: number;
 }
 
 interface CompetenciesSectionProps {
@@ -46,7 +52,10 @@ export function CompetenciesSection({
   onViewCompetency,
   onUpdateProgress,
 }: CompetenciesSectionProps) {
-  const totalXP = competencies.reduce((sum, comp) => sum + comp.totalXP, 0);
+  const totalXP = competencies.reduce(
+    (sum, comp) => sum + (comp.totalXP || 0),
+    0
+  );
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-surface-300 p-6">
@@ -117,8 +126,26 @@ function CompetencyCard({
   onView: () => void;
   onUpdate: () => void;
 }) {
-  const categoryConfig = {
+  const categoryConfig: Record<
+    string,
+    {
+      icon: any;
+      label: string;
+      color: string;
+      bg: string;
+      border: string;
+      progressColor: string;
+    }
+  > = {
     leadership: {
+      icon: Crown,
+      label: "LIDERANÇA",
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      progressColor: "from-amber-400 to-amber-600",
+    },
+    LEADERSHIP: {
       icon: Crown,
       label: "LIDERANÇA",
       color: "text-amber-600",
@@ -134,7 +161,23 @@ function CompetencyCard({
       border: "border-blue-200",
       progressColor: "from-blue-400 to-blue-600",
     },
+    TECHNICAL: {
+      icon: Code,
+      label: "TÉCNICO",
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      border: "border-blue-200",
+      progressColor: "from-blue-400 to-blue-600",
+    },
     behavioral: {
+      icon: Users,
+      label: "COMPORTAMENTAL",
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+      border: "border-emerald-200",
+      progressColor: "from-emerald-400 to-emerald-600",
+    },
+    BEHAVIORAL: {
       icon: Users,
       label: "COMPORTAMENTAL",
       color: "text-emerald-600",
@@ -144,7 +187,9 @@ function CompetencyCard({
     },
   };
 
-  const config = categoryConfig[competency.category];
+  // Normalizar categoria para lowercase ou usar diretamente se for uppercase
+  const config =
+    categoryConfig[competency.category] || categoryConfig.technical;
   const CategoryIcon = config.icon;
 
   return (
@@ -215,7 +260,7 @@ function CompetencyCard({
               Próximo Marco
             </div>
             <div className={`text-sm font-semibold ${config.color}`}>
-              {competency.nextMilestone}
+              {competency.nextMilestone || "A definir"}
             </div>
           </div>
         </div>
@@ -225,7 +270,7 @@ function CompetencyCard({
       <div className="flex items-center justify-between pt-3 border-t border-surface-200">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Award className="w-4 h-4" />
-          <span>{competency.totalXP.toLocaleString()} XP</span>
+          <span>{(competency.totalXP || 0).toLocaleString()} XP</span>
         </div>
 
         <button

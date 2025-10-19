@@ -19,7 +19,7 @@ import { apiClient } from "../client";
 // ==================== Types ====================
 
 export type TeamStatus = "ACTIVE" | "ARCHIVED" | "INACTIVE";
-export type TeamMemberRole = "LEADER" | "MEMBER";
+export type TeamMemberRole = "MANAGER" | "MEMBER";
 
 export interface Team {
   id: string;

@@ -1,9 +1,11 @@
 import { ArrowLeft, Edit3 } from "lucide-react";
 import { TeamStats } from "./TeamStats";
 import { TeamMembersList } from "./TeamMembersList";
+import { AddMemberModal } from "./AddMemberModal";
 import { useAdminTeams } from "@/features/admin/hooks/useAdminTeams";
 import type { TeamDetail } from "@/features/admin/types/team";
 import type { TeamMemberRole } from "@/lib/api/endpoints/teams";
+import { useState, useEffect } from "react";
 
 interface TeamEditViewProps {
   team: TeamDetail;
@@ -11,33 +13,100 @@ interface TeamEditViewProps {
 }
 
 export function TeamEditView({ team, onBack }: TeamEditViewProps) {
-  const { addMember, removeMember, updateMemberRole } = useAdminTeams();
+  const {
+    removeMember,
+    updateMemberRole,
+    updateTeam,
+    addMember,
+    selectTeam,
+    selectedTeam,
+  } = useAdminTeams();
 
-  const managers = team.memberships?.filter((m) => m.role === "MANAGER") || [];
-  const members = team.memberships?.filter((m) => m.role === "MEMBER") || [];
+  const [name, setName] = useState(team.name);
+  const [description, setDescription] = useState(team.description || "");
+  const [saving, setSaving] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState(team);
 
-  // Adapter: MANAGER -> LEADER
-  const toApiRole = (role: "MANAGER" | "MEMBER"): TeamMemberRole => {
-    return role === "MANAGER" ? "LEADER" : "MEMBER";
-  };
+  // Atualizar currentTeam quando selectedTeam mudar
+  useEffect(() => {
+    if (selectedTeam) {
+      // Converter members do selectedTeam para memberships do TeamDetail
+      const teamDetail: TeamDetail = {
+        id: selectedTeam.id,
+        name: selectedTeam.name,
+        description: selectedTeam.description,
+        memberships: selectedTeam.members.map((m) => ({
+          user: { id: m.userId, name: m.name, email: m.email },
+          role: m.role,
+        })),
+      };
+      setCurrentTeam(teamDetail);
+      setName(teamDetail.name);
+      setDescription(teamDetail.description || "");
+    }
+  }, [selectedTeam]);
+
+  const managers =
+    currentTeam.memberships?.filter((m) => m.role === "MANAGER") || [];
+  const members =
+    currentTeam.memberships?.filter((m) => m.role === "MEMBER") || [];
+  const hasManager = managers.length > 0;
 
   // Handlers com integração backend
   const handleAddMember = () => {
-    // TODO: Abrir modal de seleção de usuário
-    console.log("Add member - implementar modal de seleção");
+    setShowAddMemberModal(true);
+  };
+
+  const handleAddMemberConfirm = async (
+    userId: string,
+    role: TeamMemberRole
+  ) => {
+    await addMember(currentTeam.id, userId, role);
+    // Recarrega os dados da equipe
+    await selectTeam(currentTeam.id);
   };
 
   const handlePromoteMember = async (userId: string) => {
-    try {
-      await updateMemberRole(team.id, userId, "LEADER");
-    } catch (err) {
-      console.error("Erro ao promover membro:", err);
+    // Verifica se já existe um líder
+    if (hasManager) {
+      const currentManager = managers[0];
+      if (
+        confirm(
+          `Já existe um líder (${currentManager.user.name}). Deseja substituí-lo por este membro? O líder atual será rebaixado para membro.`
+        )
+      ) {
+        try {
+          // Primeiro, rebaixa o líder atual
+          await updateMemberRole(
+            currentTeam.id,
+            currentManager.user.id,
+            "MEMBER"
+          );
+          // Depois, promove o novo líder
+          await updateMemberRole(currentTeam.id, userId, "MANAGER");
+          // Recarrega os dados da equipe
+          await selectTeam(currentTeam.id);
+        } catch (err) {
+          console.error("Erro ao trocar líder:", err);
+        }
+      }
+    } else {
+      try {
+        await updateMemberRole(currentTeam.id, userId, "MANAGER");
+        // Recarrega os dados da equipe
+        await selectTeam(currentTeam.id);
+      } catch (err) {
+        console.error("Erro ao promover membro:", err);
+      }
     }
   };
 
   const handleRemoveMember = async (userId: string) => {
     try {
-      await removeMember(team.id, userId);
+      await removeMember(currentTeam.id, userId);
+      // Recarrega os dados da equipe
+      await selectTeam(currentTeam.id);
     } catch (err) {
       console.error("Erro ao remover membro:", err);
     }
@@ -50,16 +119,32 @@ export function TeamEditView({ team, onBack }: TeamEditViewProps) {
         (m) => m.user.id === userId
       );
       const newRole: TeamMemberRole =
-        currentMember?.role === "MANAGER" ? "MEMBER" : "LEADER";
-      await updateMemberRole(team.id, userId, newRole);
+        currentMember?.role === "MANAGER" ? "MEMBER" : "MANAGER";
+      await updateMemberRole(currentTeam.id, userId, newRole);
+      // Recarrega os dados da equipe
+      await selectTeam(currentTeam.id);
     } catch (err) {
       console.error("Erro ao mudar role:", err);
     }
   };
 
-  const handleSave = () => {
-    // Salvar mudanças se necessário
-    onBack();
+  const handleSave = async () => {
+    if (!name.trim()) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await updateTeam(currentTeam.id, {
+        name: name.trim(),
+        description: description.trim() || undefined,
+      });
+      onBack();
+    } catch (err) {
+      console.error("Erro ao salvar equipe:", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -83,10 +168,10 @@ export function TeamEditView({ team, onBack }: TeamEditViewProps) {
                   <span className="text-brand-600 font-medium">Editar</span>
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                  {team.name}
+                  {currentTeam.name}
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">
-                  {team.description || "Sem descrição"}
+                  {currentTeam.description || "Sem descrição"}
                 </p>
               </div>
             </div>
@@ -115,14 +200,17 @@ export function TeamEditView({ team, onBack }: TeamEditViewProps) {
               <div className="p-6">
                 <div className="space-y-5">
                   {/* Estatísticas da equipe */}
-                  <TeamStats membersCount={team.memberships?.length || 0} />
+                  <TeamStats
+                    membersCount={currentTeam.memberships?.length || 0}
+                  />
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Nome da Equipe
                     </label>
                     <input
                       type="text"
-                      defaultValue={team.name}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                       className="w-full px-4 py-2.5 border border-surface-300 rounded-lg focus:ring-2 focus:ring-brand-400 focus:border-brand-500 focus:outline-none transition-all duration-200 text-sm"
                     />
                   </div>
@@ -132,7 +220,8 @@ export function TeamEditView({ team, onBack }: TeamEditViewProps) {
                       Descrição
                     </label>
                     <textarea
-                      defaultValue={team.description || ""}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                       rows={4}
                       placeholder="Descreva o propósito e responsabilidades da equipe..."
                       className="w-full px-4 py-2.5 border border-surface-300 rounded-lg focus:ring-2 focus:ring-brand-400 focus:border-brand-500 focus:outline-none transition-all duration-200 text-sm resize-none"
@@ -143,13 +232,15 @@ export function TeamEditView({ team, onBack }: TeamEditViewProps) {
                   <div className="flex gap-3">
                     <button
                       onClick={handleSave}
-                      className="flex-1 px-5 py-3 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white rounded-lg font-semibold text-sm transition-all duration-200 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-brand-400 focus:outline-none"
+                      disabled={saving || !name.trim()}
+                      className="flex-1 px-5 py-3 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white rounded-lg font-semibold text-sm transition-all duration-200 shadow-lg hover:shadow-xl focus:ring-2 focus:ring-brand-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Salvar Alterações
+                      {saving ? "Salvando..." : "Salvar Alterações"}
                     </button>
                     <button
                       onClick={onBack}
-                      className="px-5 py-3 text-gray-600 hover:bg-surface-100 rounded-lg font-semibold text-sm transition-all duration-200 border border-surface-300 hover:border-surface-400"
+                      disabled={saving}
+                      className="px-5 py-3 text-gray-600 hover:bg-surface-100 rounded-lg font-semibold text-sm transition-all duration-200 border border-surface-300 hover:border-surface-400 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancelar
                     </button>
@@ -171,6 +262,16 @@ export function TeamEditView({ team, onBack }: TeamEditViewProps) {
             />
           </div>
         </div>
+
+        {/* Modal de adicionar membro */}
+        <AddMemberModal
+          isOpen={showAddMemberModal}
+          onClose={() => setShowAddMemberModal(false)}
+          onAdd={handleAddMemberConfirm}
+          currentMemberIds={
+            currentTeam.memberships?.map((m) => m.user.id) || []
+          }
+        />
       </div>
     </div>
   );

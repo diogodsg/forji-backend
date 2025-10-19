@@ -15,6 +15,28 @@ interface RegisterDto {
   bio?: string;
 }
 
+interface Workspace {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  avatarUrl?: string;
+  status: "ACTIVE" | "ARCHIVED";
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+interface WorkspaceMembership {
+  id: string;
+  userId: string;
+  workspaceId: string;
+  role: "OWNER" | "ADMIN" | "MEMBER";
+  joinedAt: string;
+  deletedAt?: string | null;
+  workspace: Workspace;
+}
+
 interface AuthUser {
   id: string;
   email: string;
@@ -22,16 +44,35 @@ interface AuthUser {
   position?: string;
   bio?: string;
   avatarUrl?: string;
-  workspaceId: string;
-  workspaceRole: "OWNER" | "ADMIN" | "MEMBER";
   createdAt: string;
   updatedAt: string;
+  workspaceMemberships?: WorkspaceMembership[];
+  // Current workspace context from JWT
+  currentWorkspaceId?: string;
+  currentWorkspaceRole?: "OWNER" | "ADMIN" | "MEMBER";
 }
 
 interface LoginResponse {
   accessToken: string;
-  user: AuthUser;
-  workspaces?: any[]; // Backend também retorna workspaces
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    position?: string;
+    bio?: string;
+  };
+  workspaces: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    role: "OWNER" | "ADMIN" | "MEMBER";
+  }>;
+  workspace?: {
+    id: string;
+    name: string;
+    slug: string;
+    role: "OWNER" | "ADMIN" | "MEMBER";
+  };
 }
 
 interface MeResponse {
@@ -113,4 +154,6 @@ export type {
   LoginResponse,
   MeResponse,
   SwitchWorkspaceDto,
+  Workspace,
+  WorkspaceMembership,
 };

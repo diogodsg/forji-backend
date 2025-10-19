@@ -54,6 +54,29 @@ export class ManagementController {
   }
 
   /**
+   * GET /management/managers/:userId
+   * Get all managers for a specific user (both direct and through teams)
+   */
+  @Get('managers/:userId')
+  async getUserManagers(@CurrentUser() user: JwtPayload, @Param('userId') userId: string) {
+    return this.managementService.getUserManagers(userId, user.workspaceId);
+  }
+
+  /**
+   * GET /management/subordinates/:userId
+   * Get all subordinates for a specific user (admin only)
+   */
+  @Get('subordinates/:userId')
+  async getUserSubordinates(
+    @CurrentUser() user: JwtPayload,
+    @Param('userId') userId: string,
+    @Query('includeTeamMembers', new ParseBoolPipe({ optional: true }))
+    includeTeamMembers = false,
+  ) {
+    return this.managementService.getMySubordinates(userId, user.workspaceId, includeTeamMembers);
+  }
+
+  /**
    * GET /management/teams
    * Get all teams managed by the current user
    */
@@ -87,11 +110,7 @@ export class ManagementController {
    */
   @Post('rules')
   async createRule(@CurrentUser() user: JwtPayload, @Body() createRuleDto: CreateRuleDto) {
-    return this.managementService.createRule(
-      user.workspaceId,
-      user.workspaceRole as any,
-      createRuleDto,
-    );
+    return this.managementService.createRule(user.workspaceId, createRuleDto);
   }
 
   /**
@@ -100,12 +119,7 @@ export class ManagementController {
    */
   @Delete('rules/:id')
   async deleteRule(@CurrentUser() user: JwtPayload, @Param('id') ruleId: string) {
-    return this.managementService.deleteRule(
-      ruleId,
-      user.sub,
-      user.workspaceId,
-      user.workspaceRole as any,
-    );
+    return this.managementService.deleteRule(ruleId);
   }
 
   /**

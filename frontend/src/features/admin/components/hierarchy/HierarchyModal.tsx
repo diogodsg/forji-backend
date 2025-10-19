@@ -1,6 +1,5 @@
 import { createPortal } from "react-dom";
 import { useAdminManagementRules } from "@/features/management/hooks/useAdminManagementRules";
-import { useAdminUsers } from "@/features/admin/hooks/useAdminUsers";
 import { useTeamManagement } from "@/features/admin/hooks/useTeamManagement";
 import type { CreateManagementRuleDto } from "@/features/management/types";
 import { useHierarchyState } from "./useHierarchyState";
@@ -20,9 +19,8 @@ export function HierarchyModal({
   // Custom hook para gerenciar estado do modal
   const state = useHierarchyState({ isOpen, userId });
 
-  // Hooks para dados
-  const { users: apiUsers } = useAdminUsers();
-  const users = allUsers || apiUsers;
+  // Hooks para dados - NOTA: allUsers já é passado pelo pai, não precisa chamar hook
+  const users = allUsers || [];
   const { teams } = useTeamManagement();
   const { rules, loading, removeRule, createRule, reload } =
     useAdminManagementRules({
@@ -60,7 +58,7 @@ export function HierarchyModal({
       if (state.ruleType === "TEAM") {
         for (const teamId of state.selectedTeamIds) {
           const rule: CreateManagementRuleDto = {
-            type: "TEAM", // Backend usa 'type'
+            ruleType: "TEAM",
             managerId: userId, // Manager que terá o subordinado
             teamId,
           };
@@ -69,7 +67,7 @@ export function HierarchyModal({
       } else {
         for (const subordinateId of state.selectedPersonIds) {
           const rule: CreateManagementRuleDto = {
-            type: "INDIVIDUAL", // Backend usa 'type'
+            ruleType: "INDIVIDUAL",
             managerId: userId, // Manager que terá o subordinado
             subordinateId,
           };

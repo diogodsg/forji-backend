@@ -32,7 +32,7 @@ export function ReviewStep({
             position={newUserData.position}
             isAdmin={newUserData.isAdmin}
             managerName={
-              allManagers.find((m) => m.id === assignments["new"]?.manager)
+              allManagers.find((m) => m.id === assignments["new"]?.managerId)
                 ?.name
             }
             team={assignments["new"]?.team}
@@ -43,7 +43,7 @@ export function ReviewStep({
             const user = users.find((u) => u.id === userId)!;
             const assignment = assignments[userId];
             const manager = allManagers.find(
-              (m) => m.id === assignment?.manager
+              (m) => m.id === assignment?.managerId
             );
 
             return (

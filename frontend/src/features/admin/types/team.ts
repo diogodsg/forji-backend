@@ -4,6 +4,7 @@ export interface TeamSummary {
   description?: string | null;
   managers: number; // count
   members: number; // total memberships
+  leaderName?: string | null; // name of the leader
   createdAt?: string; // ISO date (added from backend list)
 }
 

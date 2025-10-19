@@ -57,8 +57,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         .slice(2, 9)}`;
       const newToast: Toast = {
         id,
-        duration: 5000, // Default: 5 segundos
         ...toastData,
+        duration: toastData.duration ?? 3000, // Default: 3 segundos
       };
 
       setToasts((prev) => [...prev, newToast]);

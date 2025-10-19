@@ -85,7 +85,7 @@ export class WorkspacesController {
     @Param('userId') memberUserId: string,
     @CurrentUser() user: any,
   ) {
-    return this.workspacesService.removeMember(workspaceId, user.id, memberUserId);
+    return this.workspacesService.removeMember(workspaceId, memberUserId);
   }
 
   /**

@@ -11,6 +11,7 @@ export default defineConfig({
     alias: {
       "@": path.join(rootDir, "src"),
       "@/features": path.join(rootDir, "src/features"),
+      "@/shared-types": path.join(rootDir, "..", "shared-types"),
     },
   },
   server: {

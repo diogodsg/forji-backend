@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import { useAuth, AuthProvider } from "@/features/auth";
 import { GamificationProvider } from "@/features/gamification";
 import { ToastProvider, ToastContainer } from "@/components/Toast";
@@ -7,6 +7,8 @@ import { AppLayout } from "./layouts/AppLayout";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ScreenLoading, PageLoading, LoginLoading } from "./lib/fallbacks";
 import { ErrorBoundary } from "./lib/ErrorBoundary";
+import { useXpAnimations, XpAnimationContainer } from "@/components/XpFloating";
+import { useCelebrations } from "@/hooks/useCelebrations";
 
 /**
  * Core pages are lazy-loaded to reduce the initial bundle size.
@@ -73,6 +75,16 @@ export default function App() {
 function InnerApp() {
   const { user, logout, loading } = useAuth();
 
+  // XP Animations & Celebrations (top-level)
+  const { triggerXpAnimation } = useXpAnimations();
+  const {
+    triggerSparkles,
+    triggerLevelUp,
+    triggerAchievement,
+    triggerMega,
+    CelebrationsComponent,
+  } = useCelebrations();
+
   console.log("🔍 InnerApp render - user:", user, "loading:", loading);
 
   // Loading splash while resolving /auth/me
@@ -88,6 +100,139 @@ function InnerApp() {
 
   return (
     <ErrorBoundary>
+      {/* Debug Buttons - EPIC CELEBRATIONS TESTING */}
+      {import.meta.env.DEV && import.meta.env.DEBUGAA && (
+        <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2">
+          {/* XP Tests - Different amounts with auto-confetti */}
+          <div className="bg-black/80 px-3 py-2 rounded-lg">
+            <div className="text-white text-xs font-bold mb-1 text-center">
+              XP Gains
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  console.log(
+                    "✨ Testing +25 XP (default confetti - 50 pieces)"
+                  );
+                  triggerXpAnimation(
+                    25,
+                    window.innerWidth / 2,
+                    window.innerHeight / 2
+                  );
+                }}
+                className="px-3 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition-all hover:scale-105 font-semibold text-xs"
+                title="Test +25 XP with default confetti"
+              >
+                +25 XP
+              </button>
+              <button
+                onClick={() => {
+                  console.log(
+                    "✨ Testing +50 XP (achievement confetti - 80 pieces)"
+                  );
+                  triggerXpAnimation(
+                    50,
+                    window.innerWidth / 2,
+                    window.innerHeight / 2
+                  );
+                }}
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-all hover:scale-105 font-semibold text-xs"
+                title="Test +50 XP with achievement confetti"
+              >
+                +50 XP
+              </button>
+              <button
+                onClick={() => {
+                  console.log(
+                    "✨ Testing +100 XP (levelup confetti - 120 pieces)"
+                  );
+                  triggerXpAnimation(
+                    100,
+                    window.innerWidth / 2,
+                    window.innerHeight / 2
+                  );
+                }}
+                className="px-3 py-2 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-all hover:scale-105 font-semibold text-xs"
+                title="Test +100 XP with levelup confetti"
+              >
+                +100 XP
+              </button>
+              <button
+                onClick={() => {
+                  console.log(
+                    "✨ Testing +350 XP (1:1 simulation - achievement confetti)"
+                  );
+                  triggerXpAnimation(
+                    350,
+                    window.innerWidth / 2,
+                    window.innerHeight / 2
+                  );
+                }}
+                className="px-3 py-2 bg-violet-600 text-white rounded-lg shadow-lg hover:bg-violet-700 transition-all hover:scale-105 font-semibold text-xs"
+                title="Test +350 XP (1:1 amount)"
+              >
+                +350 XP
+              </button>
+            </div>
+          </div>
+
+          {/* Epic Celebrations */}
+          <div className="bg-black/80 px-3 py-2 rounded-lg">
+            <div className="text-white text-xs font-bold mb-1 text-center">
+              Epic Effects
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  console.log("� Testing Sparkles!");
+                  triggerSparkles();
+                }}
+                className="px-3 py-2 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-all hover:scale-105 font-semibold text-xs"
+                title="Test Sparkles + Confetti"
+              >
+                🎊 Sparkles
+              </button>
+              <button
+                onClick={() => {
+                  console.log("⭐ Testing Level Up!");
+                  triggerLevelUp(5);
+                }}
+                className="px-3 py-2 bg-amber-600 text-white rounded-lg shadow-lg hover:bg-amber-700 transition-all hover:scale-105 font-semibold text-xs"
+                title="Test Level Up Explosion"
+              >
+                ⭐ Level 5
+              </button>
+              <button
+                onClick={() => {
+                  console.log("🏆 Testing Achievement!");
+                  triggerAchievement("Meta Trimestral!", "Parabéns!");
+                }}
+                className="px-3 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition-all hover:scale-105 font-semibold text-xs"
+                title="Test Achievement Trophy"
+              >
+                🏆 Trophy
+              </button>
+              <button
+                onClick={() => {
+                  console.log("🌈 Testing MEGA!");
+                  triggerMega();
+                }}
+                className="px-3 py-2 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 text-white rounded-lg shadow-lg hover:from-pink-700 hover:via-purple-700 hover:to-blue-700 transition-all hover:scale-105 font-semibold text-xs"
+                title="Test MEGA Everything"
+              >
+                🌈 MEGA
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* XP Animation Container - Global */}
+      <XpAnimationContainer />
+
+      {/* Epic Celebrations - Global */}
+      {CelebrationsComponent}
+
       <AppLayout
         userName={user.name}
         onLogout={logout}
@@ -105,7 +250,7 @@ function InnerApp() {
         <Suspense fallback={<PageLoading />}>
           <Routes>
             {/* Dashboard Gamificado como homepage */}
-            <Route index element={<HomePage />} />
+            <Route index element={<CurrentCyclePageOptimized />} />
             <Route path="/home" element={<HomePage />} />
             {/* Desenvolvimento (novo hub) */}
             <Route

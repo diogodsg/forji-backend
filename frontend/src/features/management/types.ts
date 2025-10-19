@@ -29,7 +29,7 @@ export interface SubordinateInfo {
 }
 
 export interface CreateManagementRuleDto {
-  type: ManagementRuleType; // Backend usa 'type', não 'ruleType'
+  ruleType: ManagementRuleType;
   managerId: string; // UUID - obrigatório no backend
   teamId?: string; // UUID
   subordinateId?: string; // UUID

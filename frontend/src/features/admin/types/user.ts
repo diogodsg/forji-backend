@@ -9,4 +9,5 @@ export interface UserRow {
   updatedAt: string;
   managers: { id: string }[]; // UUID[]
   reports: { id: string }[]; // UUID[]
+  managedTeams?: { id: string; name: string }[]; // Times gerenciados
 }

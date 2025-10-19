@@ -95,6 +95,19 @@ export class UsersController {
   }
 
   /**
+   * POST /users/:id/reset-password - Admin reset user password
+   * Allows admins to reset any user's password without knowing current password
+   */
+  @Post(':id/reset-password')
+  resetPassword(
+    @Param('id') id: string,
+    @Body() body: { newPassword?: string },
+    @CurrentUser() user: any,
+  ) {
+    return this.usersService.adminResetPassword(id, user.id, body.newPassword);
+  }
+
+  /**
    * DELETE /users/:id - Delete user (soft delete)
    */
   @Delete(':id')

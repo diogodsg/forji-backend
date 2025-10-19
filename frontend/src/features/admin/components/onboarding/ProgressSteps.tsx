@@ -16,7 +16,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 export function ProgressSteps({ steps, currentStep }: ProgressStepsProps) {
   return (
-    <div className="flex items-center gap-4 mt-4">
+    <div className="flex items-center gap-4 py-4">
       {steps.map((step, index) => {
         const Icon = iconMap[step.iconName];
         return (
@@ -27,7 +27,7 @@ export function ProgressSteps({ steps, currentStep }: ProgressStepsProps) {
                   ? "bg-brand-50 text-brand-700 border border-brand-200"
                   : step.completed
                   ? "bg-success-50 text-success-700 border border-success-200"
-                  : "bg-surface-100 text-gray-600"
+                  : "bg-surface-100 text-gray-600 border border-surface-200"
               }`}
             >
               <Icon className="w-4 h-4" />

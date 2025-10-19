@@ -6,3 +6,4 @@
 
 // AdminCreateRuleModal foi removido - funcionalidade agora está no HierarchyModal
 export { ChangePasswordModal } from "./ChangePasswordModal";
+export { EditUserModal } from "./EditUserModal";

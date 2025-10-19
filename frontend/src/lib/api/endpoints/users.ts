@@ -27,6 +27,9 @@ export interface User {
   deletedAt?: string | null;
   isAdmin?: boolean;
   isManager?: boolean;
+  managers?: { id: string }[]; // Gerentes deste usuário
+  reports?: { id: string }[]; // Subordinados deste usuário
+  managedTeams?: { id: string; name: string }[]; // Times gerenciados por este usuário
 }
 
 export interface PaginatedUsers {
@@ -175,6 +178,28 @@ export const usersApi = {
       `/users/${userId}/password`,
       dto
     );
+    return data;
+  },
+
+  /**
+   * POST /users/:id/reset-password - Admin reseta senha do usuário
+   * Permite que admins resetem senha sem conhecer a senha atual
+   */
+  async adminResetPassword(
+    userId: string,
+    newPassword?: string
+  ): Promise<{
+    success: boolean;
+    message: string;
+    generatedPassword?: string;
+  }> {
+    const { data } = await apiClient.post<{
+      success: boolean;
+      message: string;
+      generatedPassword?: string;
+    }>(`/users/${userId}/reset-password`, {
+      newPassword,
+    });
     return data;
   },
 

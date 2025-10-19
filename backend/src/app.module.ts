@@ -7,6 +7,11 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
 import { UsersModule } from './users/users.module';
 import { TeamsModule } from './teams/teams.module';
 import { ManagementModule } from './management/management.module';
+import { GamificationModule } from './gamification/gamification.module';
+import { CyclesModule } from './cycles/cycles.module';
+import { GoalsModule } from './goals/goals.module';
+import { CompetenciesModule } from './competencies/competencies.module';
+import { ActivitiesModule } from './activities/activities.module';
 
 @Module({
   imports: [
@@ -23,6 +28,11 @@ import { ManagementModule } from './management/management.module';
     UsersModule,
     TeamsModule,
     ManagementModule,
+    GamificationModule,
+    CyclesModule,
+    GoalsModule,
+    CompetenciesModule,
+    ActivitiesModule,
   ],
   controllers: [],
   providers: [

@@ -13,3 +13,20 @@ export {
   useUpdateGoalProgress,
 } from "./useCycleQueries";
 export { useCycleStore } from "../stores/useCycleStore";
+
+// API Integration Hooks (NEW)
+export { useCycleData as useIntegratedCycleData } from "./useCycleData";
+export {
+  useGoalMutations,
+  useCompetencyMutations,
+  useActivityMutations,
+} from "./useCycleMutations";
+export type {
+  UseGoalMutationsReturn,
+  UseCompetencyMutationsReturn,
+  UseActivityMutationsReturn,
+} from "./useCycleMutations";
+export {
+  useActivitiesTimeline,
+  type TimelineActivity,
+} from "./useActivitiesTimeline";

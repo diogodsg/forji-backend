@@ -5,13 +5,14 @@ import type { ViewMode, FilterType } from "./types";
 import { TeamsHeader } from "./TeamsHeader";
 import { TeamsList } from "./TeamsList";
 import { TeamEditView } from "./TeamEditView";
-import { TeamCreateView } from "./TeamCreateView";
+import { CreateTeamModal } from "./CreateTeamModal";
 
 export function TeamsManagement() {
   // Estados
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBy, setFilterBy] = useState<FilterType>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Hooks para dados
   const {
@@ -56,20 +57,26 @@ export function TeamsManagement() {
   const handleBackToList = () => {
     setViewMode("list");
     selectTeam(null);
+    refresh(); // Recarregar lista após voltar da edição
   };
 
   const handleCreateTeam = () => {
-    setViewMode("create");
+    setShowCreateModal(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
   };
 
   // Se estiver no modo de edição, mostrar a tela de edição
   if (viewMode === "edit" && selectedTeam) {
-    return <TeamEditView team={selectedTeam} onBack={handleBackToList} />;
-  }
-
-  // Se estiver no modo de criação, mostrar a tela de criação
-  if (viewMode === "create") {
-    return <TeamCreateView onBack={handleBackToList} onCreated={refresh} />;
+    return (
+      <TeamEditView
+        key={`${selectedTeam.id}-${selectedTeam.memberships?.length || 0}`}
+        team={selectedTeam}
+        onBack={handleBackToList}
+      />
+    );
   }
 
   // Vista principal da lista de equipes
@@ -92,6 +99,13 @@ export function TeamsManagement() {
         onEdit={handleEditTeam}
         onDelete={handleDeleteTeam}
         onRefresh={refresh}
+      />
+
+      {/* Modal de criação de equipe */}
+      <CreateTeamModal
+        isOpen={showCreateModal}
+        onClose={handleCloseCreateModal}
+        onCreated={refresh}
       />
     </div>
   );

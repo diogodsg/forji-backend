@@ -13,7 +13,7 @@ interface Goal {
   title: string;
   description: string;
   progress: number;
-  lastUpdate: Date;
+  lastUpdate?: Date | string; // Pode vir como Date (mock) ou string ISO (backend)
   status: "on-track" | "needs-attention" | "completed";
 }
 
@@ -37,12 +37,17 @@ interface GoalsDashboardProps {
  * - completed: Azul, meta concluída
  */
 export function GoalsDashboard({ goals, onUpdateGoal }: GoalsDashboardProps) {
-  const allGoalsUpdated = goals.every(
-    (goal) =>
-      goal.status === "completed" ||
-      (goal.lastUpdate &&
-        new Date().getTime() - goal.lastUpdate.getTime() < 86400000 * 2) // 2 dias
-  );
+  const allGoalsUpdated = goals.every((goal) => {
+    if (goal.status === "completed") return true;
+    if (!goal.lastUpdate) return false;
+
+    const lastUpdateDate =
+      typeof goal.lastUpdate === "string"
+        ? new Date(goal.lastUpdate)
+        : goal.lastUpdate;
+
+    return new Date().getTime() - lastUpdateDate.getTime() < 86400000 * 2; // 2 dias
+  });
 
   const totalXPAvailable =
     goals.filter((g) => g.status !== "completed").length * 15;
@@ -108,9 +113,19 @@ export function GoalsDashboard({ goals, onUpdateGoal }: GoalsDashboardProps) {
 
 // Goal Card Component
 function GoalCard({ goal, onUpdate }: { goal: Goal; onUpdate: () => void }) {
-  const daysSinceUpdate = Math.floor(
-    (new Date().getTime() - goal.lastUpdate.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  // Converter lastUpdate para Date se for string (vindo do backend)
+  const lastUpdateDate = goal.lastUpdate
+    ? typeof goal.lastUpdate === "string"
+      ? new Date(goal.lastUpdate)
+      : goal.lastUpdate
+    : null;
+
+  const daysSinceUpdate = lastUpdateDate
+    ? Math.floor(
+        (new Date().getTime() - lastUpdateDate.getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+    : 999; // Nunca atualizado
 
   const statusConfig = {
     "on-track": {

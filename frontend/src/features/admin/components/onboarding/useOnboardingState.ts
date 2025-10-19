@@ -91,17 +91,17 @@ export function useOnboardingState(users: AdminUser[], allUsers: AdminUser[]) {
   const handleAssignment = (
     userId: string, // UUID
     field: "manager" | "team",
-    value: string // UUID or name for display
+    value: string // UUID
   ) => {
     setAssignments((prev) => {
       const updated = { ...prev[userId] };
 
       if (field === "manager") {
-        // value is manager name for display
-        updated.manager = value;
-        // Find manager ID from users list
-        const manager = users.find((u) => u.name === value);
-        updated.managerId = manager?.id;
+        // value is manager ID (UUID)
+        updated.managerId = value;
+        // Find manager name from users list for display
+        const manager = users.find((u) => u.id === value);
+        updated.manager = manager?.name;
       } else if (field === "team") {
         // value is team ID (UUID)
         updated.teamId = value;
@@ -131,6 +131,18 @@ export function useOnboardingState(users: AdminUser[], allUsers: AdminUser[]) {
     }
   };
 
+  const reset = () => {
+    setCurrentStep(0);
+    setSelectedUsers([]);
+    setAssignments({});
+    setNewUserData({
+      name: "",
+      email: "",
+      isAdmin: false,
+      position: "",
+    });
+  };
+
   return {
     currentStep,
     selectedUsers,
@@ -144,5 +156,6 @@ export function useOnboardingState(users: AdminUser[], allUsers: AdminUser[]) {
     updateNewUserData,
     nextStep,
     prevStep,
+    reset,
   };
 }

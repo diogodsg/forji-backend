@@ -29,74 +29,37 @@ export function TeamCard({ team, onEdit, onDelete }: TeamCardProps) {
     onDelete();
   };
 
+  const hasLeader = team.managers > 0;
+  const memberCount = team.members || 0;
+
   return (
     <>
       <div
         onClick={handleCardClick}
-        className="group bg-gradient-to-br from-white to-surface-50 rounded-xl border border-surface-300/60 shadow-sm hover:shadow-lg hover:border-brand-300 transition-all duration-300 overflow-hidden cursor-pointer"
+        className="group relative bg-white rounded-xl border border-surface-300 hover:border-brand-400 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
       >
-        <div className="p-5">
-          {/* Header com Avatar e Info */}
+        <div className="p-6">
+          {/* Header: Nome e Botão Deletar */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-md group-hover:scale-105 transition-transform duration-200">
+              <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-md group-hover:scale-105 transition-transform duration-200">
                 {team.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold text-gray-900 truncate group-hover:text-brand-600 transition-colors">
+                <h3 className="text-lg font-bold text-gray-900 truncate group-hover:text-brand-600 transition-colors mb-2">
                   {team.name}
                 </h3>
-                {team.description && (
-                  <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                    {team.description}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Botão de Excluir */}
-            <button
-              onClick={handleDeleteClick}
-              className="flex-shrink-0 p-2 hover:bg-error-50 rounded-lg transition-all duration-200 group/delete"
-              aria-label="Excluir equipe"
-            >
-              <Trash2 className="w-4 h-4 text-gray-400 group-hover/delete:text-error-600 transition-colors" />
-            </button>
-          </div>
-
-          {/* Separator */}
-          <div className="h-px bg-gradient-to-r from-transparent via-surface-200 to-transparent mb-4"></div>
-
-          {/* Info compacta */}
-          <div className="space-y-3">
-            {/* Contagem de membros - Destaque principal */}
-            <div className="bg-gradient-to-br from-brand-50 to-brand-100/50 rounded-lg p-4 border border-brand-200/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-lg flex items-center justify-center">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-brand-700 uppercase tracking-wide">
-                      Membros
-                    </p>
-                    <p className="text-2xl font-bold text-brand-900">
-                      {team.members}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Badge de líder */}
-                {team.managers > 0 ? (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-full">
+                {/* Tag de Líder */}
+                {hasLeader && team.leaderName ? (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 border border-amber-300 rounded-md">
                     <Crown className="w-3.5 h-3.5 text-amber-600" />
-                    <span className="text-xs font-semibold text-amber-900">
-                      Com Líder
+                    <span className="text-xs font-semibold text-amber-700">
+                      Líder: {team.leaderName}
                     </span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-100 border border-surface-300 rounded-full">
-                    <Crown className="w-3.5 h-3.5 text-gray-400" />
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 border border-gray-300 rounded-md">
+                    <Crown className="w-3.5 h-3.5 text-gray-500" />
                     <span className="text-xs font-medium text-gray-600">
                       Sem Líder
                     </span>
@@ -104,15 +67,52 @@ export function TeamCard({ team, onEdit, onDelete }: TeamCardProps) {
                 )}
               </div>
             </div>
+
+            <button
+              onClick={handleDeleteClick}
+              className="flex-shrink-0 p-2 hover:bg-error-50 rounded-lg transition-colors group/delete"
+              aria-label="Excluir equipe"
+            >
+              <Trash2 className="w-4.5 h-4.5 text-gray-400 group-hover/delete:text-error-600 transition-colors" />
+            </button>
           </div>
 
-          {/* Footer com Data */}
-          {team.createdAt && (
-            <div className="mt-4 pt-3 border-t border-surface-200">
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <Calendar className="w-3 h-3" />
-                <span>Criada em {formatDate(team.createdAt)}</span>
+          {/* Descrição */}
+          {team.description ? (
+            <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+              {team.description}
+            </p>
+          ) : (
+            <p className="text-sm text-gray-400 italic mb-4">Sem descrição</p>
+          )}
+
+          {/* Separator */}
+          <div className="h-px bg-gradient-to-r from-transparent via-surface-200 to-transparent mb-4"></div>
+
+          {/* Contador de Membros */}
+          <div className="bg-gradient-to-br from-brand-50 to-brand-100/30 rounded-lg p-4 mb-4 border border-brand-200/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
               </div>
+              <div>
+                <p className="text-xs font-medium text-brand-700 uppercase tracking-wide">
+                  Total de Membros
+                </p>
+                <p className="text-2xl font-bold text-brand-900">
+                  {memberCount}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer: Data de Criação */}
+          {team.createdAt && (
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              <span className="text-xs text-gray-500">
+                Criada em {formatDate(team.createdAt)}
+              </span>
             </div>
           )}
         </div>

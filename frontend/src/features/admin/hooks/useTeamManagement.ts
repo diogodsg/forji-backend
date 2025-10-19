@@ -19,9 +19,10 @@ export function useTeamManagement() {
         id: t.id, // UUID string mantido
         name: t.name,
         description: t.description,
-        managers: 0, // Não temos essa info no novo modelo
-        members: t.memberCount,
-        createdAt: new Date().toISOString(),
+        managers: t.managers || 0, // Passa o valor real de managers
+        members: t.members || 0, // Passa o valor real de members
+        leaderName: t.leaderName || null, // Passa o nome do líder
+        createdAt: t.createdAt || new Date().toISOString(),
       })),
     [hook.teams]
   );
@@ -40,7 +41,7 @@ export function useTeamManagement() {
                 name: m.name,
                 email: m.email,
               },
-              role: m.role === "LEADER" ? "MANAGER" : "MEMBER",
+              role: m.role, // Mantém role como está (MANAGER ou MEMBER)
             })),
           }
         : null,
@@ -54,9 +55,10 @@ export function useTeamManagement() {
         id: t.id, // UUID string mantido
         name: t.name,
         description: t.description,
-        managers: 0,
-        members: t.memberCount,
-        createdAt: new Date().toISOString(),
+        managers: t.managers || 0, // Passa o valor real de managers
+        members: t.members || 0, // Passa o valor real de members
+        leaderName: t.leaderName || null, // Passa o nome do líder
+        createdAt: t.createdAt || new Date().toISOString(),
       })),
     [hook.filteredTeams]
   );
@@ -79,11 +81,7 @@ export function useTeamManagement() {
     userId: string,
     role: "MEMBER" | "MANAGER"
   ) => {
-    await hook.addMember(
-      teamId,
-      userId,
-      role === "MANAGER" ? "LEADER" : "MEMBER"
-    );
+    await hook.addMember(teamId, userId, role);
   };
 
   const removeMember = async (teamId: string, userId: string) => {
@@ -95,11 +93,7 @@ export function useTeamManagement() {
     userId: string,
     role: "MEMBER" | "MANAGER"
   ) => {
-    await hook.updateMemberRole(
-      teamId,
-      userId,
-      role === "MANAGER" ? "LEADER" : "MEMBER"
-    );
+    await hook.updateMemberRole(teamId, userId, role);
   };
 
   return {

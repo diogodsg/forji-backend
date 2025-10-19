@@ -29,4 +29,18 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   bio?: string;
+
+  @ApiProperty({ example: 'My Company', description: 'Workspace name' })
+  @IsString()
+  @MinLength(2, { message: 'Workspace name must be at least 2 characters long' })
+  workspaceName: string;
+
+  @ApiProperty({
+    example: 'my-company',
+    description: 'Workspace slug (URL-friendly identifier)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  workspaceSlug?: string;
 }

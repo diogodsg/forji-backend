@@ -5,6 +5,10 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy, JwtStrategy } from './strategies';
 import { PrismaModule } from '../prisma/prisma.module';
+import { AuthRepository } from './repositories/auth.repository';
+import { LoginUseCase } from './use-cases/login.use-case';
+import { RegisterUseCase } from './use-cases/register.use-case';
+import { ValidateTokenUseCase } from './use-cases/validate-token.use-case';
 
 @Module({
   imports: [
@@ -18,7 +22,15 @@ import { PrismaModule } from '../prisma/prisma.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    AuthRepository,
+    LoginUseCase,
+    RegisterUseCase,
+    ValidateTokenUseCase,
+    LocalStrategy,
+    JwtStrategy,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

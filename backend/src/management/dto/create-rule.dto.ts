@@ -4,7 +4,7 @@ import { ManagementRuleType } from '@prisma/client';
 export class CreateRuleDto {
   @IsEnum(ManagementRuleType)
   @IsNotEmpty()
-  type: ManagementRuleType;
+  ruleType: ManagementRuleType;
 
   @IsString()
   @IsNotEmpty()

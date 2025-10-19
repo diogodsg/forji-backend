@@ -19,13 +19,11 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 const STORAGE_TOKEN_KEY = "auth:token";
 
 /**
- * Transforma o user do backend (com workspaceRole) para o formato esperado pelo frontend (com isAdmin/isManager)
+ * Transforma o user do backend (com currentWorkspaceRole) para o formato esperado pelo frontend (com isAdmin/isManager)
  */
 function transformBackendUser(backendUser: any): AuthUser {
-  const workspaceRole = backendUser.workspaceRole as
-    | "OWNER"
-    | "ADMIN"
-    | "MEMBER";
+  const workspaceRole = (backendUser.currentWorkspaceRole ||
+    backendUser.workspaceRole) as "OWNER" | "ADMIN" | "MEMBER";
 
   return {
     id: backendUser.id,
@@ -36,6 +34,7 @@ function transformBackendUser(backendUser: any): AuthUser {
     githubId: backendUser.githubId,
     createdAt: backendUser.createdAt,
     updatedAt: backendUser.updatedAt,
+    workspaceId: backendUser.currentWorkspaceId || backendUser.workspaceId, // Adiciona workspaceId
     // OWNER e ADMIN tem permissões de admin
     isAdmin: workspaceRole === "OWNER" || workspaceRole === "ADMIN",
     // Por enquanto, OWNER e ADMIN também são managers (pode ajustar depois)

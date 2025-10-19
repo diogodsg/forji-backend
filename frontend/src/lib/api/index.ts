@@ -46,4 +46,45 @@ export type {
   ListTeamsParams,
 } from "./endpoints/teams";
 
-// Adicionar outros endpoints conforme forem criados
+// Management endpoints
+export { managementApi } from "./endpoints/management";
+export type {
+  ManagementRuleType,
+  ManagerInfo,
+  SubordinateInfo,
+  GetManagersResponse,
+  GetSubordinatesResponse,
+  ManagementRule,
+  CreateRuleDto,
+} from "./endpoints/management";
+
+// Cycles endpoints
+export { cyclesApi } from "./endpoints/cycles";
+export type {
+  // Re-export from shared-types for convenience
+  CreateCycleDto,
+  UpdateCycleDto,
+  CycleResponseDto,
+  CycleStatsDto,
+  CreateGoalDto,
+  UpdateGoalDto,
+  UpdateGoalProgressDto,
+  GoalResponseDto,
+  GoalUpdateHistoryDto,
+  GoalFiltersDto,
+  CreateCompetencyDto,
+  UpdateCompetencyDto,
+  UpdateCompetencyProgressDto,
+  CompetencyResponseDto,
+  CompetencyUpdateHistoryDto,
+  CompetencyLibraryDto,
+  CompetencyFiltersDto,
+  CreateOneOnOneDto,
+  CreateMentoringDto,
+  CreateCertificationDto,
+  OneOnOneActivityResponseDto,
+  MentoringActivityResponseDto,
+  CertificationActivityResponseDto,
+  ActivityTimelineDto,
+  ActivityFiltersDto,
+} from "@/shared-types";

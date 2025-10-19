@@ -20,18 +20,13 @@ export default function Step1BasicInfo({
   const bonuses = calculateBonuses(data);
   const totalXP = bonuses.reduce((sum, b) => sum + b.value, 0);
 
-  // Pre-select first participant if available and no participant selected
-  // If no reports, use a mock user
+  // Pre-select first participant automatically when reports are loaded
   useEffect(() => {
-    if (!data.participant) {
-      if (!loadingReports && reports.length > 0) {
-        onChange({ participant: reports[0].name });
-      } else if (!loadingReports) {
-        // Mock user when no reports available
-        onChange({ participant: "João Silva" });
-      }
+    if (!loadingReports && reports.length > 0 && !data.participant) {
+      onChange({ participant: reports[0].name });
     }
-  }, [loadingReports, reports, data.participant, onChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingReports, reports.length]);
 
   const handleWorkingOnAdd = (item: string) => {
     onChange({
@@ -63,21 +58,23 @@ export default function Step1BasicInfo({
             <select
               value={data.participant}
               onChange={(e) => onChange({ participant: e.target.value })}
-              disabled={loadingReports}
+              disabled={loadingReports || reports.length === 0}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
-              <option value="">
-                {loadingReports ? "Carregando..." : "Selecione o participante"}
-              </option>
-              {/* Mock user */}
-              <option value="João Silva">João Silva</option>
-              <option value="Maria Santos">Maria Santos</option>
-              <option value="Pedro Oliveira">Pedro Oliveira</option>
-              {reports.map((user) => (
-                <option key={user.id} value={user.name}>
-                  {user.name}
-                </option>
-              ))}
+              {loadingReports ? (
+                <option value="">Carregando reportados...</option>
+              ) : reports.length === 0 ? (
+                <option value="">Nenhum reportado encontrado</option>
+              ) : (
+                <>
+                  <option value="">Selecione o participante</option>
+                  {reports.map((user) => (
+                    <option key={user.id} value={user.name}>
+                      {user.name}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
           </div>
 
@@ -115,13 +112,15 @@ export default function Step1BasicInfo({
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
             <FileText className="w-4 h-4 text-blue-500" />
             Anotações Gerais
+            <span className="text-red-500">*</span>
           </label>
           <textarea
             value={data.generalNotes}
             onChange={(e) => onChange({ generalNotes: e.target.value })}
-            placeholder="Anotações sobre a conversa, contexto, etc."
+            placeholder="Anotações sobre a conversa, contexto, etc. (obrigatório)"
             rows={6}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            required
           />
         </div>
       </div>

@@ -35,7 +35,16 @@ export function OnboardingModal({
     updateNewUserData,
     nextStep,
     prevStep,
+    reset,
   } = useOnboardingState(users, allUsers);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      reset();
+      setIsSubmitting(false);
+    }
+  }, [isOpen, reset]);
 
   // Handle ESC key press
   useEffect(() => {
@@ -78,8 +87,17 @@ export function OnboardingModal({
     try {
       if (isCreatingNewUser) {
         // Obter dados do assignment para o novo usuário (se houver)
-        const userId = "new-user"; // Placeholder temporário
+        const userId = "new"; // Deve corresponder ao usado no StructureAssignmentStep
         const assignment = assignments[userId];
+
+        console.log("📝 Enviando dados de onboarding:", {
+          name: newUserData.name,
+          email: newUserData.email,
+          position: newUserData.position,
+          workspaceRole: newUserData.isAdmin ? "ADMIN" : "MEMBER",
+          managerId: assignment?.managerId,
+          teamId: assignment?.teamId,
+        });
 
         // Criar novo usuário via API de onboarding
         const result = await usersApi.createWithOnboarding({
@@ -192,18 +210,20 @@ export function OnboardingModal({
       aria-modal="true"
       aria-labelledby="onboarding-modal-title"
     >
-      <div className="bg-white rounded-2xl border border-surface-300 shadow-xl w-[56rem] h-[600px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl border border-surface-300 shadow-2xl w-[56rem] h-[600px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
         <OnboardingHeader
           isCreatingNewUser={isCreatingNewUser}
           userCount={users.length}
           onClose={onClose}
         />
 
-        <div className="px-6 border-b border-surface-200">
+        <div className="px-6 border-b border-surface-200 bg-surface-50">
           <ProgressSteps steps={steps} currentStep={currentStep} />
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1">{renderStepContent()}</div>
+        <div className="p-6 overflow-y-auto flex-1 bg-gradient-to-br from-white to-surface-50">
+          {renderStepContent()}
+        </div>
 
         <OnboardingFooter
           currentStep={currentStep}

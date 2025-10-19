@@ -37,21 +37,21 @@ export function ModernPersonCard({
   const shownManagers = managerUsers.slice(0, 3);
   const extraManagers = Math.max(managerUsers.length - shownManagers.length, 0);
 
-  // Management rules temporariamente desabilitado (aguardando endpoint backend)
-  const managementRules: any[] = [];
+  // Resolver subordinados (reports) para exibir badges
+  const subordinateUsers: AdminUser[] = useMemo(() => {
+    return (user.reports || [])
+      .map((s) => usersById.get(s.id))
+      .filter((u): u is AdminUser => Boolean(u));
+  }, [user.reports, usersById]);
 
-  const ruleBadges = useMemo(() => {
-    return managementRules.map((r) => ({
-      type: r.ruleType,
-      label:
-        r.ruleType === "TEAM"
-          ? r.team?.name || "Equipe"
-          : r.subordinate?.name || "Colaborador",
-    }));
-  }, [managementRules]);
+  const shownSubordinates = subordinateUsers.slice(0, 3);
+  const extraSubordinates = Math.max(
+    subordinateUsers.length - shownSubordinates.length,
+    0
+  );
 
-  const shownRules = ruleBadges.slice(0, 3);
-  const extraRules = Math.max(ruleBadges.length - shownRules.length, 0);
+  // Times gerenciados
+  const managedTeams = user.managedTeams || [];
 
   // Gerar iniciais para avatar
   const initials = user.name
@@ -169,10 +169,10 @@ export function ModernPersonCard({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                     />
                   </svg>
-                  Remover Usuário
+                  Remover do Workspace
                 </div>
               </button>
             </div>
@@ -249,9 +249,9 @@ export function ModernPersonCard({
           )}
         </div>
 
-        {/* Regras de subordinados (badges) - Quem esta pessoa gerencia */}
+        {/* Subordinados (badges) - Quem esta pessoa gerencia */}
         <div className="mb-3 min-h-[40px]">
-          {ruleBadges.length > 0 ? (
+          {subordinateUsers.length > 0 || managedTeams.length > 0 ? (
             <>
               <div className="flex items-center gap-1.5 mb-1">
                 <svg
@@ -264,7 +264,7 @@ export function ModernPersonCard({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
                 <span className="text-xs font-medium text-gray-600">
@@ -272,55 +272,51 @@ export function ModernPersonCard({
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                {shownRules.map((r, idx) => (
+                {/* Times gerenciados */}
+                {managedTeams.map((team) => (
                   <span
-                    key={`${r.type}-${idx}`}
-                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs border ${
-                      r.type === "TEAM"
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : "bg-blue-50 text-blue-700 border-blue-200"
-                    }`}
-                    title={
-                      r.type === "TEAM"
-                        ? `Equipe: ${r.label}`
-                        : `Colaborador: ${r.label}`
-                    }
+                    key={team.id}
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-xs border border-green-200"
+                    title={`Time: ${team.name}`}
                   >
-                    {r.type === "TEAM" ? (
-                      <svg
-                        className="w-3.5 h-3.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        className="w-3.5 h-3.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    )}
-                    <span className="max-w-[9rem] truncate">{r.label}</span>
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                    <span className="max-w-[8rem] truncate">{team.name}</span>
                   </span>
                 ))}
-                {extraRules > 0 && (
-                  <span className="inline-flex items-center px-2 py-0.5 bg-gray-50 text-gray-600 rounded-full text-xs border border-gray-200">
-                    +{extraRules}
+
+                {/* Subordinados individuais */}
+                {shownSubordinates.map((s) => (
+                  <span
+                    key={s.id}
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs border border-blue-200"
+                    title={`Subordinado: ${s.name}`}
+                  >
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-600 text-white text-[10px]">
+                      {s.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                        .slice(0, 2)}
+                    </span>
+                    <span className="max-w-[8rem] truncate">{s.name}</span>
+                  </span>
+                ))}
+                {extraSubordinates > 0 && (
+                  <span className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs border border-blue-200">
+                    +{extraSubordinates}
                   </span>
                 )}
               </div>
@@ -337,7 +333,7 @@ export function ModernPersonCard({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
               <span>Sem subordinados</span>

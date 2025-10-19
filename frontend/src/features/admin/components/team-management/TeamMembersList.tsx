@@ -23,6 +23,7 @@ export function TeamMembersList({
   // Unificar todos os membros em uma única lista
   const allMembers = [...managers, ...members];
   const totalMembers = allMembers.length;
+  const hasLeader = managers.length > 0;
 
   return (
     <div className="bg-white rounded-xl border border-surface-300/60 shadow-lg overflow-hidden">
@@ -98,13 +99,13 @@ export function TeamMembersList({
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                      {!isManager && (
+                      {!isManager && !hasLeader && (
                         <button
                           onClick={() => onPromoteMember(membership.user.id)}
                           className="px-3 py-1.5 text-xs bg-surface-100 text-gray-700 font-medium rounded-lg hover:bg-surface-200 transition-all duration-200 border border-surface-300"
-                          title="Promover a líder"
+                          title="Tornar líder"
                         >
-                          Promover
+                          Tornar Líder
                         </button>
                       )}
                       {isManager && (

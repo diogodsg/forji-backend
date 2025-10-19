@@ -2,9 +2,23 @@ import { useEffect, useState } from "react";
 import { api } from "../../../lib/apiClient";
 
 export interface ReportUser {
-  id: number;
+  id: string;
   name: string;
   email: string;
+}
+
+interface SubordinateResponse {
+  id: string;
+  subordinate: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  team: {
+    id: string;
+    name: string;
+  } | null;
+  ruleType: string;
 }
 
 /**
@@ -19,11 +33,25 @@ export function useMyReports() {
     let active = true;
     (async () => {
       try {
-        const res = await api<ReportUser[]>("/management/subordinates", {
-          auth: true,
-        });
+        const res = await api<SubordinateResponse[]>(
+          "/management/subordinates",
+          {
+            auth: true,
+          }
+        );
+
         if (!active) return;
-        setReports(res || []);
+
+        // Extract subordinate data from the response
+        const extractedReports = (res || [])
+          .filter((item) => item.subordinate) // Only INDIVIDUAL rules have subordinate
+          .map((item) => ({
+            id: item.subordinate.id,
+            name: item.subordinate.name,
+            email: item.subordinate.email,
+          }));
+
+        setReports(extractedReports);
       } catch (e: any) {
         if (!active) return;
         setError(e.message || "Erro ao carregar subordinados");

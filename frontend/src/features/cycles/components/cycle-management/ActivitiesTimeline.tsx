@@ -147,14 +147,10 @@ export function ActivitiesTimeline({
           <h3 className="text-lg font-semibold text-gray-800 mb-2">
             Nenhuma atividade ainda
           </h3>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
-            Comece registrando suas primeiras atividades de desenvolvimento e
-            acompanhe sua evolução!
+          <p className="text-gray-500 max-w-md mx-auto">
+            Comece registrando suas primeiras atividades de desenvolvimento
+            usando os botões da barra de ações acima!
           </p>
-          <button className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-medium text-sm h-10 px-4 rounded-lg hover:opacity-90 transition-all">
-            <Award className="w-4 h-4" />
-            Registrar Primeira Atividade
-          </button>
         </div>
       )}
     </div>

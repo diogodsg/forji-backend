@@ -4,6 +4,10 @@ import { OnboardingModal } from "@/features/admin/components/onboarding";
 import { EnhancedUsersToolbar } from "./EnhancedUsersToolbar";
 import { HierarchyModal } from "@/features/admin/components/hierarchy";
 import { ModernPersonCard } from "@/features/admin/components/cards";
+import {
+  EditUserModal,
+  ChangePasswordModal,
+} from "@/features/admin/components/modals";
 import type { AdminUser } from "@/features/admin/types";
 
 export function WorkflowPeopleTab() {
@@ -12,6 +16,8 @@ export function WorkflowPeopleTab() {
     error,
     removeUser: deleteUser,
     changePassword,
+    updateUser,
+    refresh,
   } = useAdminUsers();
 
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
@@ -21,6 +27,12 @@ export function WorkflowPeopleTab() {
   const [selectedUserForHierarchy, setSelectedUserForHierarchy] =
     useState<AdminUser | null>(null);
   const [showHierarchyModal, setShowHierarchyModal] = useState(false);
+  const [selectedUserForEdit, setSelectedUserForEdit] =
+    useState<AdminUser | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] =
+    useState<AdminUser | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // Quando clicar em "Adicionar Pessoa", abre o modal de onboarding
   // com uma lista vazia (para criar nova pessoa)
@@ -36,9 +48,35 @@ export function WorkflowPeopleTab() {
   };
 
   // Função simples para fechar o modal
-  const handleCloseHierarchyModal = () => {
+  const handleCloseHierarchyModal = async () => {
     setSelectedUserForHierarchy(null);
     setShowHierarchyModal(false);
+    // Atualiza a lista de usuários para refletir as mudanças na hierarquia
+    await refresh();
+  };
+
+  // Função para abrir o modal de edição
+  const handleOpenEditModal = (user: AdminUser) => {
+    setSelectedUserForEdit(user);
+    setShowEditModal(true);
+  };
+
+  // Função para fechar o modal de edição
+  const handleCloseEditModal = () => {
+    setSelectedUserForEdit(null);
+    setShowEditModal(false);
+  };
+
+  // Função para abrir o modal de senha
+  const handleOpenPasswordModal = (user: AdminUser) => {
+    setSelectedUserForPassword(user);
+    setShowPasswordModal(true);
+  };
+
+  // Função para fechar o modal de senha
+  const handleClosePasswordModal = () => {
+    setSelectedUserForPassword(null);
+    setShowPasswordModal(false);
   };
 
   // Filtrar usuários baseado na pesquisa e filtros
@@ -145,11 +183,9 @@ export function WorkflowPeopleTab() {
                 key={user.id}
                 user={user}
                 allUsers={users}
-                onEdit={() => {
-                  /* TODO: Implementar edição */
-                }}
+                onEdit={() => handleOpenEditModal(user)}
                 onHierarchy={() => handleOpenHierarchyModal(user)}
-                onChangePassword={() => changePassword(user.id)}
+                onChangePassword={() => handleOpenPasswordModal(user)}
                 onRemove={() => deleteUser(user.id)}
               />
             ))
@@ -164,6 +200,26 @@ export function WorkflowPeopleTab() {
         users={onboardingUsers}
         allUsers={users}
       />
+
+      {/* Modal de Edição */}
+      {selectedUserForEdit && (
+        <EditUserModal
+          isOpen={showEditModal}
+          onClose={handleCloseEditModal}
+          user={selectedUserForEdit}
+          onUpdate={updateUser}
+        />
+      )}
+
+      {/* Modal de Senha */}
+      {selectedUserForPassword && (
+        <ChangePasswordModal
+          user={selectedUserForPassword}
+          isOpen={showPasswordModal}
+          onClose={handleClosePasswordModal}
+          onChangePassword={changePassword}
+        />
+      )}
 
       {/* Modal de Hierarquias - Novo Modal Limpo */}
       {selectedUserForHierarchy && (

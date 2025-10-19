@@ -1,4 +1,4 @@
-import { usersApi } from "@/lib/api";
+import { usersApi, workspacesApi } from "@/lib/api";
 import type { AdminUser, CreateAdminUserInput } from "../types";
 import type {
   UpdateProfileDto,
@@ -16,10 +16,12 @@ import type {
 export const adminApi = {
   /**
    * Lista todos usuários (usa nova API /users)
+   * Backend já retorna managers, subordinates e times gerenciados incluídos
    */
   async listUsers(): Promise<AdminUser[]> {
     const response = await usersApi.findAll({ page: 1, limit: 1000 });
-    // Mapeia User[] para AdminUser[] (compatibilidade)
+
+    // Backend já retorna managers, reports e managedTeams, apenas mapear para AdminUser
     return response.data.map((user) => ({
       id: user.id, // UUID string
       email: user.email,
@@ -29,8 +31,9 @@ export const adminApi = {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       isAdmin: user.isAdmin || false,
-      managers: [], // TODO: buscar da API de management
-      reports: [], // TODO: buscar da API de management
+      managers: user.managers || [],
+      reports: user.reports || [],
+      managedTeams: user.managedTeams || [],
     }));
   },
 
@@ -66,11 +69,11 @@ export const adminApi = {
   },
 
   /**
-   * Remove usuário (usa nova API /users/:id)
+   * Remove usuário do workspace atual (usa nova API /workspaces/:id/members/:userId)
+   * Nota: Não deleta o usuário, apenas remove do workspace
    */
-  async deleteUser(userId: string): Promise<void> {
-    // UUID
-    await usersApi.remove(userId);
+  async deleteUser(workspaceId: string, userId: string): Promise<void> {
+    await workspacesApi.removeMember(workspaceId, userId);
   },
 
   /**
@@ -96,31 +99,22 @@ export const adminApi = {
   },
 
   /**
-   * Troca senha de usuário (usa nova API /users/:id/password)
+   * Troca senha de usuário (usa nova API /users/:id/reset-password)
+   * Admin pode resetar senha sem conhecer a senha atual
    */
   async changePassword(
     userId: string, // UUID
     newPassword?: string
   ): Promise<{ success: boolean; generatedPassword?: string }> {
-    const password = newPassword || generatePassword();
-
-    // NOTA: Backend precisa de currentPassword, mas admin pode resetar
-    // Por hora, usamos uma senha temporária que será trocada
     try {
-      await usersApi.updatePassword(userId, {
-        currentPassword: "temp-admin-reset", // Senha especial para admin
-        newPassword: password,
-      });
-
+      const result = await usersApi.adminResetPassword(userId, newPassword);
       return {
-        success: true,
-        generatedPassword: password,
+        success: result.success,
+        generatedPassword: result.generatedPassword,
       };
     } catch (error) {
-      console.error("Erro ao trocar senha:", error);
-      throw new Error(
-        "Erro ao trocar senha. Funcionalidade de reset por admin precisa ser implementada no backend."
-      );
+      console.error("Erro ao resetar senha:", error);
+      throw error;
     }
   },
 

@@ -20,10 +20,21 @@ const INITIAL_DATA: OneOnOneData = {
 /**
  * OneOnOneRecorder - 2-Step Wizard
  *
- * **Step 1**: Informações Básicas (participant, date, workingOn, generalNotes)
+ * **Step 1**: Informações Básicas (participant*, date*, workingOn, generalNotes*)
  * **Step 2**: Resultados & Próximos Passos (positivePoints, improvementPoints, nextSteps)
  * **Layout**: 2 colunas (Form + XP Breakdown)
  * **XP System**: Preview dinâmico com bonuses
+ *
+ * Campos obrigatórios (*):
+ * - participant: Nome do participante
+ * - date: Data da reunião
+ * - generalNotes: Anotações gerais (mínimo 1 caractere)
+ *
+ * Campos opcionais (bonificam XP):
+ * - workingOn: Itens de trabalho
+ * - positivePoints: Pontos positivos
+ * - improvementPoints: Pontos de melhoria
+ * - nextSteps: Próximos passos
  */
 export function OneOnOneRecorder({
   isOpen,
@@ -71,8 +82,12 @@ export function OneOnOneRecorder({
   };
 
   // Validation per step
-  const canProceedStep1 = data.participant.trim() !== "" && data.date !== "";
-  const canProceedStep2 = isFormValid(data);
+  // Apenas participante, data e anotações gerais são obrigatórios
+  const canProceedStep1 =
+    (data.participant?.trim() ?? "") !== "" &&
+    data.date !== "" &&
+    (data.generalNotes?.trim() ?? "") !== "";
+  const canProceedStep2 = isFormValid(data); // Mesma validação
 
   const canProceed = currentStep === 1 ? canProceedStep1 : canProceedStep2;
 

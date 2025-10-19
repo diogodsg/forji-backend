@@ -14,8 +14,10 @@ interface TeamSummary {
   id: string;
   name: string;
   description?: string;
-  memberCount: number;
-  status: "ACTIVE" | "ARCHIVED" | "INACTIVE";
+  managers: number;
+  members: number;
+  leaderName?: string | null;
+  createdAt?: string;
 }
 
 interface TeamDetail {
@@ -97,13 +99,23 @@ export function useAdminTeams(): UseAdminTeamsResult {
   /**
    * Converte Team da API para TeamSummary
    */
-  const toTeamSummary = (team: Team): TeamSummary => ({
-    id: team.id,
-    name: team.name,
-    description: team.description,
-    memberCount: team.memberCount || 0,
-    status: team.status,
-  });
+  const toTeamSummary = (team: Team): TeamSummary => {
+    // Backend retorna: { memberCount, managers, members, leaderName }
+    // members = total count
+    // managers = count of managers
+    // leaderName = name of the manager
+    const teamAny = team as any;
+
+    return {
+      id: team.id,
+      name: team.name,
+      description: team.description,
+      managers: teamAny.managers || 0,
+      members: teamAny.members || teamAny.memberCount || 0,
+      leaderName: teamAny.leaderName || null,
+      createdAt: team.createdAt,
+    };
+  };
 
   /**
    * Converte Team com members para TeamDetail
@@ -149,6 +161,7 @@ export function useAdminTeams(): UseAdminTeamsResult {
     setError(null);
     try {
       const teamsList = await teamsApi.findAll({ includeMemberCount: true });
+      console.log("📊 Teams recebidos do backend:", teamsList);
       setTeams(teamsList.map(toTeamSummary));
       setMetrics(calculateMetrics(teamsList));
 
@@ -165,7 +178,8 @@ export function useAdminTeams(): UseAdminTeamsResult {
 
   useEffect(() => {
     refresh(); // Carregamento inicial
-  }, [refresh]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Só carrega uma vez no mount
 
   /**
    * Seleciona team e carrega detalhes com membros
@@ -298,17 +312,19 @@ export function useAdminTeams(): UseAdminTeamsResult {
         // Atualiza contador na lista
         setTeams((prev) =>
           prev.map((t) =>
-            t.id === teamId ? { ...t, memberCount: t.memberCount + 1 } : t
+            t.id === teamId ? { ...t, members: t.members + 1 } : t
           )
         );
 
         // Recarrega detalhes do team selecionado
         if (selectedTeam?.id === teamId) {
+          console.log("🔄 Recarregando team após adicionar membro...");
           const updated = await teamsApi.findOne(teamId, true);
           setSelectedTeam(toTeamDetail(updated));
+          console.log("✅ Team recarregado:", updated);
         }
 
-        toast.success("Membro adicionado com sucesso!", "Membro adicionado");
+        toast.success("Membro adicionado com sucesso!");
       } catch (err) {
         const message = extractErrorMessage(err);
         toast.error(message, "Erro ao adicionar membro");
@@ -330,19 +346,19 @@ export function useAdminTeams(): UseAdminTeamsResult {
         // Atualiza contador na lista
         setTeams((prev) =>
           prev.map((t) =>
-            t.id === teamId
-              ? { ...t, memberCount: Math.max(0, t.memberCount - 1) }
-              : t
+            t.id === teamId ? { ...t, members: Math.max(0, t.members - 1) } : t
           )
         );
 
         // Recarrega detalhes do team selecionado
         if (selectedTeam?.id === teamId) {
+          console.log("🔄 Recarregando team após remover membro...");
           const updated = await teamsApi.findOne(teamId, true);
           setSelectedTeam(toTeamDetail(updated));
+          console.log("✅ Team recarregado:", updated);
         }
 
-        toast.success("Membro removido com sucesso!", "Membro removido");
+        toast.success("Membro removido com sucesso!");
       } catch (err) {
         const message = extractErrorMessage(err);
         toast.error(message, "Erro ao remover membro");
@@ -363,11 +379,13 @@ export function useAdminTeams(): UseAdminTeamsResult {
 
         // Recarrega detalhes do team selecionado
         if (selectedTeam?.id === teamId) {
+          console.log("🔄 Recarregando team após atualizar role...");
           const updated = await teamsApi.findOne(teamId, true);
           setSelectedTeam(toTeamDetail(updated));
+          console.log("✅ Team recarregado:", updated);
         }
 
-        toast.success("Role atualizada com sucesso!", "Role atualizada");
+        toast.success("Role atualizada com sucesso!");
       } catch (err) {
         const message = extractErrorMessage(err);
         toast.error(message, "Erro ao atualizar role");
@@ -399,8 +417,8 @@ export function useAdminTeams(): UseAdminTeamsResult {
       result = result.filter((t) => t.id === teamFilter);
     }
 
-    // Ordenar por nome
-    result.sort((a, b) => a.name.localeCompare(b.name));
+    // Ordenação já vem do backend (por quantidade de membros)
+    // Não reordenar aqui para manter a ordem do backend
 
     return result;
   }, [teams, search, teamFilter]);

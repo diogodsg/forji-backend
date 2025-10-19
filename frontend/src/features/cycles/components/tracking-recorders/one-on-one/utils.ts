@@ -51,10 +51,5 @@ export function calculateCompleteness(data: OneOnOneData): number {
 }
 
 export function isFormValid(data: OneOnOneData): boolean {
-  return !!(
-    data.participant &&
-    data.date &&
-    data.workingOn.length > 0 &&
-    data.generalNotes.trim()
-  );
+  return !!(data.participant && data.date && data.generalNotes?.trim());
 }

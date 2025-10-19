@@ -54,7 +54,7 @@ export class TeamsController {
    */
   @Post()
   create(@CurrentUser() user: any, @Body() createTeamDto: CreateTeamDto) {
-    return this.teamsService.create(user.workspaceId, createTeamDto, user.id);
+    return this.teamsService.create(createTeamDto, user.workspaceId);
   }
 
   /**
@@ -74,7 +74,7 @@ export class TeamsController {
    */
   @Patch(':id')
   update(@Param('id') id: string, @CurrentUser() user: any, @Body() updateTeamDto: UpdateTeamDto) {
-    return this.teamsService.update(id, user.workspaceId, updateTeamDto, user.id);
+    return this.teamsService.update(id, updateTeamDto, user.workspaceId);
   }
 
   /**
@@ -82,7 +82,7 @@ export class TeamsController {
    */
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.teamsService.remove(id, user.workspaceId, user.id);
+    return this.teamsService.remove(id, user.workspaceId);
   }
 
   /**
@@ -98,7 +98,7 @@ export class TeamsController {
    */
   @Post(':id/members')
   addMember(@Param('id') id: string, @CurrentUser() user: any, @Body() addMemberDto: AddMemberDto) {
-    return this.teamsService.addMember(id, user.workspaceId, addMemberDto, user.id);
+    return this.teamsService.addMember(id, addMemberDto, user.workspaceId);
   }
 
   /**
@@ -111,7 +111,7 @@ export class TeamsController {
     @CurrentUser() user: any,
     @Body() updateRoleDto: UpdateMemberRoleDto,
   ) {
-    return this.teamsService.updateMemberRole(id, userId, user.workspaceId, updateRoleDto, user.id);
+    return this.teamsService.updateMemberRole(id, userId, updateRoleDto, user.workspaceId);
   }
 
   /**
@@ -119,6 +119,6 @@ export class TeamsController {
    */
   @Delete(':id/members/:userId')
   removeMember(@Param('id') id: string, @Param('userId') userId: string, @CurrentUser() user: any) {
-    return this.teamsService.removeMember(id, userId, user.workspaceId, user.id);
+    return this.teamsService.removeMember(id, userId, user.workspaceId);
   }
 }
