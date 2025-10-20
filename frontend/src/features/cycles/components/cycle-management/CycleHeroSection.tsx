@@ -8,11 +8,12 @@ interface CycleHeroSectionProps {
   cycle: {
     name: string;
     progress: number;
-    xpCurrent: number;
-    xpNextLevel: number;
+    xpCurrent: number; // XP no nível atual (ex: 1070)
+    xpNextLevel: number; // XP necessário para próximo nível (ex: 2500)
     currentLevel: number;
     streak: number;
     daysRemaining: number;
+    totalXP?: number; // XP total acumulado (ex: 15470)
   };
 }
 
@@ -33,7 +34,8 @@ interface CycleHeroSectionProps {
  * - Informações contextuais (dias restantes, nome do ciclo)
  */
 export function CycleHeroSection({ user, cycle }: CycleHeroSectionProps) {
-  const progressToNextLevel = ((cycle.xpCurrent % 1000) / 1000) * 100;
+  // Cálculos corretos baseados nos dados do backend
+  const progressToNextLevel = (cycle.xpCurrent / cycle.xpNextLevel) * 100;
   const xpToNextLevel = cycle.xpNextLevel - cycle.xpCurrent;
 
   return (
@@ -110,7 +112,7 @@ export function CycleHeroSection({ user, cycle }: CycleHeroSectionProps) {
               </div>
             </div>
             <div className="text-xl text-gray-800 font-semibold">
-              {cycle.xpCurrent.toLocaleString()} XP
+              {(cycle.totalXP || cycle.xpCurrent).toLocaleString()} XP
             </div>
 
             {/* Progress Bar to Next Level */}

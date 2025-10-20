@@ -10,7 +10,7 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import { api } from "@/lib/apiClient";
-import { usePlayerProfile } from "@/features/gamification/hooks/useGamification";
+import { useGamificationProfile } from "../features/cycles/hooks/useGamificationProfile";
 
 interface User {
   id: number;
@@ -42,7 +42,7 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
   const navigate = useNavigate();
 
   // Get gamification data
-  const { profile } = usePlayerProfile();
+  const { profile: gamificationProfile } = useGamificationProfile();
 
   // Auto-focus quando abrir busca
   useEffect(() => {
@@ -200,8 +200,8 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
   };
 
   const getXPProgressPercentage = () => {
-    if (!profile) return 0;
-    const { currentXP, nextLevelXP } = profile;
+    if (!gamificationProfile) return 0;
+    const { currentXP, nextLevelXP } = gamificationProfile;
     if (nextLevelXP === 0) return 100;
     return Math.min(100, (currentXP / nextLevelXP) * 100);
   };
@@ -215,19 +215,19 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
             {/* Left: Level Card */}
             <div className="flex items-center gap-3">
               {/* Level Progress Card - Design System v2 */}
-              {profile && (
+              {gamificationProfile && (
                 <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-brand-50 to-brand-100 border border-brand-200 rounded-xl shadow-soft hover:shadow-md transition-all duration-200 group">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-brand-500 to-brand-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                      {profile.level}
+                      {gamificationProfile.level}
                     </div>
                     <div>
                       <div className="text-xs font-bold text-gray-900 tracking-wide">
-                        Nível {profile.level}
+                        Nível {gamificationProfile.level}
                       </div>
                       <div className="text-xs font-medium text-gray-600 tabular-nums">
-                        {profile.currentXP?.toLocaleString()}/
-                        {profile.nextLevelXP?.toLocaleString()} XP
+                        {gamificationProfile.currentXP?.toLocaleString()}/
+                        {gamificationProfile.nextLevelXP?.toLocaleString()} XP
                       </div>
                     </div>
                   </div>
@@ -505,9 +505,9 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
                       <div className="text-sm font-semibold text-gray-900 truncate max-w-32 tracking-tight">
                         {userName}
                       </div>
-                      {profile && (
+                      {gamificationProfile && (
                         <div className="text-xs font-medium text-brand-600 tabular-nums">
-                          Nível {profile.level}
+                          Nível {gamificationProfile.level}
                         </div>
                       )}
                     </div>
@@ -516,7 +516,7 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
 
                   {userMenuOpen && (
                     <div className="absolute top-full right-0 mt-2 w-72 bg-surface-0 border border-surface-300 rounded-2xl shadow-xl z-50 overflow-hidden">
-                      {profile && (
+                      {gamificationProfile && (
                         <div className="p-6 bg-gradient-to-br from-brand-50 to-brand-100 border-b border-surface-200">
                           <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
@@ -527,8 +527,9 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
                                 {userName}
                               </div>
                               <div className="text-sm font-semibold text-brand-600 tracking-wide">
-                                Nível {profile.level} •{" "}
-                                {profile.currentXP?.toLocaleString()} XP
+                                Nível {gamificationProfile.level} •{" "}
+                                {gamificationProfile.totalXP?.toLocaleString()}{" "}
+                                XP
                               </div>
                             </div>
                           </div>

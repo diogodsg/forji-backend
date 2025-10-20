@@ -151,13 +151,15 @@ export function useXpAnimations() {
     });
 
     // 🎉 Trigger confetti suave junto com XP!
-    // Quantidade de confetti baseada no XP ganho
-    if (xp >= 100) {
-      triggerConfetti("levelup"); // Muito XP = confetti abundante
-    } else if (xp >= 50) {
-      triggerConfetti("achievement"); // XP médio-alto
-    } else {
-      triggerConfetti("default"); // XP normal
+    // Quantidade de confetti baseada no XP ganho (só para XP positivo)
+    if (xp > 0) {
+      if (xp >= 100) {
+        triggerConfetti("levelup"); // Muito XP = confetti abundante
+      } else if (xp >= 50) {
+        triggerConfetti("achievement"); // XP médio-alto
+      } else {
+        triggerConfetti("default"); // XP normal
+      }
     }
 
     // Auto-remove após 2 segundos

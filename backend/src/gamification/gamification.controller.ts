@@ -3,7 +3,6 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nes
 import { GamificationService } from './gamification.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { User } from '@prisma/client';
 import { GamificationProfileResponseDto } from './dto/gamification-profile-response.dto';
 import { BadgeResponseDto } from './dto/badge-response.dto';
 import { AddXpDto } from './dto/add-xp.dto';
@@ -48,8 +47,8 @@ export class GamificationController {
     status: 404,
     description: 'Perfil de gamificação não encontrado',
   })
-  async getProfile(@CurrentUser() user: User): Promise<GamificationProfileResponseDto> {
-    return this.gamificationService.getProfile(user.id);
+  async getProfile(@CurrentUser() user: any): Promise<GamificationProfileResponseDto> {
+    return this.gamificationService.getProfile(user.id, user.workspaceId);
   }
 
   /**
@@ -77,7 +76,7 @@ export class GamificationController {
     status: 404,
     description: 'Perfil de gamificação não encontrado',
   })
-  async getBadges(@CurrentUser() user: User): Promise<BadgeResponseDto[]> {
-    return this.gamificationService.getBadges(user.id);
+  async getBadges(@CurrentUser() user: any): Promise<BadgeResponseDto[]> {
+    return this.gamificationService.getBadges(user.id, user.workspaceId);
   }
 }

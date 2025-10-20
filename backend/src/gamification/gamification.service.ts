@@ -33,14 +33,16 @@ export class GamificationService {
    * @returns Perfil de gamificação completo com badges
    */
   async getProfile(userId: string, workspaceId: string): Promise<GamificationProfileResponseDto> {
-    this.logger.log(`Buscando perfil de gamificação para usuário ${userId} no workspace ${workspaceId}`);
+    this.logger.log(
+      `Buscando perfil de gamificação para usuário ${userId} no workspace ${workspaceId}`,
+    );
 
     const profile = await this.prisma.gamificationProfile.findUnique({
-      where: { 
+      where: {
         unique_user_workspace_gamification: {
           userId,
           workspaceId,
-        }
+        },
       },
       include: {
         badges: {
@@ -50,7 +52,9 @@ export class GamificationService {
     });
 
     if (!profile) {
-      throw new NotFoundException(`Perfil de gamificação não encontrado para usuário ${userId} no workspace ${workspaceId}`);
+      throw new NotFoundException(
+        `Perfil de gamificação não encontrado para usuário ${userId} no workspace ${workspaceId}`,
+      );
     }
 
     // Atualizar streak (verificar se perdeu)
@@ -58,7 +62,10 @@ export class GamificationService {
 
     // Recalcular nível baseado em totalXP
     const level = this.calculateLevel(profile.totalXP);
-    const { nextLevelXP, progressToNextLevel } = this.calculateProgress(profile.totalXP, level);
+    const { nextLevelXP, progressToNextLevel, currentXP } = this.calculateProgress(
+      profile.totalXP,
+      level,
+    );
 
     // Verificar status do streak
     const streakStatus = this.checkStreakStatus(profile.lastActiveAt);
@@ -67,9 +74,9 @@ export class GamificationService {
       id: profile.id,
       userId: profile.userId,
       level,
-      currentXP: profile.currentXP,
+      currentXP, // XP no nível atual (calculado dinamicamente)
       totalXP: profile.totalXP,
-      nextLevelXP,
+      nextLevelXP, // XP necessário para próximo nível
       progressToNextLevel,
       streak: profile.streak,
       streakStatus,
@@ -91,11 +98,11 @@ export class GamificationService {
     this.logger.log(`Listando badges para usuário ${userId} no workspace ${workspaceId}`);
 
     const profile = await this.prisma.gamificationProfile.findUnique({
-      where: { 
+      where: {
         unique_user_workspace_gamification: {
           userId,
           workspaceId,
-        }
+        },
       },
       include: {
         badges: true,
@@ -103,7 +110,9 @@ export class GamificationService {
     });
 
     if (!profile) {
-      throw new NotFoundException(`Perfil de gamificação não encontrado para usuário ${userId} no workspace ${workspaceId}`);
+      throw new NotFoundException(
+        `Perfil de gamificação não encontrado para usuário ${userId} no workspace ${workspaceId}`,
+      );
     }
 
     // Badges disponíveis no sistema
@@ -149,17 +158,17 @@ export class GamificationService {
     );
 
     const profile = await this.prisma.gamificationProfile.findUnique({
-      where: { 
+      where: {
         unique_user_workspace_gamification: {
           userId,
           workspaceId,
-        }
+        },
       },
     });
 
     if (!profile) {
       throw new NotFoundException(
-        `Perfil de gamificação não encontrado para usuário ${userId} no workspace ${workspaceId}`
+        `Perfil de gamificação não encontrado para usuário ${userId} no workspace ${workspaceId}`,
       );
     }
 
@@ -167,20 +176,16 @@ export class GamificationService {
     const newLevel = this.calculateLevel(newTotalXP);
     const leveledUp = newLevel > profile.level;
 
-    // Se subiu de nível, resetar currentXP
-    const newCurrentXP = leveledUp ? 0 : profile.currentXP + xpAmount;
-
-    // Atualizar perfil
+    // Atualizar perfil (currentXP é calculado dinamicamente no getProfile)
     const updatedProfile = await this.prisma.gamificationProfile.update({
-      where: { 
+      where: {
         unique_user_workspace_gamification: {
           userId,
           workspaceId,
-        }
+        },
       },
       data: {
         totalXP: newTotalXP,
-        currentXP: newCurrentXP,
         level: newLevel,
         lastActiveAt: new Date(),
       },
@@ -213,11 +218,11 @@ export class GamificationService {
    */
   async updateStreak(userId: string, workspaceId: string): Promise<void> {
     const profile = await this.prisma.gamificationProfile.findUnique({
-      where: { 
+      where: {
         unique_user_workspace_gamification: {
           userId,
           workspaceId,
-        }
+        },
       },
     });
 
@@ -231,11 +236,11 @@ export class GamificationService {
     if (hoursSinceLastActive > 24) {
       this.logger.log(`Resetando streak do usuário ${userId} (>24h inativo)`);
       await this.prisma.gamificationProfile.update({
-        where: { 
+        where: {
           unique_user_workspace_gamification: {
             userId,
             workspaceId,
-          }
+          },
         },
         data: {
           streak: 1,
@@ -251,11 +256,11 @@ export class GamificationService {
     else if (hoursSinceLastActive <= 24) {
       this.logger.log(`Incrementando streak do usuário ${userId}`);
       await this.prisma.gamificationProfile.update({
-        where: { 
+        where: {
           unique_user_workspace_gamification: {
             userId,
             workspaceId,
-          }
+          },
         },
         data: {
           streak: { increment: 1 },
@@ -275,11 +280,11 @@ export class GamificationService {
     this.logger.log(`Verificando badges para usuário ${userId} no workspace ${workspaceId}`);
 
     const profile = await this.prisma.gamificationProfile.findUnique({
-      where: { 
+      where: {
         unique_user_workspace_gamification: {
           userId,
           workspaceId,
-        }
+        },
       },
       include: {
         badges: true,
@@ -411,12 +416,12 @@ export class GamificationService {
    *
    * @param totalXP - XP total do usuário
    * @param currentLevel - Nível atual
-   * @returns { nextLevelXP, progressToNextLevel }
+   * @returns { currentXP, nextLevelXP, progressToNextLevel }
    */
   private calculateProgress(
     totalXP: number,
     currentLevel: number,
-  ): { nextLevelXP: number; progressToNextLevel: number } {
+  ): { currentXP: number; nextLevelXP: number; progressToNextLevel: number } {
     const nextLevel = currentLevel + 1;
     const xpForNextLevel = Math.pow(nextLevel, 2) * 100;
     const xpForCurrentLevel = Math.pow(currentLevel, 2) * 100;
@@ -425,7 +430,8 @@ export class GamificationService {
     const progress = Math.min(100, Math.floor((xpProgress / xpNeeded) * 100));
 
     return {
-      nextLevelXP: xpNeeded,
+      currentXP: xpProgress, // XP no nível atual
+      nextLevelXP: xpNeeded, // XP necessário para subir de nível
       progressToNextLevel: progress,
     };
   }

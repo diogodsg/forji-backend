@@ -93,12 +93,14 @@ export interface CycleStatsDto {
 
 export interface CreateGoalDto {
   cycleId: string;
+  userId: string;
+  workspaceId: string;
+  type: GoalType;
   title: string;
   description?: string;
-  type: GoalType;
+  startValue: number;
   targetValue: number;
-  initialValue?: number;
-  deadline: string; // ISO 8601
+  unit: string;
 }
 
 export interface UpdateGoalDto {
@@ -319,4 +321,42 @@ export interface PaginatedResponse<T> {
     total: number;
     totalPages: number;
   };
+}
+
+// ==========================================
+// GAMIFICATION TYPES
+// ==========================================
+
+export type BadgeType =
+  | "STREAK_7"
+  | "STREAK_30"
+  | "GOAL_MASTER"
+  | "FAST_LEARNER"
+  | "MENTOR"
+  | "CERTIFIED"
+  | "TEAM_PLAYER";
+
+export interface GamificationProfileResponseDto {
+  id: string;
+  userId: string;
+  level: number;
+  currentXP: number;
+  totalXP: number;
+  nextLevelXP: number; // Corrigir para corresponder ao backend
+  progressToNextLevel: number;
+  streak: number;
+  streakStatus: "active" | "broken" | "new";
+  lastActiveAt: string;
+  badges: BadgeResponseDto[];
+  totalBadges: number;
+  rank: string | null;
+}
+
+export interface BadgeResponseDto {
+  id: string;
+  type: BadgeType;
+  name: string;
+  description: string;
+  earnedAt: string | null;
+  isEarned: boolean;
 }

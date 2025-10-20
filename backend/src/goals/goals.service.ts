@@ -185,6 +185,19 @@ export class GoalsService {
       },
     });
 
+    // Adicionar XP por criar uma meta (25 XP)
+    try {
+      await this.gamificationService.addXP({
+        userId,
+        workspaceId,
+        xpAmount: 25,
+        reason: `Meta criada: "${title}"`,
+      });
+    } catch (error) {
+      console.error('Erro ao adicionar XP por criar meta:', error);
+      // Não falha a criação da meta se XP falhar
+    }
+
     return this.enrichGoal(goal);
   }
 
@@ -448,6 +461,26 @@ export class GoalsService {
 
     // Verifica permissão
     await this.checkPermission(currentUserId, goal.userId, workspaceId);
+
+    // Calcular XP total associado à meta para remover
+    // Por enquanto, remove apenas o XP da criação (25 XP)
+    // TODO: Implementar tracking preciso de XP por meta no futuro
+    const totalXpToRemove = 25;
+
+    // Remover XP do usuário (XP negativo)
+    if (totalXpToRemove > 0) {
+      try {
+        await this.gamificationService.addXP({
+          userId: goal.userId,
+          workspaceId,
+          xpAmount: -totalXpToRemove, // XP negativo remove XP
+          reason: `Meta excluída: "${goal.title}" (remoção de ${totalXpToRemove} XP)`,
+        });
+      } catch (error) {
+        console.error('Erro ao remover XP por exclusão de meta:', error);
+        // Continue com a exclusão mesmo se XP falhar
+      }
+    }
 
     // Soft delete
     await this.prisma.goal.update({

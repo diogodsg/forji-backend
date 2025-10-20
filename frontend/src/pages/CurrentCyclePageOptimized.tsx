@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   CycleHeroSection,
   QuickActionsBar,
@@ -12,6 +13,7 @@ import {
   GoalUpdateRecorder,
 } from "../features/cycles";
 import { CompetenceUpdateRecorder } from "../features/cycles/components/tracking-recorders/competence-update-recorder";
+import { DeleteGoalModal } from "../features/cycles/components/cycle-management/DeleteGoalModal";
 import {
   mockUserData,
   mockCycleData,
@@ -32,6 +34,7 @@ import {
   useActivityMutations,
   useActivitiesTimeline,
 } from "../features/cycles/hooks";
+import { useGamificationProfile } from "../features/cycles/hooks/useGamificationProfile";
 
 /**
  * CurrentCyclePage - Versão Otimizada (Proposta Desenvolvimento Ciclo)
@@ -106,9 +109,18 @@ export function CurrentCyclePageOptimized() {
     refreshActivities,
   } = useIntegratedCycleData();
 
+  // Gamification Profile
+  const {
+    profile: gamificationProfile,
+    loading: gamificationLoading,
+    error: gamificationError,
+    refreshProfile: refreshGamificationProfile,
+  } = useGamificationProfile();
+
   const {
     createGoal,
     updateGoalProgress,
+    deleteGoal,
     loading: goalLoading,
     error: goalError,
   } = useGoalMutations();
@@ -132,11 +144,12 @@ export function CurrentCyclePageOptimized() {
   const cycleData = cycle
     ? {
         ...cycle,
-        // Adicionar campos de gamificação se não existirem (para compatibilidade com UI)
-        xpCurrent: cycle.xpCurrent ?? 0,
-        xpNextLevel: cycle.xpNextLevel ?? 1000,
-        currentLevel: cycle.currentLevel ?? 1,
-        streak: cycle.streak ?? 0,
+        // Usar dados reais de gamificação quando disponíveis
+        xpCurrent: gamificationProfile?.currentXP ?? 0,
+        xpNextLevel: gamificationProfile?.nextLevelXP ?? 1000,
+        currentLevel: gamificationProfile?.level ?? 1,
+        streak: gamificationProfile?.streak ?? 0,
+        totalXP: gamificationProfile?.totalXP ?? 0, // Adicionar totalXP
       }
     : mockCycleData;
 
@@ -194,36 +207,117 @@ export function CurrentCyclePageOptimized() {
   // ==========================================
 
   const handleGoalCreate = async (data: any) => {
-    if (!cycle) {
-      toast.error("Nenhum ciclo ativo encontrado");
+    if (!cycle || !user) {
+      toast.error("Nenhum ciclo ativo ou usuário encontrado");
       return;
     }
 
     try {
-      // Mapear GoalData para CreateGoalDto
+      // Mapear GoalData para CreateGoalDto (usando novos campos)
       const goalDto = {
         cycleId: cycle.id,
+        userId: user.id,
+        workspaceId: user.workspaceId,
+        type: data.type.toUpperCase() as any, // "increase" -> "INCREASE"
         title: data.title,
         description: data.description,
-        type: data.type.toUpperCase() as any, // "increase" -> "INCREASE"
+        startValue: data.successCriterion.currentValue || 0,
         targetValue: data.successCriterion.targetValue || 0,
-        initialValue: data.successCriterion.currentValue || 0,
-        deadline: new Date().toISOString(), // TODO: Usar data do formulário
+        unit: data.successCriterion.unit || "unidades",
       };
 
       const newGoal = await createGoal(goalDto);
 
       if (newGoal) {
         await refreshGoals();
+        // Refresh dos dados de gamificação para mostrar o XP ganho
+        refreshGamificationProfile();
+
+        // Disparar animação de XP (+25 XP por criar meta)
+        triggerXpAnimation(25);
+
         toast.success(
-          `Meta "${newGoal.title}" criada! Ganhe até ${newGoal.xpReward} XP ao completá-la 🎯`,
+          `Meta "${newGoal.title}" criada! Você ganhou 25 XP! 🎯`,
           "Meta Criada"
         );
         handleClose();
       }
     } catch (err) {
-      toast.error("Erro ao criar meta. Tente novamente.");
+      console.error("Erro ao criar meta:", err);
+      toast.error("Erro ao criar meta. Verifique os dados e tente novamente.");
     }
+  };
+
+  // ==========================================
+  // HANDLERS - Goal Delete
+  // ==========================================
+
+  const [deleteModalState, setDeleteModalState] = useState<{
+    isOpen: boolean;
+    goalId: string | null;
+    goalTitle: string;
+    xpLoss: number;
+  }>({
+    isOpen: false,
+    goalId: null,
+    goalTitle: "",
+    xpLoss: 0,
+  });
+
+  const handleGoalDelete = (goalId: string) => {
+    const goal = goalsData.find((g) => g.id === goalId);
+    if (!goal) return;
+
+    // Calcular XP que será perdido (estimativa: 25 XP base + progresso)
+    const xpLoss = 25; // Por enquanto, só o XP da criação
+
+    setDeleteModalState({
+      isOpen: true,
+      goalId,
+      goalTitle: goal.title,
+      xpLoss,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModalState.goalId) return;
+
+    try {
+      const success = await deleteGoal(deleteModalState.goalId);
+
+      if (success) {
+        await refreshGoals();
+        // Refresh dos dados de gamificação para mostrar XP removido
+        refreshGamificationProfile();
+
+        // Disparar animação de XP negativo (perda de XP)
+        triggerXpAnimation(-deleteModalState.xpLoss);
+
+        toast.success(
+          `Meta "${deleteModalState.goalTitle}" excluída. ${deleteModalState.xpLoss} XP foi removido.`,
+          "Meta Excluída"
+        );
+
+        setDeleteModalState({
+          isOpen: false,
+          goalId: null,
+          goalTitle: "",
+          xpLoss: 0,
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao excluir meta:", err);
+      toast.error("Erro ao excluir meta. Tente novamente.");
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalState({
+      isOpen: false,
+      goalId: null,
+      goalTitle: "",
+      xpLoss: 0,
+    });
   };
 
   // ==========================================
@@ -531,7 +625,11 @@ export function CurrentCyclePageOptimized() {
           {/* Goals & Competencies - 50/50 Split */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Goals Dashboard (50%) */}
-            <GoalsDashboard goals={goalsData} onUpdateGoal={handleGoalUpdate} />
+            <GoalsDashboard
+              goals={goalsData}
+              onUpdateGoal={handleGoalUpdate}
+              onDeleteGoal={handleGoalDelete}
+            />
 
             {/* Competencies Section (50%) */}
             <CompetenciesSection
@@ -648,6 +746,17 @@ export function CurrentCyclePageOptimized() {
             : null
         }
       />
+
+      {/* Modal de Exclusão de Meta */}
+      {deleteModalState.isOpen && (
+        <DeleteGoalModal
+          isOpen={deleteModalState.isOpen}
+          goalTitle={deleteModalState.goalTitle}
+          xpLoss={25} // 25 XP perdidos por meta excluída
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
     </div>
   );
 }

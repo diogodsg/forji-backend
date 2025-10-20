@@ -6,6 +6,7 @@ import {
   Zap,
   Check,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 
 interface Goal {
@@ -20,6 +21,7 @@ interface Goal {
 interface GoalsDashboardProps {
   goals: Goal[];
   onUpdateGoal: (goalId: string) => void;
+  onDeleteGoal: (goalId: string) => void;
 }
 
 /**
@@ -36,7 +38,11 @@ interface GoalsDashboardProps {
  * - needs-attention: Amarelo, precisa update
  * - completed: Azul, meta concluída
  */
-export function GoalsDashboard({ goals, onUpdateGoal }: GoalsDashboardProps) {
+export function GoalsDashboard({
+  goals,
+  onUpdateGoal,
+  onDeleteGoal,
+}: GoalsDashboardProps) {
   const allGoalsUpdated = goals.every((goal) => {
     if (goal.status === "completed") return true;
     if (!goal.lastUpdate) return false;
@@ -90,6 +96,7 @@ export function GoalsDashboard({ goals, onUpdateGoal }: GoalsDashboardProps) {
             key={goal.id}
             goal={goal}
             onUpdate={() => onUpdateGoal(goal.id)}
+            onDelete={() => onDeleteGoal(goal.id)}
           />
         ))}
       </div>
@@ -112,7 +119,15 @@ export function GoalsDashboard({ goals, onUpdateGoal }: GoalsDashboardProps) {
 }
 
 // Goal Card Component
-function GoalCard({ goal, onUpdate }: { goal: Goal; onUpdate: () => void }) {
+function GoalCard({
+  goal,
+  onUpdate,
+  onDelete,
+}: {
+  goal: Goal;
+  onUpdate: () => void;
+  onDelete: () => void;
+}) {
   // Converter lastUpdate para Date se for string (vindo do backend)
   const lastUpdateDate = goal.lastUpdate
     ? typeof goal.lastUpdate === "string"
@@ -177,6 +192,15 @@ function GoalCard({ goal, onUpdate }: { goal: Goal; onUpdate: () => void }) {
           </div>
           <p className="text-sm text-gray-600 mb-3">{goal.description}</p>
         </div>
+
+        {/* Botão de Exclusão - Top Right */}
+        <button
+          onClick={onDelete}
+          className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200"
+          title="Excluir meta"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Progress Bar */}
@@ -230,15 +254,17 @@ function GoalCard({ goal, onUpdate }: { goal: Goal; onUpdate: () => void }) {
           )}
         </div>
 
-        {goal.status !== "completed" && (
-          <button
-            onClick={onUpdate}
-            className="inline-flex items-center gap-1 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-all"
-          >
-            <TrendingUp className="w-3 h-3" />
-            Update +15 XP
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {goal.status !== "completed" && (
+            <button
+              onClick={onUpdate}
+              className="inline-flex items-center gap-1 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-all"
+            >
+              <TrendingUp className="w-3 h-3" />
+              Update +15 XP
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Almost Done Badge */}

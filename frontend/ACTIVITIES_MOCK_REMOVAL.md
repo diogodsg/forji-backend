@@ -9,6 +9,7 @@ Remover o fallback para dados mock das atividades, garantindo que a aplicação 
 ### 1. **Removido fallback para mockActivitiesData** (`CurrentCyclePageOptimized.tsx`)
 
 #### ❌ Antes:
+
 ```typescript
 const activitiesData =
   !loading.activities && cycle
@@ -17,6 +18,7 @@ const activitiesData =
 ```
 
 #### ✅ Depois:
+
 ```typescript
 // ✅ Usar apenas dados reais do backend (nunca mock)
 // Se não houver atividades, retorna array vazio []
@@ -26,6 +28,7 @@ const activitiesData = timelineActivities;
 ### 2. **Removido importação de mockActivitiesData**
 
 #### ❌ Antes:
+
 ```typescript
 import {
   mockUserData,
@@ -37,6 +40,7 @@ import {
 ```
 
 #### ✅ Depois:
+
 ```typescript
 import {
   mockUserData,
@@ -49,6 +53,7 @@ import {
 ### 3. **Removido console.log de debug**
 
 #### ❌ Antes:
+
 ```typescript
 const safeActivities = Array.isArray(activities) ? activities : [];
 
@@ -63,6 +68,7 @@ const timelineActivities = useActivitiesTimeline(safeActivities);
 ```
 
 #### ✅ Depois:
+
 ```typescript
 const safeActivities = Array.isArray(activities) ? activities : [];
 const timelineActivities = useActivitiesTimeline(safeActivities);
@@ -71,11 +77,13 @@ const timelineActivities = useActivitiesTimeline(safeActivities);
 ## 🎨 Comportamento Atual
 
 ### Quando não há atividades:
+
 - ✅ `timelineActivities` retorna `[]` (array vazio)
 - ✅ `ActivitiesTimeline` mostra empty state: "Sem atividades registradas ainda"
 - ✅ Nenhum dado fake é exibido
 
 ### Quando há atividades:
+
 - ✅ Backend retorna atividades via API `/cycles/:id/activities`
 - ✅ `useActivitiesTimeline` mapeia para formato da Timeline
 - ✅ Componente renderiza atividades reais (1:1, Mentoria, Certificação)
@@ -84,23 +92,25 @@ const timelineActivities = useActivitiesTimeline(safeActivities);
 
 Os seguintes mocks ainda são usados como fallback:
 
-| Componente | Mock Data | Razão |
-|------------|-----------|-------|
-| CycleHeroSection | `mockCycleData` | Fallback quando não há ciclo ativo |
-| User Display | `mockUserData` | Fallback quando não há user autenticado |
-| GoalsDashboard | `mockGoalsData` | Fallback quando `goals.length === 0` |
+| Componente          | Mock Data              | Razão                                       |
+| ------------------- | ---------------------- | ------------------------------------------- |
+| CycleHeroSection    | `mockCycleData`        | Fallback quando não há ciclo ativo          |
+| User Display        | `mockUserData`         | Fallback quando não há user autenticado     |
+| GoalsDashboard      | `mockGoalsData`        | Fallback quando `goals.length === 0`        |
 | CompetenciesSection | `mockCompetenciesData` | Fallback quando `competencies.length === 0` |
-| ActivitiesTimeline | ~~mockActivitiesData~~ | ✅ **Removido - só usa dados reais** |
+| ActivitiesTimeline  | ~~mockActivitiesData~~ | ✅ **Removido - só usa dados reais**        |
 
 ## 🧪 Como Testar
 
 1. **Sem atividades cadastradas**:
+
    ```bash
    # Limpar atividades do ciclo
    # Resultado esperado: Empty state "Sem atividades registradas ainda"
    ```
 
 2. **Com atividades cadastradas**:
+
    ```bash
    # Criar atividade via frontend ou seed
    npx prisma db seed

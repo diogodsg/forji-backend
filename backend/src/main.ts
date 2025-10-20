@@ -77,6 +77,11 @@ async function bootstrap() {
     },
   });
 
+  // Serve the raw Swagger JSON (e.g. at /api/docs-json)
+  app.getHttpAdapter().get('/api/docs-json', (req, res) => {
+    res.json(document);
+  });
+
   const port = process.env.PORT || 8000;
   await app.listen(port);
 
