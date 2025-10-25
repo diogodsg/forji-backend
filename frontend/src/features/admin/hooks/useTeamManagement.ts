@@ -35,11 +35,12 @@ export function useTeamManagement() {
             id: hook.selectedTeam.id, // UUID string mantido
             name: hook.selectedTeam.name,
             description: hook.selectedTeam.description,
-            memberships: hook.selectedTeam.members.map((m) => ({
+            memberships: hook.selectedTeam.memberships.map((m) => ({
               user: {
-                id: m.userId, // UUID string mantido
-                name: m.name,
-                email: m.email,
+                id: m.user.id, // UUID string mantido
+                name: m.user.name,
+                email: m.user.email,
+                avatarId: m.user.avatarId,
               },
               role: m.role, // Mantém role como está (MANAGER ou MEMBER)
             })),

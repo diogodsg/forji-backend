@@ -23,10 +23,31 @@ export default function SuccessCriterionForm({
       {/* INCREASE */}
       {goalType === "increase" && (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Valor Inicial *
+              </label>
+              <input
+                type="number"
+                value={successCriterion?.startValue || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    successCriterion: {
+                      ...successCriterion!,
+                      startValue: Number(e.target.value),
+                    },
+                  })
+                }
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                placeholder="5"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Valor Atual *
               </label>
               <input
                 type="number"
@@ -41,7 +62,7 @@ export default function SuccessCriterionForm({
                   })
                 }
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                placeholder="5"
+                placeholder="8"
                 required
               />
             </div>
@@ -88,25 +109,36 @@ export default function SuccessCriterionForm({
               />
             </div>
           </div>
-          {successCriterion?.currentValue !== undefined &&
+          {successCriterion?.startValue !== undefined &&
+            successCriterion?.currentValue !== undefined &&
             successCriterion?.targetValue !== undefined && (
               <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200">
                 <p className="text-xs text-emerald-800">
-                  <strong>Crescimento:</strong> De{" "}
-                  {successCriterion.currentValue} para{" "}
+                  <strong>Meta:</strong> De {successCriterion.startValue} para{" "}
                   {successCriterion.targetValue} {successCriterion.unit}
-                  {successCriterion.currentValue > 0 && (
+                  {successCriterion.startValue > 0 && (
                     <span className="ml-1 font-semibold">
                       (+
-                      {(
+                      {Math.round(
                         ((successCriterion.targetValue -
-                          successCriterion.currentValue) /
-                          successCriterion.currentValue) *
-                        100
-                      ).toFixed(0)}
-                      %)
+                          successCriterion.startValue) /
+                          successCriterion.startValue) *
+                          100
+                      )}
+                      % crescimento)
                     </span>
                   )}
+                  <br />
+                  <strong>Progresso atual:</strong>{" "}
+                  {successCriterion.currentValue} {successCriterion.unit}(
+                  {Math.round(
+                    ((successCriterion.currentValue -
+                      successCriterion.startValue) /
+                      (successCriterion.targetValue -
+                        successCriterion.startValue)) *
+                      100
+                  )}
+                  % concluído)
                 </p>
               </div>
             )}
@@ -116,7 +148,28 @@ export default function SuccessCriterionForm({
       {/* DECREASE */}
       {goalType === "decrease" && (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Valor Inicial *
+              </label>
+              <input
+                type="number"
+                value={successCriterion?.startValue || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    successCriterion: {
+                      ...successCriterion!,
+                      startValue: Number(e.target.value),
+                    },
+                  })
+                }
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                placeholder="20"
+                required
+              />
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
                 Valor Atual *
@@ -134,7 +187,7 @@ export default function SuccessCriterionForm({
                   })
                 }
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                placeholder="20"
+                placeholder="15"
                 required
               />
             </div>
@@ -176,29 +229,41 @@ export default function SuccessCriterionForm({
                   })
                 }
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                placeholder="horas..."
+                placeholder="bugs..."
                 required
               />
             </div>
           </div>
-          {successCriterion?.currentValue !== undefined &&
+          {successCriterion?.startValue !== undefined &&
+            successCriterion?.currentValue !== undefined &&
             successCriterion?.targetValue !== undefined && (
               <div className="p-2 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-xs text-blue-800">
-                  <strong>Redução:</strong> De {successCriterion.currentValue}{" "}
-                  para {successCriterion.targetValue} {successCriterion.unit}
-                  {successCriterion.currentValue > 0 && (
+                  <strong>Meta:</strong> De {successCriterion.startValue} para{" "}
+                  {successCriterion.targetValue} {successCriterion.unit}
+                  {successCriterion.startValue > 0 && (
                     <span className="ml-1 font-semibold">
                       (
-                      {(
-                        ((successCriterion.currentValue -
+                      {Math.round(
+                        ((successCriterion.startValue -
                           successCriterion.targetValue) /
-                          successCriterion.currentValue) *
-                        100
-                      ).toFixed(0)}
-                      % menos)
+                          successCriterion.startValue) *
+                          100
+                      )}
+                      % redução)
                     </span>
                   )}
+                  <br />
+                  <strong>Progresso atual:</strong>{" "}
+                  {successCriterion.currentValue} {successCriterion.unit}(
+                  {Math.round(
+                    ((successCriterion.startValue -
+                      successCriterion.currentValue) /
+                      (successCriterion.startValue -
+                        successCriterion.targetValue)) *
+                      100
+                  )}
+                  % concluído)
                 </p>
               </div>
             )}

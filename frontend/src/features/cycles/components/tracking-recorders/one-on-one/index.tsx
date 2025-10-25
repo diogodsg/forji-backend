@@ -101,6 +101,10 @@ export function OneOnOneRecorder({
     (data.generalNotes.length > 50 ? 50 : 0);
   const totalXP = baseXP + bonusXP;
 
+  const isEditMode = Boolean(
+    prefillData && Object.keys(prefillData).length > 0
+  );
+
   return createPortal(
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div
@@ -111,6 +115,7 @@ export function OneOnOneRecorder({
           currentStep={currentStep}
           totalXP={totalXP}
           onClose={onClose}
+          isEditMode={isEditMode}
         />
 
         <div className="flex-1 px-6 py-6  overflow-hidden">
@@ -129,6 +134,7 @@ export function OneOnOneRecorder({
           onSubmit={handleSubmit}
           canProceed={canProceed}
           isSubmitting={isSubmitting}
+          isEditMode={isEditMode}
         />
       </div>
     </div>,

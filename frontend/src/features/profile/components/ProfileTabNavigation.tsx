@@ -1,16 +1,18 @@
-import { FiStar, FiTarget } from "react-icons/fi";
+import { FiStar } from "react-icons/fi";
 import type { ProfileTab, ProfileTabConfig } from "../types/profile";
 
 interface ProfileTabNavigationProps {
   activeTab: ProfileTab;
   onTabChange: (tab: ProfileTab) => void;
   isCurrentUser: boolean;
+  canViewPrivateInfo?: boolean; // Nova prop para gestores
 }
 
 export function ProfileTabNavigation({
   activeTab,
   onTabChange,
   isCurrentUser,
+  canViewPrivateInfo = false,
 }: ProfileTabNavigationProps) {
   const tabs: ProfileTabConfig[] = [
     {
@@ -19,16 +21,10 @@ export function ProfileTabNavigation({
       icon: FiStar,
       requiresPrivateAccess: false,
     },
-    {
-      id: "pdi",
-      label: "PDI",
-      icon: FiTarget,
-      requiresPrivateAccess: true,
-    },
   ];
 
   const visibleTabs = tabs.filter(
-    (tab) => !tab.requiresPrivateAccess || isCurrentUser
+    (tab) => !tab.requiresPrivateAccess || isCurrentUser || canViewPrivateInfo
   );
 
   return (

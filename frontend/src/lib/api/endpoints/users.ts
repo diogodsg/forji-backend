@@ -22,6 +22,7 @@ export interface User {
   position?: string;
   bio?: string;
   githubId?: string;
+  avatarId?: string;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
@@ -80,6 +81,7 @@ export interface UpdateUserDto {
   email?: string;
   position?: string;
   bio?: string;
+  avatarId?: string;
   isAdmin?: boolean;
   isManager?: boolean;
 }

@@ -253,9 +253,6 @@ export class CompetenciesService {
   ): Promise<CompetencyResponseDto> {
     const { cycleId, userId, name, category, currentLevel, targetLevel } = createCompetencyDto;
 
-    // Verifica permissão
-    await this.checkPermission(currentUserId, userId, 'workspace'); // workspaceId será validado pelo ciclo
-
     // Valida níveis
     if (targetLevel <= currentLevel) {
       throw new BadRequestException('Nível alvo deve ser maior que o nível atual');
@@ -273,6 +270,9 @@ export class CompetenciesService {
     if (!cycle) {
       throw new BadRequestException('Ciclo não encontrado ou não pertence a este usuário');
     }
+
+    // Verifica permissão (agora que temos o workspaceId do ciclo)
+    await this.checkPermission(currentUserId, userId, cycle.workspaceId);
 
     // Cria competência
     const competency = await this.prisma.competency.create({

@@ -75,8 +75,30 @@ export class ManagementService {
   }
 
   async isUserManagedBy(userId: string, managerId: string, workspaceId: string) {
+    console.log('🔍 [ManagementService] isUserManagedBy chamado:', {
+      userId,
+      managerId,
+      workspaceId,
+    });
+
     const hierarchy = await this.getUserHierarchyUseCase.execute(userId, workspaceId);
+
+    console.log('🔍 [ManagementService] Hierarquia retornada:', {
+      userId,
+      managers: hierarchy.managers,
+      managersCount: hierarchy.managers?.length || 0,
+    });
+
     // Check if managerId is in the user's managers list
-    return hierarchy.managers?.some((m: any) => m.id === managerId) || false;
+    // Note: hierarchy.managers contains objects with { id: ruleId, manager: { id: managerId, ... } }
+    const result = hierarchy.managers?.some((m: any) => m.manager?.id === managerId) || false;
+
+    console.log('🔍 [ManagementService] Resultado da verificação:', {
+      result,
+      managerId,
+      managerIds: hierarchy.managers?.map((m: any) => m.manager?.id) || [],
+    });
+
+    return result;
   }
 }

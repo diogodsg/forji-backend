@@ -42,6 +42,26 @@ export class UpdateGoalDto {
   targetValue?: number;
 
   @ApiProperty({
+    description: 'Valor inicial',
+    example: 5,
+    required: false,
+  })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  startValue?: number;
+
+  @ApiProperty({
+    description: 'Valor atual',
+    example: 10,
+    required: false,
+  })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  currentValue?: number;
+
+  @ApiProperty({
     description: 'Unidade de medida',
     example: 'PRs',
     required: false,

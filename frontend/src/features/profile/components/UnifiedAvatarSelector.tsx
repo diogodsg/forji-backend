@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 import {
   dicebearAvatarOptions,
@@ -25,9 +26,9 @@ export function UnifiedAvatarSelector({
     onClose();
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 bg-surface-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-surface-0 rounded-2xl shadow-xl border border-surface-200 max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-surface-0 rounded-2xl shadow-xl border border-surface-200 max-w-4xl w-full max-h-[90vh] overflow-visible">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-surface-200">
           <div>
@@ -35,7 +36,7 @@ export function UnifiedAvatarSelector({
               Escolher Avatar
             </h2>
             <p className="text-sm text-surface-600 mt-1 font-medium">
-              Selecione um avatar pixel art que represente você
+              Selecione um avatar que represente você
             </p>
           </div>
           <button
@@ -47,7 +48,7 @@ export function UnifiedAvatarSelector({
         </div>
 
         {/* Avatar Grid */}
-        <div className="p-6 overflow-y-auto max-h-[600px]">
+        <div className="p-6 pt-12 overflow-y-auto overflow-x-hidden max-h-[600px]">
           <div className="grid gap-4 grid-cols-5 md:grid-cols-8 lg:grid-cols-10">
             {dicebearAvatarOptions.map((avatar) => (
               <DiceBearAvatarOption
@@ -64,7 +65,7 @@ export function UnifiedAvatarSelector({
         <div className="px-6 py-4 border-t border-surface-200 bg-surface-50">
           <div className="flex items-center justify-between">
             <p className="text-xs text-surface-500 font-medium">
-              {dicebearAvatarOptions.length} avatares pixel art disponíveis
+              {dicebearAvatarOptions.length} avatares disponíveis
             </p>
             <button
               onClick={onClose}
@@ -77,6 +78,8 @@ export function UnifiedAvatarSelector({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
 
 // DiceBear Avatar Option Component
@@ -127,8 +130,13 @@ function DiceBearAvatarOption({
         </div>
       )}
 
-      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-surface-900 text-surface-0 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 font-medium">
+      {/* Tooltip - aparece acima com z-index alto para ficar sobre o header */}
+      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-nowrap z-[9999] font-semibold shadow-2xl border border-gray-700">
         {avatar.name}
+        {/* Arrow apontando para baixo */}
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-px">
+          <div className="border-8 border-transparent border-t-gray-900"></div>
+        </div>
       </div>
     </button>
   );

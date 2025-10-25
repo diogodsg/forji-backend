@@ -1,8 +1,8 @@
 export interface CompetenceData {
   name: string;
   category: string;
-  initialLevel: "beginner" | "intermediate" | "advanced" | "expert";
-  targetLevel: "beginner" | "intermediate" | "advanced" | "expert";
+  initialLevel: 1 | 2 | 3 | 4 | 5;
+  targetLevel: 1 | 2 | 3 | 4 | 5;
   description: string;
   evidences: string[];
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { AdminUser } from "@/features/admin/types";
+import { Avatar } from "@/features/profile/components/Avatar";
 
 interface ModernPersonCardProps {
   user: AdminUser;
@@ -53,23 +54,17 @@ export function ModernPersonCard({
   // Times gerenciados
   const managedTeams = user.managedTeams || [];
 
-  // Gerar iniciais para avatar
-  const initials = user.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
   return (
     <div className="bg-white rounded-2xl border border-surface-300 shadow-sm hover:shadow-md transition-all duration-200 hover:border-violet-300 p-4 flex flex-col h-full min-h-[280px]">
       {/* Header: Avatar + Nome + Badges */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          {/* Avatar com gradient violet */}
-          <div className="h-11 w-11 inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-sm flex-shrink-0">
-            <span className="text-white font-semibold text-sm">{initials}</span>
-          </div>
+          {/* Avatar usando componente Avatar */}
+          <Avatar
+            avatarId={user.avatarId}
+            size="md"
+            className="flex-shrink-0"
+          />
 
           {/* Info principal */}
           <div className="min-w-0 flex-1">

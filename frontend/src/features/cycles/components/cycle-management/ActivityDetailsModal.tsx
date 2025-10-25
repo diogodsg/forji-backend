@@ -8,46 +8,32 @@ import {
   Calendar,
   Clock,
   Star,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-interface Activity {
-  id: string;
-  type: "oneOnOne" | "mentoring" | "certification" | "milestone" | "competency";
-  title: string;
-  person?: string;
-  topics?: string[];
-  outcomes?: string;
-  rating?: number;
-  progress?: {
-    from: number;
-    to: number;
-  };
-  xpEarned: number;
-  timestamp: Date;
-  description?: string;
-  duration?: number; // em minutos
-  nextSteps?: string[];
-  // Campos específicos de 1:1
-  workingOn?: string[];
-  generalNotes?: string;
-  positivePoints?: string[];
-  improvementPoints?: string[];
-}
+import type { Activity } from "../../hooks/useActivitiesTimeline";
 
 interface ActivityDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   activity: Activity | null;
+  onDelete?: (activityId: string) => void;
 }
 
 export function ActivityDetailsModal({
   isOpen,
   onClose,
   activity,
+  onDelete,
 }: ActivityDetailsModalProps) {
   if (!isOpen || !activity) return null;
+
+  // Garantir que timestamp é um Date
+  const timestamp =
+    typeof activity.timestamp === "string"
+      ? new Date(activity.timestamp)
+      : activity.timestamp;
 
   const typeConfig = {
     oneOnOne: {
@@ -115,7 +101,7 @@ export function ActivityDetailsModal({
               </h2>
               <p className="text-sm text-white/80">
                 {config.label} •{" "}
-                {format(activity.timestamp, "d 'de' MMMM 'de' yyyy", {
+                {format(timestamp, "d 'de' MMMM 'de' yyyy", {
                   locale: ptBR,
                 })}
               </p>
@@ -157,7 +143,7 @@ export function ActivityDetailsModal({
               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-200">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="w-4 h-4" />
-                  {format(activity.timestamp, "d 'de' MMMM", { locale: ptBR })}
+                  {format(timestamp, "d 'de' MMMM", { locale: ptBR })}
                 </div>
                 {activity.duration && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -344,13 +330,26 @@ export function ActivityDetailsModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-surface-200 px-6 py-4 bg-surface-50 flex items-center justify-end flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:opacity-90 transition-all"
-          >
-            Fechar
-          </button>
+        <div className="border-t border-surface-200 px-6 py-4 bg-surface-50 flex items-center justify-between flex-shrink-0">
+          {/* Delete Button (if onDelete provided) */}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(activity.id)}
+              className="px-4 py-2 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Excluir Atividade
+            </button>
+          )}
+
+          <div className={onDelete ? "" : "w-full flex justify-end"}>
+            <button
+              onClick={onClose}
+              className="px-6 py-2 rounded-lg font-medium bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:opacity-90 transition-all"
+            >
+              Fechar
+            </button>
+          </div>
         </div>
       </div>
     </div>,

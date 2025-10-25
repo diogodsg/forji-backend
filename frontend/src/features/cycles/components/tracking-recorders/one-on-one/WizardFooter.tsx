@@ -7,6 +7,7 @@ interface WizardFooterProps {
   onSubmit: () => void;
   canProceed: boolean;
   isSubmitting: boolean;
+  isEditMode?: boolean;
 }
 
 export default function WizardFooter({
@@ -16,6 +17,7 @@ export default function WizardFooter({
   onSubmit,
   canProceed,
   isSubmitting,
+  isEditMode = false,
 }: WizardFooterProps) {
   return (
     <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
@@ -66,7 +68,11 @@ export default function WizardFooter({
             `}
           >
             <Check className="w-4 h-4" />
-            {isSubmitting ? "Salvando..." : "Concluir 1:1"}
+            {isSubmitting
+              ? "Salvando..."
+              : isEditMode
+              ? "Atualizar 1:1"
+              : "Concluir 1:1"}
           </button>
         )}
       </div>

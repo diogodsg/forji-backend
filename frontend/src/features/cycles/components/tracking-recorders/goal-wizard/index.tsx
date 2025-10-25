@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import type { GoalData } from "./types";
 import { validateStep1, validateStep2, calculateGoalXP } from "./utils";
@@ -12,6 +12,7 @@ interface GoalCreatorWizardProps {
   onClose: () => void;
   onSave: (data: GoalData) => void;
   prefillData?: Partial<GoalData>;
+  isEditing?: boolean; // Novo prop para indicar modo de edição
 }
 
 /**
@@ -35,6 +36,7 @@ export default function GoalCreatorWizard({
   onClose,
   onSave,
   prefillData,
+  isEditing = false,
 }: GoalCreatorWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<Partial<GoalData>>({
@@ -43,6 +45,19 @@ export default function GoalCreatorWizard({
     type: prefillData?.type || undefined,
     successCriterion: prefillData?.successCriterion || undefined,
   });
+
+  // Atualizar formData quando prefillData mudar (para modo de edição)
+  useEffect(() => {
+    if (prefillData && isOpen) {
+      console.log("🔄 Atualizando formData com prefillData:", prefillData);
+      setFormData({
+        title: prefillData.title || "",
+        description: prefillData.description || "",
+        type: prefillData.type || undefined,
+        successCriterion: prefillData.successCriterion || undefined,
+      });
+    }
+  }, [prefillData, isOpen]);
 
   const { total: xpTotal, bonuses: xpBonuses } = calculateGoalXP(formData);
   const isStep1Valid = validateStep1(formData);
@@ -70,6 +85,13 @@ export default function GoalCreatorWizard({
 
   const handleClose = () => {
     setCurrentStep(1);
+    // Reset formData to initial state
+    setFormData({
+      title: "",
+      description: "",
+      type: undefined,
+      successCriterion: undefined,
+    });
     onClose();
   };
 
@@ -84,7 +106,11 @@ export default function GoalCreatorWizard({
         className="bg-white rounded-xl shadow-2xl w-[1100px] h-[680px] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <WizardHeader currentStep={currentStep} onClose={handleClose} />
+        <WizardHeader
+          currentStep={currentStep}
+          onClose={handleClose}
+          isEditing={isEditing}
+        />
 
         <div className="flex-1 overflow-y-auto px-8 py-6">
           {currentStep === 1 && (
@@ -115,6 +141,7 @@ export default function GoalCreatorWizard({
             onBack={handleBack}
             onNext={handleNext}
             onCancel={handleClose}
+            isEditing={isEditing}
           />
         </form>
       </div>

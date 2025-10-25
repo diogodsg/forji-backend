@@ -19,14 +19,13 @@ Seguindo a arquitetura feature-first do projeto:
 ```
 src/features/profile/
 ├── components/           # Componentes UI
-│   ├── ProfilePage.tsx          # Página principal
-│   ├── ProfileHeader.tsx        # Cabeçalho com avatar e info
+│   ├── ProfilePage.tsx          # Página principal (sem aba PDI)
+│   ├── ProfileHeader.tsx        # Cabeçalho com avatar, info e botão PDI para gestores
 │   ├── StatsGrid.tsx           # Grid de estatísticas
 │   ├── TimelineSection.tsx     # Timeline de atividades
-│   ├── ProfileTabNavigation.tsx # Sistema de tabs
+│   ├── ProfileTabNavigation.tsx # Sistema de tabs (apenas Gamificação)
 │   ├── GamificationTab.tsx     # Tab de gamificação
-│   ├── PDITab.tsx              # Tab de PDI
-│   ├── ConfigurationTab.tsx    # Configurações de privacidade
+│   └── ConfigurationTab.tsx    # Configurações de privacidade
 │   └── index.ts
 ├── hooks/                # Hooks para API
 │   ├── useProfile.ts           # Hook principal do perfil
@@ -65,21 +64,26 @@ Implementado seguindo o design system v2.0 violet:
 - Status indicators (próprio perfil, colega de equipe)
 - Progresso de nível com barra animada
 - Badges de team e streak
+- **Novo**: Botão "Editar PDI" para gestores
 
 ### 2. Sistema de Tabs
 
 - **Gamificação**: Stats, badges e conquistas
-- **PDI**: Progresso e histórico (apenas perfil próprio)
-- **Timeline**: Atividades e marcos
-- **Configurações**: Privacidade (apenas perfil próprio)
 
-### 3. Controle de Privacidade
+### 3. Botão Editar PDI para Gestores
+
+- **Localização**: No ProfileHeader para gestores visualizando subordinados
+- **Comportamento**: Redireciona para `/users/{userId}/pdi/edit`
+- **Condição**: Visível apenas quando `!isCurrentUser && canViewPrivateInfo`
+- **Design**: Gradiente verde com ícone de target e emoji
+
+### 4. Controle de Privacidade
 
 - **4 Níveis**: Private, Team, Company, Public
-- **Controle Granular**: Badges, stats, timeline, PDI separadamente
+- **Controle Granular**: Badges, stats, timeline separadamente
 - **Settings Adicionais**: Team contributions, streak visibility
 
-### 4. Timeline Inteligente
+### 5. Timeline Inteligente
 
 - **Filtros**: Por tipo de atividade
 - **Paginação**: Load more com lazy loading
@@ -185,8 +189,8 @@ const { profileData, loading, error, isCurrentUser } = useProfile(userId);
 ## 🔒 Segurança e Privacidade
 
 - **Controle de Acesso**: Verificação automática de permissões
-- **Dados Sensíveis**: PDI e configurações apenas para usuário próprio
-- **Managers**: Acesso especial conforme hierarquia
+- **Dados Sensíveis**: Configurações apenas para usuário próprio
+- **Managers**: Acesso especial conforme hierarquia (botão Editar PDI)
 - **Public View**: Filtros automáticos para visitantes
 
 ---

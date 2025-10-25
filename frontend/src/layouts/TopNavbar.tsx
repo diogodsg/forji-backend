@@ -9,17 +9,10 @@ import {
   FiChevronDown,
   FiLogOut,
 } from "react-icons/fi";
-import { api } from "@/lib/apiClient";
+import { usersApi, type User } from "@/lib/api/endpoints/users";
 import { useGamificationProfile } from "../features/cycles/hooks/useGamificationProfile";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  position?: string;
-  bio?: string;
-  githubId?: string;
-}
+import { useAuth } from "@/features/auth";
+import { Avatar } from "@/features/profile/components/Avatar";
 
 interface TopNavbarProps {
   userName: string;
@@ -41,7 +34,8 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
   const notificationsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Get gamification data
+  // Get user and gamification data
+  const { user } = useAuth();
   const { profile: gamificationProfile } = useGamificationProfile();
 
   // Auto-focus quando abrir busca
@@ -98,12 +92,7 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
     const timeoutId = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const results = await api<User[]>(
-          `/auth/search?q=${encodeURIComponent(searchQuery)}`,
-          {
-            auth: true,
-          }
-        );
+        const results = await usersApi.search(searchQuery);
         setSearchResults(results);
         setSelectedIndex(-1);
       } catch (error) {
@@ -171,15 +160,6 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
     setSearchQuery("");
     setSearchResults([]);
     setSelectedIndex(-1);
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   const highlightMatch = (text: string, query: string) => {
@@ -329,9 +309,11 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
                                 }
                               `}
                             >
-                              <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center text-white font-medium text-sm mr-3">
-                                {getInitials(user.name)}
-                              </div>
+                              <Avatar
+                                avatarId={user.avatarId}
+                                size="sm"
+                                className="flex-shrink-0 mr-3"
+                              />
                               <div className="flex-1 min-w-0">
                                 <div className="text-sm font-medium text-gray-900">
                                   {highlightMatch(user.name, searchQuery)}
@@ -489,18 +471,17 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-3 px-3 py-2 hover:bg-surface-100 rounded-xl transition-all duration-150 hover:scale-105 group"
                   >
-                    <div
-                      className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center text-white font-semibold text-sm shadow-md transition-all duration-150 hover:scale-110 hover:shadow-lg hover:from-brand-600 hover:to-brand-700 cursor-pointer relative group/avatar"
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate("/me");
                         setUserMenuOpen(false);
                       }}
+                      className="transition-all duration-150 hover:scale-110"
                       title="Clique para ver seu perfil"
                     >
-                      {getInitials(userName)}
-                      <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-150 pointer-events-none" />
-                    </div>
+                      <Avatar avatarId={user?.avatarId} size="sm" />
+                    </button>
                     <div className="hidden md:block text-left">
                       <div className="text-sm font-semibold text-gray-900 truncate max-w-32 tracking-tight">
                         {userName}
@@ -519,9 +500,7 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
                       {gamificationProfile && (
                         <div className="p-6 bg-gradient-to-br from-brand-50 to-brand-100 border-b border-surface-200">
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
-                              {getInitials(userName)}
-                            </div>
+                            <Avatar avatarId={user?.avatarId} size="lg" />
                             <div>
                               <div className="text-lg font-bold text-gray-900 tracking-tight">
                                 {userName}

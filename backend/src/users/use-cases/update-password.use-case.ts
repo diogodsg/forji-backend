@@ -25,8 +25,8 @@ export class UpdatePasswordUseCase {
       throw new ForbiddenException('You can only update your own password');
     }
 
-    // 2. Find user
-    const user = await this.usersRepository.findById(id);
+    // 2. Find user with password
+    const user = await this.usersRepository.findByIdWithPassword(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }

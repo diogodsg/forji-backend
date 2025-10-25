@@ -45,6 +45,7 @@ export interface TeamMember {
     name: string;
     email: string;
     position?: string;
+    avatarId?: string;
   };
 }
 

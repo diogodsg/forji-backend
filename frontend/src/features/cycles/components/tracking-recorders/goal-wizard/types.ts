@@ -12,8 +12,9 @@ export interface GoalData {
   successCriterion: {
     type: GoalType;
     // Para increase/decrease/percentage
-    currentValue?: number;
-    targetValue?: number;
+    startValue?: number; // Valor inicial
+    currentValue?: number; // Valor atual
+    targetValue?: number; // Valor meta
     unit?: string;
     // Para binary
     completed?: boolean;

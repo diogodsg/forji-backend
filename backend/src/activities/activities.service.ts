@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
 import { ActivityResponseDto, TimelineResponseDto } from './dto/activity-response.dto';
 import { ActivityType } from '@prisma/client';
 
@@ -120,8 +121,21 @@ export class ActivitiesService {
       certificationData,
     } = createActivityDto;
 
-    // Verifica permissão
-    await this.checkPermission(currentUserId, userId, 'workspace'); // workspaceId será validado pelo ciclo
+    // Valida se o ciclo existe e pertence ao usuário PRIMEIRO
+    const cycle = await this.prisma.cycle.findFirst({
+      where: {
+        id: cycleId,
+        userId,
+        deletedAt: null,
+      },
+    });
+
+    if (!cycle) {
+      throw new BadRequestException('Ciclo não encontrado ou não pertence a este usuário');
+    }
+
+    // Verifica permissão usando o workspaceId do ciclo
+    await this.checkPermission(currentUserId, userId, cycle.workspaceId);
 
     // Valida que dados específicos foram fornecidos para o tipo
     if (type === ActivityType.ONE_ON_ONE && !oneOnOneData) {
@@ -138,19 +152,6 @@ export class ActivitiesService {
       throw new BadRequestException(
         'Dados de certificação são obrigatórios para atividades do tipo CERTIFICATION',
       );
-    }
-
-    // Valida se o ciclo existe e pertence ao usuário
-    const cycle = await this.prisma.cycle.findFirst({
-      where: {
-        id: cycleId,
-        userId,
-        deletedAt: null,
-      },
-    });
-
-    if (!cycle) {
-      throw new BadRequestException('Ciclo não encontrado ou não pertence a este usuário');
     }
 
     // Calcula XP
@@ -223,7 +224,7 @@ export class ActivitiesService {
     }
 
     // Busca atividade completa com dados específicos
-    return this.findOne(activity.id, currentUserId, 'workspace');
+    return this.findOne(activity.id, currentUserId, cycle.workspaceId);
   }
 
   /**
@@ -309,6 +310,129 @@ export class ActivitiesService {
     await this.checkPermission(currentUserId, activity.userId, workspaceId);
 
     return this.formatActivity(activity);
+  }
+
+  /**
+   * Atualiza atividade existente
+   */
+  async update(
+    id: string,
+    updateActivityDto: UpdateActivityDto,
+    currentUserId: string,
+    workspaceId: string,
+  ): Promise<ActivityResponseDto> {
+    // Busca atividade existente
+    const activity = await this.prisma.activity.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+      include: {
+        oneOnOne: true,
+        mentoring: true,
+        certification: true,
+      },
+    });
+
+    if (!activity) {
+      throw new NotFoundException(`Atividade com ID ${id} não encontrada`);
+    }
+
+    // Verifica permissão
+    await this.checkPermission(currentUserId, activity.userId, workspaceId);
+
+    const { title, description, duration, oneOnOneData, mentoringData, certificationData } =
+      updateActivityDto;
+
+    // Atualiza dados principais
+    const updatedActivity = await this.prisma.activity.update({
+      where: { id },
+      data: {
+        title: title ?? activity.title,
+        description: description ?? activity.description,
+        duration: duration ?? activity.duration,
+      },
+      include: {
+        oneOnOne: true,
+        mentoring: true,
+        certification: true,
+      },
+    });
+
+    // Atualiza dados específicos do tipo se fornecidos
+    if (oneOnOneData && activity.type === ActivityType.ONE_ON_ONE && activity.oneOnOne) {
+      await this.prisma.oneOnOneActivity.update({
+        where: { id: activity.oneOnOne.id },
+        data: {
+          participantName: oneOnOneData.participantName ?? activity.oneOnOne.participantName,
+          workingOn:
+            oneOnOneData.workingOn !== undefined
+              ? oneOnOneData.workingOn
+              : (activity.oneOnOne.workingOn as any),
+          generalNotes: oneOnOneData.generalNotes ?? activity.oneOnOne.generalNotes,
+          positivePoints:
+            oneOnOneData.positivePoints !== undefined
+              ? oneOnOneData.positivePoints
+              : (activity.oneOnOne.positivePoints as any),
+          improvementPoints:
+            oneOnOneData.improvementPoints !== undefined
+              ? oneOnOneData.improvementPoints
+              : (activity.oneOnOne.improvementPoints as any),
+          nextSteps:
+            oneOnOneData.nextSteps !== undefined
+              ? oneOnOneData.nextSteps
+              : (activity.oneOnOne.nextSteps as any),
+        },
+      });
+    }
+
+    if (mentoringData && activity.type === ActivityType.MENTORING && activity.mentoring) {
+      await this.prisma.mentoringActivity.update({
+        where: { id: activity.mentoring.id },
+        data: {
+          menteeName: mentoringData.menteeName ?? activity.mentoring.menteeName,
+          topics:
+            mentoringData.topics !== undefined
+              ? mentoringData.topics
+              : (activity.mentoring.topics as any),
+          progressFrom: mentoringData.progressFrom ?? activity.mentoring.progressFrom,
+          progressTo: mentoringData.progressTo ?? activity.mentoring.progressTo,
+          outcomes: mentoringData.outcomes ?? activity.mentoring.outcomes,
+        },
+      });
+    }
+
+    if (
+      certificationData &&
+      activity.type === ActivityType.CERTIFICATION &&
+      activity.certification
+    ) {
+      await this.prisma.certificationActivity.update({
+        where: { id: activity.certification.id },
+        data: {
+          certificationName:
+            certificationData.certificationName ?? activity.certification.certificationName,
+          topics:
+            certificationData.topics !== undefined
+              ? certificationData.topics
+              : (activity.certification.topics as any),
+          outcomes: certificationData.outcomes ?? activity.certification.outcomes,
+          rating: certificationData.rating ?? activity.certification.rating,
+        },
+      });
+    }
+
+    // Recarrega atividade com todas as relações
+    const reloadedActivity = await this.prisma.activity.findUnique({
+      where: { id },
+      include: {
+        oneOnOne: true,
+        mentoring: true,
+        certification: true,
+      },
+    });
+
+    return this.formatActivity(reloadedActivity);
   }
 
   /**

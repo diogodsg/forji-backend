@@ -7,7 +7,7 @@
 
 export const mockUserData = {
   name: "João Silva",
-  initials: "JS",
+  avatarId: "avataaars-1", // Usando um ID de avatar DiceBear válido
   avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=joao",
   level: 12,
   currentXP: 2840,

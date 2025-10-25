@@ -10,11 +10,9 @@ interface Step2DetailsProps {
 
 const CATEGORIES = [
   { value: "technical", label: "Técnica", icon: "Code" },
+  { value: "behavioral", label: "Comportamental", icon: "Heart" },
   { value: "leadership", label: "Liderança", icon: "Users" },
-  { value: "soft-skills", label: "Soft Skills", icon: "Heart" },
-  { value: "business", label: "Negócio", icon: "TrendingUp" },
-  { value: "methodology", label: "Metodologia", icon: "Settings" },
-  { value: "language", label: "Idioma", icon: "Globe" },
+  { value: "business", label: "Negócios", icon: "TrendingUp" },
 ];
 
 export function Step2Details({ data, onChange }: Step2DetailsProps) {
@@ -36,20 +34,17 @@ export function Step2Details({ data, onChange }: Step2DetailsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full overflow-hidden">
-      {/* Main Content - 2/3 with scroll */}
-      <div
-        className="lg:col-span-2 overflow-y-auto px-4"
-        style={{ maxHeight: "calc(680px - 180px)" }}
-      >
-        <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+      {/* Main Content - 2/3 without scroll */}
+      <div className="lg:col-span-2 px-4">
+        <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
               <FileText className="w-5 h-5 text-brand-600" />
               Detalhes e Evidências
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Categoria */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
@@ -82,14 +77,12 @@ export function Step2Details({ data, onChange }: Step2DetailsProps) {
                   value={data.description}
                   onChange={(e) => onChange("description", e.target.value)}
                   placeholder="Descreva o que você aprendeu, como aplicou e qual foi o impacto..."
-                  rows={4}
+                  rows={3}
                   className="w-full px-4 py-2 border border-surface-300 rounded-lg focus:ring-2 focus:ring-brand-400 focus:border-brand-500 focus:outline-none transition-all duration-200 resize-none"
                 />
                 <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                   <FileText className="w-3 h-3" />
-                  <span>
-                    Descrições detalhadas (+100 caracteres) ganham +15 XP
-                  </span>
+                  <span>Descreva o que você aprendeu e como aplicou</span>
                 </div>
               </div>
 
@@ -99,11 +92,11 @@ export function Step2Details({ data, onChange }: Step2DetailsProps) {
                   <Link2 className="w-4 h-4" />
                   Evidências
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-32 overflow-y-auto">
                   {data.evidences.map((evidence, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                      className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200"
                     >
                       <span className="flex-1 text-sm text-gray-700 truncate">
                         {evidence}
@@ -128,8 +121,7 @@ export function Step2Details({ data, onChange }: Step2DetailsProps) {
                 <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                   <Link2 className="w-3 h-3" />
                   <span>
-                    Certificados, projetos, artigos, links (2+ evidências = +30
-                    XP)
+                    Certificados, projetos, artigos, links como referência
                   </span>
                 </div>
               </div>

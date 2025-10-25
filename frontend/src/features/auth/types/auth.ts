@@ -9,6 +9,7 @@ export interface AuthUser {
   githubId?: string;
   position?: string;
   bio?: string;
+  avatarId?: string;
   workspaceId?: string; // UUID do workspace ativo
 }
 

@@ -7,7 +7,10 @@ import {
   Check,
   Sparkles,
   Trash2,
+  Edit3,
 } from "lucide-react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 
 interface Goal {
   id: string;
@@ -21,7 +24,9 @@ interface Goal {
 interface GoalsDashboardProps {
   goals: Goal[];
   onUpdateGoal: (goalId: string) => void;
+  onEditGoal: (goalId: string) => void;
   onDeleteGoal: (goalId: string) => void;
+  onCreateGoal?: () => void;
 }
 
 /**
@@ -41,8 +46,16 @@ interface GoalsDashboardProps {
 export function GoalsDashboard({
   goals,
   onUpdateGoal,
+  onEditGoal,
   onDeleteGoal,
+  onCreateGoal,
 }: GoalsDashboardProps) {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+
   const allGoalsUpdated = goals.every((goal) => {
     if (goal.status === "completed") return true;
     if (!goal.lastUpdate) return false;
@@ -57,6 +70,24 @@ export function GoalsDashboard({
 
   const totalXPAvailable =
     goals.filter((g) => g.status !== "completed").length * 15;
+
+  const handleDeleteClick = (goalId: string, goalTitle: string) => {
+    setGoalToDelete({ id: goalId, title: goalTitle });
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (goalToDelete) {
+      onDeleteGoal(goalToDelete.id);
+      setDeleteModalOpen(false);
+      setGoalToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setGoalToDelete(null);
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-surface-300 p-6">
@@ -96,7 +127,8 @@ export function GoalsDashboard({
             key={goal.id}
             goal={goal}
             onUpdate={() => onUpdateGoal(goal.id)}
-            onDelete={() => onDeleteGoal(goal.id)}
+            onEdit={() => onEditGoal(goal.id)}
+            onDelete={() => handleDeleteClick(goal.id, goal.title)}
           />
         ))}
       </div>
@@ -108,12 +140,71 @@ export function GoalsDashboard({
             <Target className="w-8 h-8 text-gray-400" />
           </div>
           <p className="text-gray-500 mb-4">Nenhuma meta definida ainda</p>
-          <button className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-medium text-sm h-10 px-4 rounded-lg hover:opacity-90 transition-all">
-            <Target className="w-4 h-4" />
-            Criar Primeira Meta
-          </button>
+          {onCreateGoal && (
+            <button
+              onClick={onCreateGoal}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-medium text-sm h-10 px-4 rounded-lg hover:opacity-90 transition-all"
+            >
+              <Target className="w-4 h-4" />
+              Criar Primeira Meta
+            </button>
+          )}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen &&
+        goalToDelete &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Excluir Meta
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Esta ação não pode ser desfeita
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-gray-700 mb-2">
+                Tem certeza que deseja excluir a meta:
+              </p>
+
+              <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                <p className="font-medium text-gray-800">
+                  "{goalToDelete.title}"
+                </p>
+              </div>
+
+              <p className="text-sm text-gray-600 mb-6">
+                Todo o progresso desta meta será perdido permanentemente.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelDelete}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Excluir Meta
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
@@ -122,10 +213,12 @@ export function GoalsDashboard({
 function GoalCard({
   goal,
   onUpdate,
+  onEdit,
   onDelete,
 }: {
   goal: Goal;
   onUpdate: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 }) {
   // Converter lastUpdate para Date se for string (vindo do backend)
@@ -167,10 +260,51 @@ function GoalCard({
       progressColor: "from-blue-400 to-blue-600",
       label: "Concluída",
     },
+    // Backend statuses fallback
+    ACTIVE: {
+      icon: Target,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      border: "border-blue-200",
+      progressColor: "from-blue-400 to-blue-600",
+      label: "Ativa",
+    },
+    PENDING: {
+      icon: AlertTriangle,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      progressColor: "from-amber-400 to-amber-600",
+      label: "Pendente",
+    },
+    IN_PROGRESS: {
+      icon: Target,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      border: "border-blue-200",
+      progressColor: "from-blue-400 to-blue-600",
+      label: "Em progresso",
+    },
+    COMPLETED: {
+      icon: CheckCircle,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+      border: "border-emerald-200",
+      progressColor: "from-emerald-400 to-emerald-600",
+      label: "Concluída",
+    },
   };
 
-  const config = statusConfig[goal.status];
-  const StatusIcon = config.icon;
+  // Fallback para status desconhecidos
+  const config = statusConfig[goal.status] || statusConfig["on-track"];
+  const StatusIcon = config?.icon || Target;
+
+  // Debug para identificar status não mapeados
+  if (!statusConfig[goal.status]) {
+    console.warn(
+      `⚠️ Status não mapeado encontrado: "${goal.status}" para goal "${goal.title}"`
+    );
+  }
 
   return (
     <div
@@ -193,14 +327,23 @@ function GoalCard({
           <p className="text-sm text-gray-600 mb-3">{goal.description}</p>
         </div>
 
-        {/* Botão de Exclusão - Top Right */}
-        <button
-          onClick={onDelete}
-          className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200"
-          title="Excluir meta"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        {/* Action Buttons - Top Right */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onEdit}
+            className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-md transition-all duration-200"
+            title="Editar meta"
+          >
+            <Edit3 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onDelete}
+            className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200"
+            title="Excluir meta"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Progress Bar */}

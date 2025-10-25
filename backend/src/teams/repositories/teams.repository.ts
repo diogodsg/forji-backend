@@ -43,6 +43,7 @@ export class TeamsRepository {
                 email: true,
                 name: true,
                 position: true,
+                avatarId: true,
               },
             },
           },
@@ -105,6 +106,7 @@ export class TeamsRepository {
                   email: true,
                   name: true,
                   position: true,
+                  avatarId: true,
                 },
               },
             },
@@ -120,6 +122,7 @@ export class TeamsRepository {
                 select: {
                   id: true,
                   name: true,
+                  avatarId: true,
                 },
               },
             },

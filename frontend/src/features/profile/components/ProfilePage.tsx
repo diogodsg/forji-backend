@@ -5,7 +5,6 @@ import { ProfileTabNavigation } from "./ProfileTabNavigation";
 import { GamificationTab } from "./GamificationTab";
 import { useProfile } from "../hooks/useProfile";
 import { usePlayerProfile } from "@/features/gamification";
-import { CurrentCyclePageOptimized } from "@/features/cycles";
 import type { ProfileTab } from "../types/profile";
 
 export function ProfilePage() {
@@ -38,6 +37,7 @@ export function ProfilePage() {
     profileError,
     isCurrentUser,
     canEdit,
+    canViewPrivateInfo: profileData?.canViewPrivateInfo,
   });
 
   if (profileLoading) {
@@ -107,6 +107,8 @@ export function ProfilePage() {
             canEdit={canEdit}
             onEditProfile={handleEditProfile}
             onUpdateAvatar={updateAvatar}
+            canViewPrivateInfo={profileData?.canViewPrivateInfo || false}
+            userId={userId}
           />
         </div>
 
@@ -117,6 +119,7 @@ export function ProfilePage() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             isCurrentUser={isCurrentUser}
+            canViewPrivateInfo={profileData?.canViewPrivateInfo || false}
           />
 
           {/* Tab Content */}
@@ -129,8 +132,6 @@ export function ProfilePage() {
                 loading={gamificationLoading}
               />
             )}
-
-            {activeTab === "pdi" && <CurrentCyclePageOptimized />}
           </div>
         </div>
       </div>

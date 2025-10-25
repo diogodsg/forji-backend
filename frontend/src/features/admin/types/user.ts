@@ -5,6 +5,7 @@ export interface UserRow {
   isAdmin?: boolean;
   position?: string | null;
   bio?: string | null;
+  avatarId?: string; // Avatar ID
   createdAt: string;
   updatedAt: string;
   managers: { id: string }[]; // UUID[]

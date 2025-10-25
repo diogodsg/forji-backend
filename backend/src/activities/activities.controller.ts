@@ -1,7 +1,18 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Patch,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ActivitiesService } from './activities.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
 import { ActivityResponseDto, TimelineResponseDto } from './dto/activity-response.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -83,6 +94,23 @@ export class ActivitiesController {
   @ApiResponse({ status: 403, description: 'Sem permissão para visualizar esta atividade' })
   async findOne(@Param('id') id: string, @CurrentUser() user: any): Promise<ActivityResponseDto> {
     return this.activitiesService.findOne(id, user.userId, user.workspaceId);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Atualizar atividade existente' })
+  @ApiResponse({
+    status: 200,
+    description: 'Atividade atualizada com sucesso',
+    type: ActivityResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Atividade não encontrada' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para editar esta atividade' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateActivityDto: UpdateActivityDto,
+    @CurrentUser() user: any,
+  ): Promise<ActivityResponseDto> {
+    return this.activitiesService.update(id, updateActivityDto, user.userId, user.workspaceId);
   }
 
   @Delete(':id')

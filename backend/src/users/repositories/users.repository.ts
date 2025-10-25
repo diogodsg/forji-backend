@@ -16,6 +16,36 @@ export class UsersRepository {
   async findById(id: string) {
     return this.prisma.user.findUnique({
       where: { id, deletedAt: null },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        position: true,
+        bio: true,
+        avatarId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  /**
+   * Find user by ID with password (for authentication operations)
+   */
+  async findByIdWithPassword(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        position: true,
+        bio: true,
+        avatarId: true,
+        password: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
@@ -76,6 +106,7 @@ export class UsersRepository {
         name: true,
         position: true,
         bio: true,
+        avatarId: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -125,6 +156,7 @@ export class UsersRepository {
         name: true,
         position: true,
         bio: true,
+        avatarId: true,
       },
     });
   }
@@ -160,6 +192,7 @@ export class UsersRepository {
         name: true,
         position: true,
         bio: true,
+        avatarId: true,
         createdAt: true,
         updatedAt: true,
       },

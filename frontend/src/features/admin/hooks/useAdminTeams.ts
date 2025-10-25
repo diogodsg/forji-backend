@@ -24,13 +24,9 @@ interface TeamDetail {
   id: string;
   name: string;
   description?: string;
-  status: "ACTIVE" | "ARCHIVED" | "INACTIVE";
-  members: Array<{
-    userId: string;
-    name: string;
-    email: string;
+  memberships: Array<{
+    user: { id: string; name: string; email: string; avatarId?: string };
     role: TeamMemberRole;
-    position?: string;
   }>;
 }
 
@@ -124,13 +120,14 @@ export function useAdminTeams(): UseAdminTeamsResult {
     id: team.id,
     name: team.name,
     description: team.description,
-    status: team.status,
-    members: (team.members || []).map((m) => ({
-      userId: m.userId,
-      name: m.user.name,
-      email: m.user.email,
+    memberships: (team.members || []).map((m) => ({
+      user: {
+        id: m.user.id,
+        name: m.user.name,
+        email: m.user.email,
+        avatarId: m.user.avatarId,
+      },
       role: m.role,
-      position: m.user.position,
     })),
   });
 

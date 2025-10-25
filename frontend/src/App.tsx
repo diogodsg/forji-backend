@@ -39,6 +39,11 @@ const ProfilePage = lazy(() =>
     default: m.ProfilePage,
   }))
 );
+const PDIEditPage = lazy(() =>
+  import("./pages/PDIEditPage").then((m) => ({
+    default: m.PDIEditPage,
+  }))
+);
 const TeamsPage = lazy(() => import("./pages/TeamsPage"));
 const HomePage = lazy(() => import("./pages/HomePage"));
 
@@ -239,14 +244,6 @@ function InnerApp() {
         showManager={!!user.isManager}
         showAdmin={!!user.isAdmin}
       >
-        {/* Debug temporário */}
-        {import.meta.env.DEV && (
-          <div className="fixed bottom-4 right-4 bg-black/80 text-white text-xs p-2 rounded z-50 font-mono">
-            isAdmin: {user.isAdmin ? "true" : "false"} | isManager:{" "}
-            {user.isManager ? "true" : "false"}
-          </div>
-        )}
-
         <Suspense fallback={<PageLoading />}>
           <Routes>
             {/* Dashboard Gamificado como homepage */}
@@ -270,6 +267,9 @@ function InnerApp() {
 
             {/* User Search & Feedback */}
             <Route path="/users/:userId/profile" element={<ProfilePage />} />
+
+            {/* PDI Management for Managers */}
+            <Route path="/users/:userId/pdi/edit" element={<PDIEditPage />} />
 
             {/* New Profile System */}
             <Route path="/me" element={<ProfilePage />} />

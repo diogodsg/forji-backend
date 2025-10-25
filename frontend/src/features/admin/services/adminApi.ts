@@ -28,6 +28,7 @@ export const adminApi = {
       name: user.name,
       position: user.position || null,
       bio: user.bio || null,
+      avatarId: user.avatarId, // Avatar ID
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       isAdmin: user.isAdmin || false,

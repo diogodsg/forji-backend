@@ -31,7 +31,7 @@ function transformBackendUser(backendUser: any): AuthUser {
     name: backendUser.name,
     position: backendUser.position,
     bio: backendUser.bio,
-    githubId: backendUser.githubId,
+    avatarId: backendUser.avatarId,
     createdAt: backendUser.createdAt,
     updatedAt: backendUser.updatedAt,
     workspaceId: backendUser.currentWorkspaceId || backendUser.workspaceId, // Adiciona workspaceId

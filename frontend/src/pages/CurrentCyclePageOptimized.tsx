@@ -119,6 +119,7 @@ export function CurrentCyclePageOptimized() {
 
   const {
     createGoal,
+    updateGoal,
     updateGoalProgress,
     deleteGoal,
     loading: goalLoading,
@@ -157,29 +158,36 @@ export function CurrentCyclePageOptimized() {
   const userData = user
     ? {
         name: user.name.split(" ")[0], // Primeiro nome
-        initials: user.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .substring(0, 2)
-          .toUpperCase(),
+        avatarId: user.avatarId,
       }
     : mockUserData;
 
   // Mapear goals do backend para formato do GoalsDashboard
   const goalsData =
     goals.length > 0
-      ? goals.map((goal) => ({
-          ...goal, // Manter todos os campos originais
-          progress: goal.currentValue || 0,
-          lastUpdate: goal.updatedAt, // Backend retorna updatedAt como string ISO
-          status:
-            goal.status === "COMPLETED"
-              ? ("completed" as const)
-              : (goal.currentValue || 0) >= (goal.targetValue || 0) * 0.8
-              ? ("on-track" as const)
-              : ("needs-attention" as const),
-        }))
+      ? goals.map((goal) => {
+          console.log("🎯 Processando goal para visualização:", {
+            id: goal.id,
+            title: goal.title,
+            type: goal.type,
+            currentValue: goal.currentValue,
+            targetValue: goal.targetValue,
+            calculatedProgress: goal.progress,
+            status: goal.status,
+          });
+
+          return {
+            ...goal, // Manter todos os campos originais
+            progress: goal.progress || 0, // Usar o progresso calculado pelo backend
+            lastUpdate: goal.updatedAt, // Backend retorna updatedAt como string ISO
+            status:
+              goal.status === "COMPLETED"
+                ? ("completed" as const)
+                : (goal.progress || 0) >= 80 // Usar progress ao invés de currentValue
+                ? ("on-track" as const)
+                : ("needs-attention" as const),
+          };
+        })
       : mockGoalsData;
 
   // Mapear competencies do backend para formato do CompetenciesSection
@@ -242,9 +250,24 @@ export function CurrentCyclePageOptimized() {
         );
         handleClose();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro ao criar meta:", err);
-      toast.error("Erro ao criar meta. Verifique os dados e tente novamente.");
+
+      // Extrair mensagem de erro mais específica se disponível
+      let errorMessage =
+        "Erro ao criar meta. Verifique os dados e tente novamente.";
+
+      if (err?.response?.data?.message) {
+        if (Array.isArray(err.response.data.message)) {
+          errorMessage = `Erro: ${err.response.data.message.join(", ")}`;
+        } else {
+          errorMessage = `Erro: ${err.response.data.message}`;
+        }
+      } else if (err?.message) {
+        errorMessage = `Erro: ${err.message}`;
+      }
+
+      toast.error(errorMessage, "Erro ao Criar Meta");
     }
   };
 
@@ -262,6 +285,14 @@ export function CurrentCyclePageOptimized() {
     goalId: null,
     goalTitle: "",
     xpLoss: 0,
+  });
+
+  const [editModalState, setEditModalState] = useState<{
+    isOpen: boolean;
+    goalData: any | null;
+  }>({
+    isOpen: false,
+    goalData: null,
   });
 
   const handleGoalDelete = (goalId: string) => {
@@ -321,18 +352,198 @@ export function CurrentCyclePageOptimized() {
   };
 
   // ==========================================
+  // HANDLERS - Goal Edit
+  // ==========================================
+
+  const handleGoalEdit = (goalId: string) => {
+    const goal = goalsData.find((g) => g.id === goalId);
+    if (!goal) return;
+
+    console.log("🔍 Meta encontrada para edição:", goal);
+
+    // Mapear tipos do backend para o frontend
+    const typeMapping: Record<string, string> = {
+      INCREASE: "increase",
+      DECREASE: "decrease",
+      PERCENTAGE: "percentage",
+      BINARY: "binary",
+    };
+
+    const wizardType = typeMapping[goal.type] || goal.type.toLowerCase();
+
+    // Transformar os dados da meta para o formato do wizard
+    const goalData = {
+      title: goal.title,
+      description: goal.description,
+      type: wizardType,
+      deadline: goal.deadline,
+      successCriterion: {
+        type: wizardType,
+        // Para metas increase/decrease/percentage - usar valores atuais da meta
+        startValue: goal.startValue,
+        currentValue: goal.currentValue,
+        targetValue: goal.targetValue,
+        unit: goal.unit || "",
+        // Para metas binary
+        completed: wizardType === "binary" ? goal.progress >= 100 : false,
+      },
+      // Manter uma referência ao ID original para buscar depois
+      _originalId: goalId,
+    };
+
+    console.log("📝 Dados transformados para o wizard:", goalData);
+
+    setEditModalState({
+      isOpen: true,
+      goalData,
+    });
+  };
+
+  const handleGoalEditSave = async (updatedData: any) => {
+    if (!editModalState.goalData) return;
+
+    try {
+      // Usar o ID original armazenado nos dados da meta
+      const goalId = editModalState.goalData._originalId;
+
+      if (!goalId) {
+        toast.error("ID da meta não encontrado.");
+        return;
+      }
+
+      // Mapear tipos do frontend para o backend
+      const typeMapping: Record<string, string> = {
+        increase: "INCREASE",
+        decrease: "DECREASE",
+        percentage: "PERCENTAGE",
+        binary: "BINARY",
+      };
+
+      const backendType =
+        typeMapping[updatedData.type] || updatedData.type.toUpperCase();
+
+      // Transformar os dados do wizard para o formato da API
+      const updateDto = {
+        title: updatedData.title,
+        description: updatedData.description,
+        type: backendType,
+        deadline: updatedData.deadline,
+        targetValue: updatedData.successCriterion?.targetValue,
+        // Incluir startValue para permitir edição do valor inicial
+        ...(updatedData.successCriterion?.startValue !== undefined && {
+          startValue: updatedData.successCriterion.startValue,
+        }),
+        // Incluir currentValue para permitir edição do valor atual
+        ...(updatedData.successCriterion?.currentValue !== undefined && {
+          currentValue: updatedData.successCriterion.currentValue,
+        }),
+        // Adicionar unit se disponível
+        ...(updatedData.successCriterion?.unit && {
+          unit: updatedData.successCriterion.unit,
+        }),
+      };
+
+      console.log("📝 Dados originais da meta:", editModalState.goalData);
+      console.log("📝 Dados atualizados do wizard:", updatedData);
+      console.log("📝 DTO final para API:", updateDto);
+
+      console.log("📝 Atualizando meta:", goalId, updateDto);
+
+      const result = await updateGoal(goalId, updateDto);
+
+      if (result) {
+        setEditModalState({
+          isOpen: false,
+          goalData: null,
+        });
+
+        toast.success("Meta editada com sucesso!", "Meta Atualizada");
+        await refreshGoals();
+      }
+    } catch (err: any) {
+      console.error("Erro ao editar meta:", err);
+
+      // Extrair mensagem de erro mais específica se disponível
+      let errorMessage = "Erro ao editar meta. Tente novamente.";
+
+      if (err?.response?.data?.message) {
+        if (Array.isArray(err.response.data.message)) {
+          errorMessage = `Erro: ${err.response.data.message.join(", ")}`;
+        } else {
+          errorMessage = `Erro: ${err.response.data.message}`;
+        }
+      } else if (err?.message) {
+        errorMessage = `Erro: ${err.message}`;
+      }
+
+      toast.error(errorMessage, "Erro ao Editar Meta");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditModalState({
+      isOpen: false,
+      goalData: null,
+    });
+  };
+
+  // ==========================================
   // HANDLERS - Goal Progress Update
   // ==========================================
 
   const handleGoalProgressUpdate = async (goalId: string, data: any) => {
     try {
+      // Calculate newValue from the progress data
+      let newValue: number;
+
+      if (typeof data.newProgress === "number") {
+        // For percentage-based goals, convert progress to actual value
+        if (data.goalType === "percentage") {
+          newValue = Math.max(0, data.newProgress);
+        } else if (
+          data.startValue !== undefined &&
+          data.targetValue !== undefined
+        ) {
+          // For increase/decrease goals, calculate absolute value from progress
+          const range = data.targetValue - data.startValue;
+          newValue = Math.max(
+            0,
+            data.startValue + (range * data.newProgress) / 100
+          );
+        } else {
+          newValue = Math.max(0, data.newProgress);
+        }
+      } else if (typeof data.currentValue === "number") {
+        newValue = Math.max(0, data.currentValue);
+      } else if (typeof data.value === "number") {
+        newValue = Math.max(0, data.value);
+      } else {
+        throw new Error("Invalid progress data: no valid numeric value found");
+      }
+
+      console.log("🎯 Goal Progress Update:", {
+        goalId,
+        goalType: data.goalType,
+        originalData: data,
+        calculatedNewValue: newValue,
+        notes: data.notes || data.description,
+      });
+
       const updatedGoal = await updateGoalProgress(goalId, {
-        currentValue: data.currentValue || data.value,
+        newValue: Math.round(newValue), // Ensure integer value
         notes: data.notes || data.description,
       });
 
       if (updatedGoal) {
-        await refreshGoals();
+        console.log("✅ Goal atualizada com sucesso:", updatedGoal);
+
+        // Small delay to ensure backend transaction is fully committed
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Refresh both goals and gamification profile in parallel
+        console.log("🔄 Fazendo refresh das goals e perfil de gamificação...");
+        await Promise.all([refreshGoals(), refreshGamificationProfile()]);
+        console.log("✅ Refresh concluído");
 
         // Trigger XP animation at center of screen
         if (updatedGoal.xpReward && updatedGoal.xpReward > 0) {
@@ -344,14 +555,29 @@ export function CurrentCyclePageOptimized() {
         }
 
         toast.success(
-          `+${updatedGoal.xpReward} XP ganho! Continue assim! 🔥`,
+          `+${updatedGoal.xpReward || 0} XP ganho! Continue assim! 🔥`,
           "Progresso Atualizado",
           4000
         );
         handleClose();
       }
-    } catch (err) {
-      toast.error("Erro ao atualizar progresso. Tente novamente.");
+    } catch (err: any) {
+      console.error("Erro ao atualizar progresso:", err);
+
+      // Extrair mensagem de erro mais específica se disponível
+      let errorMessage = "Erro ao atualizar progresso. Tente novamente.";
+
+      if (err?.response?.data?.message) {
+        if (Array.isArray(err.response.data.message)) {
+          errorMessage = `Erro: ${err.response.data.message.join(", ")}`;
+        } else {
+          errorMessage = `Erro: ${err.response.data.message}`;
+        }
+      } else if (err?.message) {
+        errorMessage = `Erro: ${err.message}`;
+      }
+
+      toast.error(errorMessage, "Erro ao Atualizar Progresso");
     }
   };
 
@@ -500,6 +726,77 @@ export function CurrentCyclePageOptimized() {
   };
 
   // ==========================================
+  // HANDLERS - Competency Create
+  // ==========================================
+
+  const handleCompetencyCreate = async (data: any) => {
+    if (!cycle) {
+      toast.error("Nenhum ciclo ativo encontrado");
+      return;
+    }
+
+    try {
+      // Mapear categoria para o backend
+      const categoryMapping: Record<string, string> = {
+        technical: "TECHNICAL",
+        behavioral: "BEHAVIORAL",
+        leadership: "LEADERSHIP",
+        business: "BUSINESS",
+      };
+
+      const payload = {
+        cycleId: cycle.id,
+        userId: cycle.userId,
+        name: data.name,
+        category: categoryMapping[data.category] || "TECHNICAL",
+        currentLevel: data.initialLevel,
+        targetLevel: data.targetLevel,
+      };
+
+      console.log("Enviando competência para o backend:", payload);
+
+      const competency = await createCompetency(payload);
+
+      if (competency) {
+        await refreshCompetencies();
+
+        // Calcular XP baseado na diferença de níveis
+        const levelDifference = data.targetLevel - data.initialLevel;
+        const xpEarned = 100 + levelDifference * 33;
+
+        // Trigger XP animation
+        triggerXpAnimation(
+          xpEarned,
+          window.innerWidth / 2,
+          window.innerHeight / 2
+        );
+
+        toast.success(
+          `+${xpEarned} XP ganho! Competência "${data.name}" registrada 🎯`,
+          "Competência Criada",
+          4000
+        );
+        handleClose();
+      }
+    } catch (err: any) {
+      console.error("Erro ao criar competência:", err);
+
+      let errorMessage = "Erro ao criar competência. Tente novamente.";
+      if (err?.response?.data?.message) {
+        if (Array.isArray(err.response.data.message)) {
+          errorMessage = `Erro: ${err.response.data.message.join(", ")}`;
+        } else {
+          errorMessage = `Erro: ${err.response.data.message}`;
+        }
+      } else if (err?.message) {
+        errorMessage = `Erro: ${err.message}`;
+      }
+
+      toast.error(errorMessage, "Erro ao Criar Competência");
+    }
+  };
+
+  // ==========================================
   // HANDLERS - Competency Update
   // ==========================================
 
@@ -571,14 +868,6 @@ export function CurrentCyclePageOptimized() {
     // TODO: Implementar visualização detalhada de competência
   };
 
-  const handleRepeatActivity = (activityId: string) => {
-    const activity = activitiesData.find((a) => a.id === activityId);
-    if (activity?.type === "oneOnOne") {
-      handleOneOnOne();
-      // TODO: Pré-preencher dados do modal com activity
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-surface-50 to-surface-100">
       {/* Loading State */}
@@ -628,6 +917,7 @@ export function CurrentCyclePageOptimized() {
             <GoalsDashboard
               goals={goalsData}
               onUpdateGoal={handleGoalUpdate}
+              onEditGoal={handleGoalEdit}
               onDeleteGoal={handleGoalDelete}
             />
 
@@ -643,7 +933,6 @@ export function CurrentCyclePageOptimized() {
           <ActivitiesTimeline
             activities={activitiesData}
             onViewDetails={handleActivityDetails}
-            onRepeatActivity={handleRepeatActivity}
           />
         </div>
       )}
@@ -668,7 +957,7 @@ export function CurrentCyclePageOptimized() {
       <CompetenceRecorder
         isOpen={isOpen("competence")}
         onClose={handleClose}
-        onSave={handleCertificationCreate}
+        onSave={handleCompetencyCreate}
       />
 
       {/* Goal Creator Modal */}
@@ -676,6 +965,15 @@ export function CurrentCyclePageOptimized() {
         isOpen={isOpen("goalCreator")}
         onClose={handleClose}
         onSave={handleGoalCreate}
+      />
+
+      {/* Goal Edit Modal */}
+      <GoalCreatorWizard
+        isOpen={editModalState.isOpen}
+        onClose={handleCancelEdit}
+        onSave={handleGoalEditSave}
+        prefillData={editModalState.goalData}
+        isEditing={true}
       />
 
       {/* Goal Update Modal */}

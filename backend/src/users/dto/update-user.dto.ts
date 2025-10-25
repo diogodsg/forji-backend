@@ -19,4 +19,9 @@ export class UpdateUserDto {
   @IsString()
   @MaxLength(500)
   bio?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  avatarId?: string;
 }

@@ -1,13 +1,15 @@
 import {
   Brain,
-  TrendingUp,
   Award,
   ChevronRight,
   Crown,
   Code,
   Users,
   BarChart,
+  Trash2,
 } from "lucide-react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 
 interface Competency {
   id: string;
@@ -22,7 +24,6 @@ interface Competency {
   currentLevel: number;
   targetLevel: number;
   currentProgress: number;
-  nextMilestone?: string;
   totalXP?: number;
 }
 
@@ -30,6 +31,8 @@ interface CompetenciesSectionProps {
   competencies: Competency[];
   onViewCompetency: (competencyId: string) => void;
   onUpdateProgress: (competencyId: string) => void;
+  onDeleteCompetency: (competencyId: string) => void;
+  onCreateCompetency?: () => void;
 }
 
 /**
@@ -51,11 +54,36 @@ export function CompetenciesSection({
   competencies,
   onViewCompetency,
   onUpdateProgress,
+  onDeleteCompetency,
+  onCreateCompetency,
 }: CompetenciesSectionProps) {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [competencyToDelete, setCompetencyToDelete] = useState<string | null>(
+    null
+  );
+
   const totalXP = competencies.reduce(
     (sum, comp) => sum + (comp.totalXP || 0),
     0
   );
+
+  const handleDeleteClick = (competencyId: string) => {
+    setCompetencyToDelete(competencyId);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (competencyToDelete) {
+      onDeleteCompetency(competencyToDelete);
+      setDeleteModalOpen(false);
+      setCompetencyToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setCompetencyToDelete(null);
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-surface-300 p-6">
@@ -93,6 +121,7 @@ export function CompetenciesSection({
             competency={competency}
             onView={() => onViewCompetency(competency.id)}
             onUpdate={() => onUpdateProgress(competency.id)}
+            onDelete={() => handleDeleteClick(competency.id)}
           />
         ))}
       </div>
@@ -106,12 +135,61 @@ export function CompetenciesSection({
           <p className="text-gray-500 mb-4">
             Nenhuma competência definida ainda
           </p>
-          <button className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-medium text-sm h-10 px-4 rounded-lg hover:opacity-90 transition-all">
-            <Brain className="w-4 h-4" />
-            Definir Competências
-          </button>
+          {onCreateCompetency && (
+            <button
+              onClick={onCreateCompetency}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-medium text-sm h-10 px-4 rounded-lg hover:opacity-90 transition-all"
+            >
+              <Brain className="w-4 h-4" />
+              Definir Competências
+            </button>
+          )}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen &&
+        competencyToDelete &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Deletar Competência
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Esta ação não pode ser desfeita
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-gray-700 mb-6">
+                Tem certeza que deseja deletar esta competência? Todo o
+                progresso será perdido permanentemente.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelDelete}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+                >
+                  Deletar
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
@@ -121,10 +199,12 @@ function CompetencyCard({
   competency,
   onView,
   onUpdate,
+  onDelete,
 }: {
   competency: Competency;
   onView: () => void;
   onUpdate: () => void;
+  onDelete: () => void;
 }) {
   const categoryConfig: Record<
     string,
@@ -192,10 +272,31 @@ function CompetencyCard({
     categoryConfig[competency.category] || categoryConfig.technical;
   const CategoryIcon = config.icon;
 
+  const handleCardClick = () => {
+    console.log("🔍 Visualizando competência:", competency.id, competency.name);
+    onView();
+  };
+
+  const handleUpdateClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log(
+      "📈 Atualizando progresso da competência:",
+      competency.id,
+      competency.name
+    );
+    onUpdate();
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("🗑️ Deletando competência:", competency.id, competency.name);
+    onDelete();
+  };
+
   return (
     <div
-      className="group bg-gradient-to-br from-white to-surface-50 rounded-xl p-5 border border-surface-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300 cursor-pointer"
-      onClick={onView}
+      className="group relative bg-gradient-to-br from-white to-surface-50 rounded-xl p-5 border border-surface-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300 cursor-pointer"
+      onClick={handleCardClick}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -221,13 +322,24 @@ function CompetencyCard({
           </div>
         </div>
 
-        {/* Level Indicator */}
-        <div className="text-right">
-          <div className="text-sm text-gray-600 mb-1">Nível</div>
-          <div className="text-xl font-bold text-gray-800">
-            {competency.currentLevel} <span className="text-gray-400">→</span>{" "}
-            {competency.targetLevel}
+        <div className="flex items-center gap-2">
+          {/* Level Indicator */}
+          <div className="text-right">
+            <div className="text-sm text-gray-600 mb-1">Nível</div>
+            <div className="text-xl font-bold text-gray-800">
+              {competency.currentLevel} <span className="text-gray-400">→</span>{" "}
+              {competency.targetLevel}
+            </div>
           </div>
+
+          {/* Delete Button */}
+          <button
+            onClick={handleDeleteClick}
+            className="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 flex items-center justify-center text-red-600 hover:text-red-700 transition-all opacity-0 group-hover:opacity-100"
+            title="Deletar competência"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -249,23 +361,6 @@ function CompetencyCard({
         </div>
       </div>
 
-      {/* Next Milestone */}
-      <div
-        className={`${config.bg} ${config.border} border rounded-lg p-3 mb-4`}
-      >
-        <div className="flex items-start gap-2">
-          <TrendingUp className={`w-4 h-4 ${config.color} mt-0.5`} />
-          <div className="flex-1">
-            <div className="text-xs font-medium text-gray-500 mb-1">
-              Próximo Marco
-            </div>
-            <div className={`text-sm font-semibold ${config.color}`}>
-              {competency.nextMilestone || "A definir"}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-surface-200">
         <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -274,10 +369,7 @@ function CompetencyCard({
         </div>
 
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onUpdate();
-          }}
+          onClick={handleUpdateClick}
           className="inline-flex items-center gap-1 text-brand-600 hover:text-brand-700 font-medium text-sm group-hover:gap-2 transition-all"
         >
           Atualizar progresso

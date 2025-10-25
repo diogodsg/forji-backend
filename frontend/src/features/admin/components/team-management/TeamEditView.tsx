@@ -31,19 +31,9 @@ export function TeamEditView({ team, onBack }: TeamEditViewProps) {
   // Atualizar currentTeam quando selectedTeam mudar
   useEffect(() => {
     if (selectedTeam) {
-      // Converter members do selectedTeam para memberships do TeamDetail
-      const teamDetail: TeamDetail = {
-        id: selectedTeam.id,
-        name: selectedTeam.name,
-        description: selectedTeam.description,
-        memberships: selectedTeam.members.map((m) => ({
-          user: { id: m.userId, name: m.name, email: m.email },
-          role: m.role,
-        })),
-      };
-      setCurrentTeam(teamDetail);
-      setName(teamDetail.name);
-      setDescription(teamDetail.description || "");
+      setCurrentTeam(selectedTeam);
+      setName(selectedTeam.name);
+      setDescription(selectedTeam.description || "");
     }
   }, [selectedTeam]);
 

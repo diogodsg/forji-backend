@@ -1,20 +1,25 @@
 import { createAvatar } from "@dicebear/core";
-import * as pixelArt from "@dicebear/pixel-art";
+import * as micah from "@dicebear/micah";
 
 export interface DiceBearAvatarOption {
   id: string;
   name: string;
   seed: string;
-  category: "professional" | "creative" | "casual" | "nature" | "abstract";
 }
 
 // Função para gerar URL do avatar DiceBear
 export function getDiceBearAvatarUrl(seed: string, size: number = 128): string {
-  const avatar = createAvatar(pixelArt, {
+  const avatar = createAvatar(micah, {
     seed,
     size,
     // Opções de customização para melhor visual
-    flip: false,
+    backgroundColor: ["d1d4f9"],
+    backgroundType: ["gradientLinear"],
+    // Opções específicas do Micah para avatares humanos diversos
+    baseColor: ["ac6651", "f9c9b6"],
+
+    earringsProbability: 30,
+    glassesProbability: 25,
   });
 
   return avatar.toDataUri();
@@ -22,264 +27,207 @@ export function getDiceBearAvatarUrl(seed: string, size: number = 128): string {
 
 // Seeds pré-definidos com visuais interessantes
 export const dicebearAvatarOptions: DiceBearAvatarOption[] = [
-  // Professional - tons mais sérios
   {
-    id: "professional-1",
-    name: "Executivo",
-    seed: "executive-blue",
-    category: "professional",
+    id: "avatar-1",
+    name: "Vision",
+    seed: "vision-2024-alpha",
   },
   {
-    id: "professional-2",
-    name: "Líder",
-    seed: "leader-strong",
-    category: "professional",
+    id: "avatar-2",
+    name: "Strategy",
+    seed: "strategy-prime-beta",
   },
   {
-    id: "professional-3",
-    name: "Estrategista",
-    seed: "strategist-wise",
-    category: "professional",
+    id: "avatar-3",
+    name: "Impact",
+    seed: "impact-force-gamma",
   },
   {
-    id: "professional-4",
-    name: "Analista",
-    seed: "analyst-sharp",
-    category: "professional",
+    id: "avatar-4",
+    name: "Insight",
+    seed: "insight-mind-delta",
   },
   {
-    id: "professional-5",
+    id: "avatar-5",
     name: "Mentor",
-    seed: "mentor-guide",
-    category: "professional",
+    seed: "mentor-wise-epsilon",
   },
   {
-    id: "professional-6",
-    name: "Consultor",
-    seed: "consultant-expert",
-    category: "professional",
+    id: "avatar-6",
+    name: "Leader",
+    seed: "leader-bold-zeta",
   },
   {
-    id: "professional-7",
-    name: "Diretor",
-    seed: "director-vision",
-    category: "professional",
+    id: "avatar-7",
+    name: "Catalyst",
+    seed: "catalyst-spark-eta",
   },
   {
-    id: "professional-8",
-    name: "Especialista",
-    seed: "specialist-pro",
-    category: "professional",
-  },
-
-  // Creative - visual mais artístico
-  {
-    id: "creative-1",
-    name: "Artista",
-    seed: "artist-creative",
-    category: "creative",
+    id: "avatar-8",
+    name: "Expert",
+    seed: "expert-pro-theta",
   },
   {
-    id: "creative-2",
-    name: "Designer",
-    seed: "designer-style",
-    category: "creative",
+    id: "avatar-9",
+    name: "Sprint",
+    seed: "sprint-fast-iota",
   },
   {
-    id: "creative-3",
-    name: "Inovador",
-    seed: "innovator-fresh",
-    category: "creative",
+    id: "avatar-10",
+    name: "Scrum",
+    seed: "scrum-team-kappa",
   },
   {
-    id: "creative-4",
-    name: "Visionário",
-    seed: "visionary-future",
-    category: "creative",
+    id: "avatar-11",
+    name: "Kanban",
+    seed: "kanban-flow-lambda",
   },
   {
-    id: "creative-5",
-    name: "Criador",
-    seed: "creator-make",
-    category: "creative",
+    id: "avatar-12",
+    name: "Pivot",
+    seed: "pivot-change-mu",
   },
   {
-    id: "creative-6",
-    name: "Músico",
-    seed: "musician-harmony",
-    category: "creative",
+    id: "avatar-13",
+    name: "Agile",
+    seed: "agile-move-nu",
   },
   {
-    id: "creative-7",
-    name: "Escritor",
-    seed: "writer-words",
-    category: "creative",
+    id: "avatar-14",
+    name: "Design",
+    seed: "design-craft-xi",
   },
   {
-    id: "creative-8",
-    name: "Arquiteto",
-    seed: "architect-build",
-    category: "creative",
-  },
-
-  // Casual - mais descontraído
-  {
-    id: "casual-1",
-    name: "Aventureiro",
-    seed: "adventurer-explore",
-    category: "casual",
+    id: "avatar-15",
+    name: "Lean",
+    seed: "lean-simple-omicron",
   },
   {
-    id: "casual-2",
-    name: "Explorador",
-    seed: "explorer-discover",
-    category: "casual",
+    id: "avatar-16",
+    name: "Beta",
+    seed: "beta-test-pi",
   },
   {
-    id: "casual-3",
-    name: "Sonhador",
-    seed: "dreamer-imagine",
-    category: "casual",
+    id: "avatar-17",
+    name: "Synergy",
+    seed: "synergy-unite-rho",
   },
   {
-    id: "casual-4",
-    name: "Viajante",
-    seed: "traveler-journey",
-    category: "casual",
+    id: "avatar-18",
+    name: "Growth",
+    seed: "growth-rise-sigma",
   },
   {
-    id: "casual-5",
-    name: "Amigável",
-    seed: "friendly-smile",
-    category: "casual",
+    id: "avatar-19",
+    name: "Trust",
+    seed: "trust-solid-tau",
   },
   {
-    id: "casual-6",
-    name: "Energético",
-    seed: "energetic-active",
-    category: "casual",
+    id: "avatar-20",
+    name: "Network",
+    seed: "network-link-upsilon",
   },
   {
-    id: "casual-7",
-    name: "Alegre",
-    seed: "cheerful-happy",
-    category: "casual",
+    id: "avatar-21",
+    name: "Engage",
+    seed: "engage-active-phi",
   },
   {
-    id: "casual-8",
-    name: "Tranquilo",
-    seed: "calm-peaceful",
-    category: "casual",
-  },
-
-  // Nature - inspirado na natureza
-  {
-    id: "nature-1",
-    name: "Floresta",
-    seed: "forest-green",
-    category: "nature",
+    id: "avatar-22",
+    name: "Connect",
+    seed: "connect-bridge-chi",
   },
   {
-    id: "nature-2",
-    name: "Oceano",
-    seed: "ocean-blue",
-    category: "nature",
+    id: "avatar-23",
+    name: "Balance",
+    seed: "balance-zen-psi",
   },
   {
-    id: "nature-3",
-    name: "Montanha",
-    seed: "mountain-high",
-    category: "nature",
+    id: "avatar-24",
+    name: "Focus",
+    seed: "focus-sharp-omega",
   },
   {
-    id: "nature-4",
-    name: "Céu",
-    seed: "sky-clouds",
-    category: "nature",
+    id: "avatar-25",
+    name: "Summit",
+    seed: "summit-peak-alpha2",
   },
   {
-    id: "nature-5",
-    name: "Tempestade",
-    seed: "storm-power",
-    category: "nature",
+    id: "avatar-26",
+    name: "Flow",
+    seed: "flow-smooth-beta2",
   },
   {
-    id: "nature-6",
-    name: "Aurora",
-    seed: "aurora-lights",
-    category: "nature",
+    id: "avatar-27",
+    name: "Peak",
+    seed: "peak-high-gamma2",
   },
   {
-    id: "nature-7",
-    name: "Deserto",
-    seed: "desert-sand",
-    category: "nature",
+    id: "avatar-28",
+    name: "Horizon",
+    seed: "horizon-far-delta2",
   },
   {
-    id: "nature-8",
-    name: "Floresta",
-    seed: "jungle-wild",
-    category: "nature",
-  },
-
-  // Abstract - mais abstratos e únicos
-  {
-    id: "abstract-1",
-    name: "Cósmico",
-    seed: "cosmic-space",
-    category: "abstract",
+    id: "avatar-29",
+    name: "Momentum",
+    seed: "momentum-power-epsilon2",
   },
   {
-    id: "abstract-2",
-    name: "Quantum",
-    seed: "quantum-science",
-    category: "abstract",
+    id: "avatar-30",
+    name: "Spark",
+    seed: "spark-bright-zeta2",
   },
   {
-    id: "abstract-3",
-    name: "Digital",
-    seed: "digital-matrix",
-    category: "abstract",
+    id: "avatar-31",
+    name: "Milestone",
+    seed: "milestone-goal-eta2",
   },
   {
-    id: "abstract-4",
-    name: "Neon",
-    seed: "neon-glow",
-    category: "abstract",
+    id: "avatar-32",
+    name: "Thrive",
+    seed: "thrive-bloom-theta2",
   },
   {
-    id: "abstract-5",
-    name: "Cristal",
-    seed: "crystal-clear",
-    category: "abstract",
+    id: "avatar-33",
+    name: "ROI",
+    seed: "roi-value-iota2",
   },
   {
-    id: "abstract-6",
-    name: "Plasma",
-    seed: "plasma-energy",
-    category: "abstract",
+    id: "avatar-34",
+    name: "KPI",
+    seed: "kpi-metric-kappa2",
   },
   {
-    id: "abstract-7",
-    name: "Holográfico",
-    seed: "hologram-3d",
-    category: "abstract",
+    id: "avatar-35",
+    name: "Matrix",
+    seed: "matrix-grid-lambda2",
   },
   {
-    id: "abstract-8",
-    name: "Estelar",
-    seed: "stellar-stars",
-    category: "abstract",
+    id: "avatar-36",
+    name: "MVP",
+    seed: "mvp-core-mu2",
+  },
+  {
+    id: "avatar-37",
+    name: "OKR",
+    seed: "okr-target-nu2",
+  },
+  {
+    id: "avatar-38",
+    name: "Benchmark",
+    seed: "benchmark-standard-xi2",
+  },
+  {
+    id: "avatar-39",
+    name: "Dashboard",
+    seed: "dashboard-view-omicron2",
+  },
+  {
+    id: "avatar-40",
+    name: "Analytics",
+    seed: "analytics-data-pi2",
   },
 ];
-
-export const dicebearAvatarCategories = [
-  { id: "professional", name: "Profissional", icon: "💼" },
-  { id: "creative", name: "Criativo", icon: "🎨" },
-  { id: "casual", name: "Casual", icon: "😊" },
-  { id: "nature", name: "Natureza", icon: "🌿" },
-  { id: "abstract", name: "Abstrato", icon: "✨" },
-] as const;
 
 // Função para gerar avatar customizado com seed específico
 export function generateCustomAvatar(seed: string, size: number = 128): string {

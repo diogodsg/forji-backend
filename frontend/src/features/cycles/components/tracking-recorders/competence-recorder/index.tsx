@@ -10,8 +10,8 @@ import { Step2Details } from "./Step2Details";
 const INITIAL_DATA: CompetenceData = {
   name: "",
   category: "",
-  initialLevel: "beginner",
-  targetLevel: "intermediate",
+  initialLevel: 1,
+  targetLevel: 2,
   description: "",
   evidences: [],
 };

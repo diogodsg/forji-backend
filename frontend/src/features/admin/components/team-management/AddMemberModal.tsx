@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { X, Search, UserPlus, User, CheckCircle2 } from "lucide-react";
+import { Avatar } from "@/features/profile/components/Avatar";
 import type { TeamMemberRole } from "@/lib/api/endpoints/teams";
 import { useAdminUsers } from "@/features/admin/hooks/useAdminUsers";
 
@@ -182,9 +183,11 @@ export function AddMemberModal({
                     `}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-semibold">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar
+                        avatarId={user.avatarId}
+                        size="md"
+                        className="shadow-sm"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-900">
                           {user.name}

@@ -5,12 +5,28 @@ import {
   TrendingUp,
   Clock,
   Eye,
-  Repeat,
   Star,
   AlertCircle,
+  Trash2,
+  Edit,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+/**
+ * Converte timestamp (Date | string) para Date de forma segura
+ */
+function safeConvertTimestamp(timestamp: Date | string): Date {
+  if (typeof timestamp === "string") {
+    const date = new Date(timestamp);
+    return isNaN(date.getTime()) ? new Date() : date;
+  } else if (timestamp instanceof Date) {
+    return isNaN(timestamp.getTime()) ? new Date() : timestamp;
+  } else {
+    console.warn("⚠️ Timestamp inválido:", timestamp);
+    return new Date();
+  }
+}
 
 interface Activity {
   id: string;
@@ -25,18 +41,20 @@ interface Activity {
     to: number;
   };
   xpEarned: number;
-  timestamp: Date;
+  timestamp: Date | string; // Pode vir como Date (mock) ou string ISO (backend)
   // Campos específicos de 1:1
   workingOn?: string[];
   generalNotes?: string;
   positivePoints?: string[];
   improvementPoints?: string[];
+  nextSteps?: string[];
 }
 
 interface ActivitiesTimelineProps {
   activities: Activity[];
   onViewDetails: (activityId: string) => void;
-  onRepeatActivity: (activityId: string) => void;
+  onDeleteActivity?: (activityId: string) => void;
+  onEditActivity?: (activityId: string) => void;
 }
 
 /**
@@ -59,16 +77,24 @@ interface ActivitiesTimelineProps {
 export function ActivitiesTimeline({
   activities,
   onViewDetails,
-  onRepeatActivity,
+  onDeleteActivity,
+  onEditActivity,
 }: ActivitiesTimelineProps) {
   const groupedActivities = groupActivitiesByPeriod(activities);
-  const daysSinceLastActivity =
-    activities.length > 0
-      ? Math.floor(
-          (new Date().getTime() - activities[0].timestamp.getTime()) /
-            (1000 * 60 * 60 * 24)
-        )
-      : 0;
+
+  // Calcular dias desde a última atividade com fallback seguro
+  const daysSinceLastActivity = (() => {
+    if (activities.length === 0) return 0;
+
+    const firstActivity = activities[0];
+    if (!firstActivity.timestamp) return 0;
+
+    const timestamp = safeConvertTimestamp(firstActivity.timestamp);
+
+    return Math.floor(
+      (new Date().getTime() - timestamp.getTime()) / (1000 * 60 * 60 * 24)
+    );
+  })();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-surface-300 p-6">
@@ -130,7 +156,16 @@ export function ActivitiesTimeline({
                   key={activity.id}
                   activity={activity}
                   onViewDetails={() => onViewDetails(activity.id)}
-                  onRepeat={() => onRepeatActivity(activity.id)}
+                  onEdit={
+                    onEditActivity && activity.type === "oneOnOne"
+                      ? () => onEditActivity(activity.id)
+                      : undefined
+                  }
+                  onDelete={
+                    onDeleteActivity
+                      ? () => onDeleteActivity(activity.id)
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -161,11 +196,13 @@ export function ActivitiesTimeline({
 function ActivityCard({
   activity,
   onViewDetails,
-  onRepeat,
+  onEdit,
+  onDelete,
 }: {
   activity: Activity;
   onViewDetails: () => void;
-  onRepeat: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }) {
   const typeConfig = {
     oneOnOne: {
@@ -210,7 +247,18 @@ function ActivityCard({
     },
   };
 
-  const config = typeConfig[activity.type];
+  const config = typeConfig[activity.type] || typeConfig.milestone; // Fallback para milestone se tipo não encontrado
+
+  // Debug: log se o tipo não foi encontrado
+  if (!typeConfig[activity.type]) {
+    console.warn(
+      "⚠️ Tipo de atividade não encontrado no typeConfig:",
+      activity.type,
+      "Activity ID:",
+      activity.id
+    );
+  }
+
   const Icon = config.icon;
 
   return (
@@ -368,18 +416,27 @@ function ActivityCard({
               <Eye className="w-3 h-3" />
               Detalhes
             </button>
-            {activity.type === "oneOnOne" && (
+            {onEdit && (
               <button
-                onClick={onRepeat}
+                onClick={onEdit}
                 className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-brand-600 font-medium transition-colors"
               >
-                <Repeat className="w-3 h-3" />
-                Repetir
+                <Edit className="w-3 h-3" />
+                Editar
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={onDelete}
+                className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-red-600 font-medium transition-colors"
+              >
+                <Trash2 className="w-3 h-3" />
+                Excluir
               </button>
             )}
             <div className="flex-1" />
             <span className="text-xs text-gray-500">
-              {formatDistanceToNow(activity.timestamp, {
+              {formatDistanceToNow(safeConvertTimestamp(activity.timestamp), {
                 addSuffix: true,
                 locale: ptBR,
               })}
@@ -399,8 +456,11 @@ function groupActivitiesByPeriod(
   const now = new Date();
 
   activities.forEach((activity) => {
+    // Usar função helper para conversão segura
+    const activityDate = safeConvertTimestamp(activity.timestamp);
+
     const diffDays = Math.floor(
-      (now.getTime() - activity.timestamp.getTime()) / (1000 * 60 * 60 * 24)
+      (now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
     let period: string;

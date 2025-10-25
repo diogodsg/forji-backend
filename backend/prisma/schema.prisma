@@ -81,6 +81,7 @@ model User {
   name          String
   position      String?
   bio           String?
+  avatarId      String?     @map("avatar_id")
   
   // Timestamps
   createdAt     DateTime    @default(now()) @map("created_at")

@@ -46,15 +46,28 @@ export default function Step2Planning({
                   key={type.id}
                   type="button"
                   onClick={() => {
-                    // Inicializa o successCriterion quando o tipo é selecionado
+                    // Preservar successCriterion existente ou criar novo
+                    const existingCriterion = formData.successCriterion;
+
                     setFormData({
                       ...formData,
                       type: type.id,
                       successCriterion: {
                         type: type.id,
-                        currentValue: type.id === "percentage" ? 0 : undefined,
-                        targetValue: type.id === "percentage" ? 100 : undefined,
-                        unit: type.id === "percentage" ? "%" : "",
+                        // Preservar valores existentes se já houver
+                        startValue:
+                          existingCriterion?.startValue ??
+                          (type.id === "percentage" ? 0 : undefined),
+                        currentValue:
+                          existingCriterion?.currentValue ??
+                          (type.id === "percentage" ? 0 : undefined),
+                        targetValue:
+                          existingCriterion?.targetValue ??
+                          (type.id === "percentage" ? 100 : undefined),
+                        unit:
+                          existingCriterion?.unit ??
+                          (type.id === "percentage" ? "%" : ""),
+                        completed: existingCriterion?.completed,
                       },
                     });
                   }}

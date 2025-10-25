@@ -35,13 +35,19 @@ export function Avatar({
   className = "",
   showName = false,
 }: AvatarProps) {
+  // Debug: log do avatarId recebido
+  console.log("🎨 Avatar Component - avatarId recebido:", avatarId);
+
   // Procura o avatar DiceBear ou usa o primeiro como fallback
   const avatar = avatarId
     ? getDiceBearAvatarById(avatarId)
     : dicebearAvatarOptions[0];
 
+  console.log("🎨 Avatar Component - avatar encontrado:", avatar);
+
   if (!avatar) {
     // Fallback para quando não encontrar o avatar
+    console.warn("⚠️ Avatar não encontrado, usando fallback");
     return (
       <div
         className={`
@@ -58,6 +64,10 @@ export function Avatar({
   }
 
   const avatarUrl = getDiceBearAvatarUrl(avatar.seed, sizePixels[size]);
+  console.log(
+    "🎨 Avatar Component - URL gerada:",
+    avatarUrl.substring(0, 50) + "..."
+  );
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>

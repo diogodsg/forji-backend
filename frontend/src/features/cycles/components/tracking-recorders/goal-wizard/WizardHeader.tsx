@@ -3,13 +3,16 @@ import { X, Target } from "lucide-react";
 interface WizardHeaderProps {
   currentStep: number;
   onClose: () => void;
+  isEditing?: boolean;
 }
 
 export default function WizardHeader({
   currentStep,
   onClose,
+  isEditing = false,
 }: WizardHeaderProps) {
   const stepLabels = ["Informações Básicas", "Tipo e Planejamento"];
+  const title = isEditing ? "Editar Meta" : "Criar Nova Meta";
 
   return (
     <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3.5">
@@ -18,7 +21,7 @@ export default function WizardHeader({
         <div className="flex items-center gap-2.5">
           <Target className="h-5 w-5" />
           <div>
-            <h2 className="text-lg font-bold">Criar Nova Meta</h2>
+            <h2 className="text-lg font-bold">{title}</h2>
             <p className="text-brand-100 text-xs">
               {stepLabels[currentStep - 1]}
             </p>

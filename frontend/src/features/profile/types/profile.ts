@@ -77,7 +77,7 @@ export interface ProfileData {
   canViewPrivateInfo: boolean;
 }
 
-export type ProfileTab = "gamification" | "pdi";
+export type ProfileTab = "gamification";
 
 export interface ProfileTabConfig {
   id: ProfileTab;

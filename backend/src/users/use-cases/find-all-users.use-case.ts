@@ -49,6 +49,7 @@ export class FindAllUsersUseCase {
           name: true,
           position: true,
           bio: true,
+          avatarId: true,
           createdAt: true,
           updatedAt: true,
         },

@@ -9,3 +9,10 @@ export type {
   ProfileStatsResponse,
   ProfileTimelineResponse,
 } from "./profile";
+
+export type {
+  GamificationStats,
+  PdiStats,
+  TeamStats,
+  OrganizedProfileStats,
+} from "./profileStats";

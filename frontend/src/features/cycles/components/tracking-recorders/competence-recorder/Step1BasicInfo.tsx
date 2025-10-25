@@ -10,24 +10,44 @@ interface Step1BasicInfoProps {
 
 const LEVELS = [
   {
-    value: "beginner",
-    label: "Iniciante",
-    description: "Conhecimento básico",
+    value: 1,
+    label: "Nível 1 - Iniciante",
+    description: "Conhecimento básico e teórico",
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-300",
   },
   {
-    value: "intermediate",
-    label: "Intermediário",
-    description: "Uso com supervisão",
+    value: 2,
+    label: "Nível 2 - Aprendiz",
+    description: "Aplicação com supervisão",
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-300",
   },
   {
-    value: "advanced",
-    label: "Avançado",
-    description: "Uso independente",
+    value: 3,
+    label: "Nível 3 - Competente",
+    description: "Uso independente e confiável",
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-50",
+    borderColor: "border-yellow-300",
   },
   {
-    value: "expert",
-    label: "Expert",
-    description: "Referência no tema",
+    value: 4,
+    label: "Nível 4 - Proficiente",
+    description: "Domínio avançado e ensino",
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-300",
+  },
+  {
+    value: 5,
+    label: "Nível 5 - Expert",
+    description: "Referência e inovação",
+    color: "text-green-600",
+    bgColor: "bg-green-50",
+    borderColor: "border-green-300",
   },
 ];
 
@@ -35,35 +55,22 @@ export function Step1BasicInfo({ data, onChange }: Step1BasicInfoProps) {
   const bonuses = calculateBonuses(data);
   const totalXP = 100 + bonuses.reduce((sum, b) => sum + b.value, 0);
 
-  const getLevelValue = (level: string) => {
-    const map: Record<string, number> = {
-      beginner: 1,
-      intermediate: 2,
-      advanced: 3,
-      expert: 4,
-    };
-    return map[level] || 0;
-  };
-
-  const isValidTargetLevel = (targetLevel: string) => {
-    return getLevelValue(targetLevel) > getLevelValue(data.initialLevel);
+  const isValidTargetLevel = (targetLevel: number) => {
+    return targetLevel > data.initialLevel;
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full overflow-hidden">
-      {/* Main Content - 2/3 with scroll */}
-      <div
-        className="lg:col-span-2 overflow-y-auto px-4"
-        style={{ maxHeight: "calc(680px - 180px)" }}
-      >
-        <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+      {/* Main Content - 2/3 without scroll */}
+      <div className="lg:col-span-2 px-4">
+        <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-brand-600" />
               Informações Básicas
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Nome da Competência */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -93,20 +100,26 @@ export function Step1BasicInfo({ data, onChange }: Step1BasicInfoProps) {
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       Nível Inicial *
                     </label>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       {LEVELS.map((level) => (
                         <button
                           key={level.value}
                           type="button"
                           onClick={() => onChange("initialLevel", level.value)}
-                          className={`w-full p-2 border-2 rounded-lg text-left transition-all duration-200 ${
+                          className={`w-full p-1.5 border-2 rounded-md text-left transition-all duration-200 ${
                             data.initialLevel === level.value
-                              ? "border-brand-500 bg-brand-50"
-                              : "border-surface-300 hover:border-brand-300 bg-white"
+                              ? `${level.borderColor} ${level.bgColor}`
+                              : "border-surface-300 hover:border-gray-400 bg-white"
                           }`}
                         >
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-xs truncate">
+                            <div
+                              className={`font-medium text-xs truncate ${
+                                data.initialLevel === level.value
+                                  ? level.color
+                                  : "text-gray-700"
+                              }`}
+                            >
                               {level.label}
                             </div>
                             <div className="text-xs text-gray-500 truncate">
@@ -123,7 +136,7 @@ export function Step1BasicInfo({ data, onChange }: Step1BasicInfoProps) {
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       Nível Alvo (Meta) *
                     </label>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       {LEVELS.map((level) => {
                         const isValid = isValidTargetLevel(level.value);
                         const isSelected = data.targetLevel === level.value;
@@ -136,17 +149,25 @@ export function Step1BasicInfo({ data, onChange }: Step1BasicInfoProps) {
                               isValid && onChange("targetLevel", level.value)
                             }
                             disabled={!isValid}
-                            className={`w-full p-2 border-2 rounded-lg text-left transition-all duration-200 ${
+                            className={`w-full p-1.5 border-2 rounded-md text-left transition-all duration-200 ${
                               isSelected
-                                ? "border-success-500 bg-success-50"
+                                ? `${level.borderColor} ${level.bgColor}`
                                 : isValid
-                                ? "border-surface-300 hover:border-success-300 bg-white"
+                                ? "border-surface-300 hover:border-gray-400 bg-white"
                                 : "border-surface-200 bg-surface-100 opacity-50 cursor-not-allowed"
                             }`}
                           >
                             <div className="flex items-center justify-between gap-1.5">
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-xs truncate">
+                                <div
+                                  className={`font-medium text-xs truncate ${
+                                    isSelected
+                                      ? level.color
+                                      : isValid
+                                      ? "text-gray-700"
+                                      : "text-gray-400"
+                                  }`}
+                                >
                                   {level.label}
                                 </div>
                                 <div className="text-xs text-gray-500 truncate">
@@ -154,7 +175,9 @@ export function Step1BasicInfo({ data, onChange }: Step1BasicInfoProps) {
                                 </div>
                               </div>
                               {isSelected && (
-                                <span className="text-xs font-medium text-success-600 whitespace-nowrap">
+                                <span
+                                  className={`text-xs font-medium whitespace-nowrap ${level.color}`}
+                                >
                                   Meta
                                 </span>
                               )}

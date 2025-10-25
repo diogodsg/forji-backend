@@ -21,3 +21,4 @@ export { GoalsDashboard } from "./GoalsDashboard";
 export { CompetenciesSection } from "./CompetenciesSection";
 export { ActivitiesTimeline } from "./ActivitiesTimeline";
 export { ActivityDetailsModal } from "./ActivityDetailsModal";
+export { DeleteActivityModal } from "./DeleteActivityModal";

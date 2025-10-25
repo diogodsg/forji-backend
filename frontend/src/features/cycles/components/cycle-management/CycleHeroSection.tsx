@@ -1,9 +1,10 @@
-import { Flame, TrendingUp } from "lucide-react";
+import { Flame, TrendingUp, Calendar, Target } from "lucide-react";
+import { Avatar } from "../../../profile/components/Avatar";
 
 interface CycleHeroSectionProps {
   user: {
     name: string;
-    initials: string;
+    avatarId?: string;
   };
   cycle: {
     name: string;
@@ -13,128 +14,137 @@ interface CycleHeroSectionProps {
     currentLevel: number;
     streak: number;
     daysRemaining: number;
-    totalXP?: number; // XP total acumulado (ex: 15470)
   };
 }
 
 /**
- * CycleHeroSection - Seção Hero gamificada da CurrentCyclePage
+ * CycleHeroSection - Seção Hero seguindo Design System Violet
  *
- * **Princípios de Design:**
- * - Gamificação central com XP, progresso e motivação
- * - Visual imediatamente recompensador
- * - Desktop-first optimized (>1200px)
- * - 100% Design System Violet compliance
- *
- * **Elementos Principais:**
- * - Avatar com gradiente brand
- * - Progress Ring do ciclo
- * - XP System com nível atual e progresso
- * - Streak badge motivacional
- * - Informações contextuais (dias restantes, nome do ciclo)
+ * **Padrões aplicados:**
+ * - Background: gradient from-surface-50 to-surface-100 (padrão do sistema)
+ * - Cards: bg-white rounded-xl border-surface-300 shadow-sm (padrão)
+ * - Tipografia: text-4xl font-bold para hero, text-xl font-bold para métricas
+ * - Cores brand: #7c3aed (brand-600) para elementos principais
+ * - Espaçamento: p-6 para cards, gap-6 para grid
  */
 export function CycleHeroSection({ user, cycle }: CycleHeroSectionProps) {
-  // Cálculos corretos baseados nos dados do backend
-  const progressToNextLevel = (cycle.xpCurrent / cycle.xpNextLevel) * 100;
-  const xpToNextLevel = cycle.xpNextLevel - cycle.xpCurrent;
+  // Cálculos para progressão de nível
+  const progressToNextLevel = Math.min(
+    (cycle.xpCurrent / cycle.xpNextLevel) * 100,
+    100
+  );
 
   return (
-    <div className="bg-gradient-to-br from-white to-brand-50 rounded-2xl p-8 shadow-lg border border-brand-200">
-      <div className="flex items-center justify-between">
-        {/* Left: Avatar + Context */}
+    <div className="bg-gradient-to-br from-surface-50 to-surface-100 rounded-2xl p-6 shadow-lg border border-surface-300">
+      {/* Header com Avatar e Saudação */}
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-6">
-          <div className="w-24 h-24 bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-white text-3xl font-bold">
-              {user.initials}
-            </span>
+          <div className="relative">
+            <Avatar avatarId={user.avatarId} size="2xl" className="shadow-sm" />
+            {/* Badge de nível seguindo padrão de badges */}
+            <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-brand-500 to-brand-600 text-white text-xs font-medium px-2 py-1 rounded-lg shadow-sm">
+              L{cycle.currentLevel}
+            </div>
           </div>
 
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent tracking-tight">
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">
               Olá, {user.name}!
             </h1>
-            <p className="text-brand-600 text-base mt-1 font-medium">
+            <p className="text-brand-600 text-lg font-medium mt-1">
               {cycle.name}
             </p>
-            <p className="text-gray-600 text-sm mt-0.5">
-              {cycle.daysRemaining} dias restantes
-            </p>
           </div>
         </div>
 
-        {/* Center: Progress Ring */}
-        <div className="flex flex-col items-center">
-          <div className="relative w-32 h-32">
-            {/* Background Circle */}
-            <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
-              <path
-                className="text-brand-100"
-                stroke="currentColor"
-                strokeWidth="3"
-                fill="transparent"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-              <path
-                className="text-brand-600"
-                stroke="currentColor"
-                strokeWidth="3"
-                fill="transparent"
-                strokeDasharray={`${cycle.progress}, 100`}
-                strokeLinecap="round"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-            </svg>
-
-            {/* Center Text */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="text-3xl font-bold text-brand-600">
-                {cycle.progress}%
-              </div>
-              <div className="text-xs text-gray-600">do ciclo</div>
-            </div>
-          </div>
-
-          <div className="text-center mt-3">
-            <div className="text-sm text-gray-600 font-medium">
-              Progresso geral
-            </div>
-          </div>
-        </div>
-
-        {/* Right: XP System + Streak */}
-        <div className="text-right">
-          {/* Level + XP */}
-          <div className="mb-4">
-            <div className="flex items-center gap-2 justify-end mb-2">
-              <TrendingUp className="w-5 h-5 text-brand-600" />
-              <div className="text-2xl font-bold text-brand-600">
-                Nível {cycle.currentLevel}
-              </div>
-            </div>
-            <div className="text-xl text-gray-800 font-semibold">
-              {(cycle.totalXP || cycle.xpCurrent).toLocaleString()} XP
-            </div>
-
-            {/* Progress Bar to Next Level */}
-            <div className="w-40 bg-brand-100 rounded-full h-2.5 mt-3 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-brand-500 to-brand-600 rounded-full h-2.5 transition-all duration-500"
-                style={{ width: `${progressToNextLevel}%` }}
-              />
-            </div>
-            <div className="text-xs text-gray-600 mt-2">
-              {xpToNextLevel} XP para Nível {cycle.currentLevel + 1}
-            </div>
-          </div>
-
-          {/* Streak Badge */}
-          <div className="inline-flex items-center gap-2 bg-gradient-to-br from-amber-50 to-orange-50 px-4 py-2 rounded-xl border border-amber-200">
+        {/* Streak Badge seguindo padrão de cards brand */}
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 px-4 py-3 rounded-xl border border-amber-200">
+          <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-amber-500" />
-            <div className="text-left">
-              <div className="text-sm font-bold text-amber-700">
-                {cycle.streak} semanas
+            <div className="text-center">
+              <div className="text-xl font-bold text-amber-700">
+                {cycle.streak}
               </div>
-              <div className="text-xs text-amber-600">crescendo!</div>
+              <div className="text-xs uppercase tracking-wide text-amber-600 font-medium">
+                semanas
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid de Métricas seguindo padrão do design system */}
+      <div className="grid grid-cols-3 gap-6">
+        {/* Card de Progresso */}
+        <div className="bg-white rounded-xl p-5 border border-surface-300 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center shadow-sm">
+              <Target className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Progresso</h3>
+              <p className="text-sm text-gray-600">do ciclo atual</p>
+            </div>
+          </div>
+
+          <div className="text-center mb-3">
+            <div className="text-2xl font-bold text-brand-600 mb-2">
+              {cycle.progress}%
+            </div>
+          </div>
+          <div className="w-full bg-surface-200 rounded-lg h-2 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-brand-500 to-brand-600 h-2 rounded-lg transition-all duration-500"
+              style={{ width: `${cycle.progress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Card de XP */}
+        <div className="bg-white rounded-xl p-5 border border-surface-300 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Experiência
+              </h3>
+              <p className="text-sm text-gray-600">nível atual</p>
+            </div>
+          </div>
+
+          <div className="text-center mb-3">
+            <div className="text-xl font-bold text-emerald-600 mb-2">
+              {cycle.xpCurrent.toLocaleString()} XP
+            </div>
+          </div>
+          <div className="w-full bg-emerald-100 rounded-lg h-2 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-lg transition-all duration-500"
+              style={{ width: `${progressToNextLevel}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Card de Tempo */}
+        <div className="bg-white rounded-xl p-5 border border-surface-300 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center shadow-sm">
+              <Calendar className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Tempo</h3>
+              <p className="text-sm text-gray-600">restante</p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <div className="text-2xl font-bold text-violet-600 mb-1">
+              {cycle.daysRemaining}
+            </div>
+            <div className="text-xs uppercase tracking-wide text-gray-500 font-medium">
+              {cycle.daysRemaining === 1 ? "DIA RESTANTE" : "DIAS RESTANTES"}
             </div>
           </div>
         </div>

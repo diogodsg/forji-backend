@@ -3,6 +3,7 @@ import { StatsGrid } from "./StatsGrid";
 import { BadgeComponent } from "@/features/gamification/components/BadgeComponent";
 import type { ProfileStats } from "../types/profile";
 import type { Badge } from "@/features/gamification/types/gamification";
+import { transformProfileStats } from "../utils/statsTransform";
 
 interface GamificationTabProps {
   stats: ProfileStats;
@@ -68,7 +69,7 @@ export function GamificationTab({
           <FiBarChart className="w-5 h-5 text-brand-600" />
           Estatísticas de Desempenho
         </h3>
-        <StatsGrid stats={stats} isPublic={isPublic} />
+        <StatsGrid stats={transformProfileStats(stats)} isPublic={isPublic} />
       </section>
 
       {/* Achievements Section */}

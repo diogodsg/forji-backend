@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiUser,
   FiCalendar,
   FiAward,
-  FiTrendingUp,
   FiUsers,
   FiEdit2,
+  FiTarget,
 } from "react-icons/fi";
 import type { UserProfile, ProfileStats } from "../types/profile";
 import { ClickableAvatar } from "./Avatar";
@@ -17,6 +18,8 @@ interface ProfileHeaderProps {
   canEdit: boolean;
   onEditProfile?: () => void;
   onUpdateAvatar?: (avatarId: string) => void;
+  canViewPrivateInfo?: boolean; // Para verificar se é gestor
+  userId?: string; // ID do usuário sendo visualizado
 }
 
 export function ProfileHeader({
@@ -24,14 +27,36 @@ export function ProfileHeader({
   stats,
   canEdit,
   onUpdateAvatar,
+  canViewPrivateInfo = false,
+  userId,
 }: ProfileHeaderProps) {
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
-  const progressPercentage = stats.levelProgress.percentage;
+  const navigate = useNavigate();
+
+  // Proteção para dados que podem estar carregando
+  const progressPercentage = Math.min(
+    Math.max(stats.levelProgress?.percentage || 0, 0),
+    100
+  );
+  const currentXP = stats.levelProgress?.current || 0;
+  const requiredXP = stats.levelProgress?.required || 100;
 
   const handleAvatarSelect = (avatarId: string) => {
+    console.log("🔄 ProfileHeader - Avatar selecionado:", avatarId);
     onUpdateAvatar?.(avatarId);
     setShowAvatarSelector(false);
   };
+
+  console.log("🎯 ProfileHeader - profile.avatarId:", profile.avatarId);
+
+  // Debug do botão de editar PDI
+  console.log("🔍 ProfileHeader - Debug botão PDI:", {
+    isCurrentUser: profile.isCurrentUser,
+    canViewPrivateInfo,
+    shouldShowButton: !profile.isCurrentUser && canViewPrivateInfo,
+    userId,
+    profileId: profile.id,
+  });
 
   return (
     <>
@@ -111,7 +136,9 @@ export function ProfileHeader({
               {/* Level */}
               <div className="flex items-center gap-2 text-brand-700">
                 <FiAward className="w-4 h-4" />
-                <span className="font-medium">Nível {stats.currentLevel}</span>
+                <span className="font-medium">
+                  Nível {stats.currentLevel || 1}
+                </span>
               </div>
 
               {/* Team */}
@@ -122,25 +149,46 @@ export function ProfileHeader({
                 </div>
               )}
 
-              {/* Streak */}
-              <div className="flex items-center gap-2 text-brand-700">
-                <FiCalendar className="w-4 h-4" />
-                <span className="text-sm font-medium">
-                  {profile.streak} dias consecutivos
-                </span>
-                <FiTrendingUp className="w-4 h-4 text-success-600" />
-              </div>
+              {/* Member Since (substituindo Streak não implementado) */}
+              {profile.joinedAt && (
+                <div className="flex items-center gap-2 text-brand-700">
+                  <FiCalendar className="w-4 h-4" />
+                  <span className="text-sm font-medium">
+                    Membro desde{" "}
+                    {new Date(profile.joinedAt).toLocaleDateString("pt-BR", {
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Manager Actions - Botão Editar PDI */}
+            {!profile.isCurrentUser && canViewPrivateInfo && (
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => {
+                    // Usar o userId passado como prop ou fallback para profile.id
+                    const targetUserId = userId || profile.id;
+                    navigate(`/users/${targetUserId}/pdi/edit`);
+                    console.log("🎯 Navegando para PDI edit:", targetUserId);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-medium text-sm h-10 px-4 rounded-lg transition-all duration-200 hover:opacity-90 focus:ring-2 focus:ring-brand-400 focus:outline-none"
+                >
+                  <FiTarget className="w-4 h-4" />
+                  Editar PDI
+                </button>
+              </div>
+            )}
           </div>
 
           {/* XP Progress */}
           <div className="w-full lg:w-auto lg:min-w-[200px] text-right space-y-3">
             <div className="text-sm text-surface-600">
-              <span className="font-medium">
-                {stats.levelProgress.current.toLocaleString()}
-              </span>
+              <span className="font-medium">{currentXP.toLocaleString()}</span>
               <span className="mx-1">/</span>
-              <span>{stats.levelProgress.required.toLocaleString()} XP</span>
+              <span>{requiredXP.toLocaleString()} XP</span>
             </div>
 
             <div className="w-full lg:w-48 h-2 bg-surface-200 rounded-full overflow-hidden">
@@ -161,13 +209,13 @@ export function ProfileHeader({
             <div className="flex justify-end gap-4 pt-2">
               <div className="text-center">
                 <div className="text-lg font-bold text-surface-900">
-                  {stats.totalXP.toLocaleString()}
+                  {(stats.totalXP || 0).toLocaleString()}
                 </div>
                 <div className="text-xs text-surface-500">XP Total</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-surface-900">
-                  {stats.badgesEarned}
+                  {stats.badgesEarned || 0}
                 </div>
                 <div className="text-xs text-surface-500">Badges</div>
               </div>

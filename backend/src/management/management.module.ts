@@ -1,8 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ManagementController } from './management.controller';
+import { SubordinatesManagementController } from './subordinates-management.controller';
 import { ManagementService } from './management.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ManagementRepository } from './repositories/management.repository';
+import { CyclesModule } from '../cycles/cycles.module';
+import { GoalsModule } from '../goals/goals.module';
+import { CompetenciesModule } from '../competencies/competencies.module';
+import { ActivitiesModule } from '../activities/activities.module';
 import {
   FindManagementRulesUseCase,
   CreateManagementRuleUseCase,
@@ -11,8 +16,14 @@ import {
 } from './use-cases';
 
 @Module({
-  imports: [PrismaModule],
-  controllers: [ManagementController],
+  imports: [
+    PrismaModule,
+    forwardRef(() => CyclesModule),
+    forwardRef(() => GoalsModule),
+    forwardRef(() => CompetenciesModule),
+    forwardRef(() => ActivitiesModule),
+  ],
+  controllers: [ManagementController, SubordinatesManagementController],
   providers: [
     ManagementService,
     ManagementRepository,

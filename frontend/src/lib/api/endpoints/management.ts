@@ -1,4 +1,10 @@
 import { apiClient } from "../client";
+import type {
+  CycleResponseDto,
+  GoalResponseDto,
+  CompetencyResponseDto,
+  ActivityTimelineDto,
+} from "../../../../../shared-types/cycles.types";
 
 /**
  * Management Rule Types
@@ -181,5 +187,71 @@ export const managementApi = {
   checkIfManaged: async (userId: string): Promise<{ isManaged: boolean }> => {
     const { data } = await apiClient.get(`/management/check/${userId}`);
     return data;
+  },
+
+  /**
+   * GET /management/subordinates/:subordinateId/cycles/current
+   * Get current cycle of a subordinate
+   */
+  getSubordinateCycle: async (
+    subordinateId: string
+  ): Promise<CycleResponseDto | null> => {
+    const { data } = await apiClient.get(
+      `/management/subordinates/${subordinateId}/cycles/current`
+    );
+    return data;
+  },
+
+  /**
+   * GET /management/subordinates/:subordinateId/goals
+   * Get goals of a subordinate
+   */
+  getSubordinateGoals: async (
+    subordinateId: string,
+    cycleId?: string
+  ): Promise<GoalResponseDto[]> => {
+    const { data } = await apiClient.get(
+      `/management/subordinates/${subordinateId}/goals`,
+      {
+        params: { cycleId },
+      }
+    );
+    return data;
+  },
+
+  /**
+   * GET /management/subordinates/:subordinateId/competencies
+   * Get competencies of a subordinate
+   */
+  getSubordinateCompetencies: async (
+    subordinateId: string,
+    cycleId?: string
+  ): Promise<CompetencyResponseDto[]> => {
+    const { data } = await apiClient.get(
+      `/management/subordinates/${subordinateId}/competencies`,
+      {
+        params: { cycleId },
+      }
+    );
+    return data;
+  },
+
+  /**
+   * GET /management/subordinates/:subordinateId/activities
+   * Get activities timeline of a subordinate
+   */
+  getSubordinateActivities: async (
+    subordinateId: string,
+    cycleId?: string,
+    page?: number,
+    pageSize?: number
+  ): Promise<ActivityTimelineDto[]> => {
+    const { data } = await apiClient.get(
+      `/management/subordinates/${subordinateId}/activities`,
+      {
+        params: { cycleId, page, pageSize },
+      }
+    );
+    return data.activities || data; // Support both paginated and simple array response
   },
 };

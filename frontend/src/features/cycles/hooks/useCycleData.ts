@@ -138,6 +138,42 @@ export function useCycleData(): UseCycleDataReturn {
       const goalsData = await cyclesApi.listGoals({ cycleId });
 
       console.log(`✅ Goals carregados: ${goalsData.length}`);
+      console.log(
+        "📊 Goals data recebida:",
+        goalsData.map((g: any) => ({
+          id: g.id,
+          title: g.title,
+          type: g.type,
+          status: g.status,
+          currentValue: g.currentValue,
+          targetValue: g.targetValue,
+          calculatedProgress: g.progress,
+          lastUpdate: g.updatedAt,
+        }))
+      );
+
+      // 🚨 Verificar inconsistências de status vs progress
+      const inconsistentGoals = goalsData.filter(
+        (g: any) =>
+          (g.status === "COMPLETED" && g.progress < 100) ||
+          (g.status !== "COMPLETED" && g.progress >= 100)
+      );
+
+      if (inconsistentGoals.length > 0) {
+        console.warn(
+          "⚠️ Metas com status inconsistente:",
+          inconsistentGoals.map((g: any) => ({
+            title: g.title,
+            status: g.status,
+            progress: g.progress,
+            problem:
+              g.status === "COMPLETED"
+                ? "Marcada como completa mas <100%"
+                : "Deveria estar completa mas não está",
+          }))
+        );
+      }
+
       setGoals(goalsData);
     } catch (err) {
       const message = extractErrorMessage(err);

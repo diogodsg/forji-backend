@@ -106,13 +106,17 @@ export interface CreateGoalDto {
 export interface UpdateGoalDto {
   title?: string;
   description?: string;
+  type?: GoalType;
   targetValue?: number;
+  startValue?: number;
+  currentValue?: number;
+  unit?: string;
   deadline?: string;
   status?: GoalStatus;
 }
 
 export interface UpdateGoalProgressDto {
-  currentValue: number;
+  newValue: number;
   notes?: string;
 }
 
@@ -125,6 +129,7 @@ export interface GoalResponseDto {
   targetValue: number;
   initialValue: number;
   currentValue: number;
+  progress: number; // Percentual calculado pelo backend (0-100)
   deadline: string;
   completedAt: string | null;
   xpReward: number;

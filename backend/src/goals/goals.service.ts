@@ -304,22 +304,84 @@ export class GoalsService {
     // Verifica permissão
     await this.checkPermission(currentUserId, goal.userId, workspaceId);
 
-    const { type, title, description, targetValue, unit, status } = updateGoalDto;
+    const { type, title, description, targetValue, startValue, currentValue, unit, status } =
+      updateGoalDto;
 
-    // Valida valores se tipo ou target estiverem mudando
+    // Valida valores se tipo, target ou start estiverem mudando
     const newType = type || goal.type;
     const newTarget = targetValue !== undefined ? targetValue : goal.targetValue || 0;
-    const start = goal.startValue || 0;
+    const newStart = startValue !== undefined ? startValue : goal.startValue || 0;
+    const newCurrent = currentValue !== undefined ? currentValue : goal.currentValue || 0;
 
-    if (newType === 'INCREASE' && newTarget <= start) {
+    if (newType === 'INCREASE' && newTarget <= newStart) {
       throw new BadRequestException(
         'Para meta INCREASE, o valor alvo deve ser maior que o valor inicial',
       );
     }
-    if (newType === 'DECREASE' && newTarget >= start) {
+    if (newType === 'DECREASE' && newTarget >= newStart) {
       throw new BadRequestException(
         'Para meta DECREASE, o valor alvo deve ser menor que o valor inicial',
       );
+    }
+
+    // Validações para currentValue se fornecido
+    if (currentValue !== undefined) {
+      if (newType === 'INCREASE' && newCurrent < newStart) {
+        throw new BadRequestException(
+          'Para meta INCREASE, o valor atual não pode ser menor que o valor inicial',
+        );
+      }
+      if (newType === 'DECREASE' && newCurrent > newStart) {
+        throw new BadRequestException(
+          'Para meta DECREASE, o valor atual não pode ser maior que o valor inicial',
+        );
+      }
+      if (newType === 'INCREASE' && newCurrent > newTarget) {
+        throw new BadRequestException(
+          'Para meta INCREASE, o valor atual não pode ser maior que o valor alvo',
+        );
+      }
+      if (newType === 'DECREASE' && newCurrent < newTarget) {
+        throw new BadRequestException(
+          'Para meta DECREASE, o valor atual não pode ser menor que o valor alvo',
+        );
+      }
+    }
+
+    // Recalcular status automaticamente se valores foram alterados
+    let calculatedStatus = status; // usar status fornecido se houver
+
+    // Se qualquer valor crítico foi alterado, recalcular o status baseado no progresso
+    if (targetValue !== undefined || startValue !== undefined || currentValue !== undefined) {
+      const finalStart = newStart;
+      const finalCurrent = newCurrent;
+      const finalTarget = newTarget;
+
+      // Calcular progresso baseado no tipo de meta
+      let progress = 0;
+
+      if (newType === 'BINARY') {
+        progress = finalCurrent >= finalTarget ? 100 : 0;
+      } else if (newType === 'PERCENTAGE') {
+        progress = Math.min(100, Math.max(0, finalCurrent));
+      } else if (newType === 'INCREASE') {
+        if (finalTarget > finalStart) {
+          progress = Math.min(
+            100,
+            Math.max(0, ((finalCurrent - finalStart) / (finalTarget - finalStart)) * 100),
+          );
+        }
+      } else if (newType === 'DECREASE') {
+        if (finalStart > finalTarget) {
+          progress = Math.min(
+            100,
+            Math.max(0, ((finalStart - finalCurrent) / (finalStart - finalTarget)) * 100),
+          );
+        }
+      }
+
+      // Definir status baseado no progresso calculado
+      calculatedStatus = progress >= 100 ? GoalStatus.COMPLETED : GoalStatus.ACTIVE;
     }
 
     // Atualiza meta
@@ -330,8 +392,10 @@ export class GoalsService {
         ...(title && { title }),
         ...(description !== undefined && { description }),
         ...(targetValue !== undefined && { targetValue }),
+        ...(startValue !== undefined && { startValue }),
+        ...(currentValue !== undefined && { currentValue }),
         ...(unit && { unit }),
-        ...(status && { status }),
+        ...(calculatedStatus && { status: calculatedStatus }),
       },
     });
 

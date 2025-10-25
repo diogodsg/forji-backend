@@ -10,7 +10,7 @@ import type { ActivityTimelineDto } from "../../../../../shared-types/cycles.typ
 import { ActivityType } from "../../../../../shared-types/cycles.types";
 
 // Tipo esperado pela Timeline (frontend)
-export interface TimelineActivity {
+export interface Activity {
   id: string;
   type: "oneOnOne" | "mentoring" | "certification" | "milestone" | "competency";
   title: string;
@@ -23,12 +23,17 @@ export interface TimelineActivity {
     to: number;
   };
   xpEarned: number;
-  timestamp: Date;
+  timestamp: Date | string;
+  description?: string;
+  duration?: number; // em minutos
   // Campos específicos de 1:1
   workingOn?: string[];
   generalNotes?: string;
   positivePoints?: string[];
   improvementPoints?: string[];
+  nextSteps?: string[];
+  // Campos adicionais do backend
+  oneOnOne?: any; // Dados originais do backend para edição
 }
 
 /**
@@ -36,7 +41,7 @@ export interface TimelineActivity {
  */
 export function useActivitiesTimeline(
   activities: ActivityTimelineDto[]
-): TimelineActivity[] {
+): Activity[] {
   return useMemo(() => {
     // Validação: garantir que activities é um array
     if (!activities || !Array.isArray(activities)) {
@@ -85,7 +90,11 @@ export function useActivitiesTimeline(
               oneOnOneData.generalNotes || activity.description || undefined,
             positivePoints: oneOnOneData.positivePoints || [],
             improvementPoints: oneOnOneData.improvementPoints || [],
+            nextSteps: oneOnOneData.nextSteps || [],
             topics: oneOnOneData.workingOn || [], // workingOn serve como topics
+            description: activity.description,
+            duration: activity.duration,
+            oneOnOne: oneOnOneData, // Preservar dados originais para edição
           };
         }
 

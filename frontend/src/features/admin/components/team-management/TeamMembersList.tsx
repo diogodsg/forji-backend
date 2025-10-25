@@ -1,4 +1,5 @@
 import { Users, Crown, UserPlus, X } from "lucide-react";
+import { Avatar } from "@/features/profile/components/Avatar";
 import type { TeamDetail } from "@/features/admin/types/team";
 
 type TeamMembership = TeamDetail["memberships"][number];
@@ -77,9 +78,11 @@ export function TeamMembersList({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-brand-600 rounded-lg flex items-center justify-center text-white text-sm font-semibold shadow-sm">
-                        {membership.user.name.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar
+                        avatarId={membership.user.avatarId}
+                        size="md"
+                        className="shadow-sm"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-gray-900 truncate">

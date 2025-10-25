@@ -22,6 +22,9 @@ export type ModalType =
   | "goalUpdate"
   | "competenceUpdate"
   | "activityDetails"
+  | "editOneOnOne"
+  | "editMentoring"
+  | "editCertification"
   | null;
 
 // Estado do modal

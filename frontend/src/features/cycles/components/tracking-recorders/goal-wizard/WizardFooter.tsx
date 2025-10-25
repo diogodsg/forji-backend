@@ -8,6 +8,7 @@ interface WizardFooterProps {
   onBack: () => void;
   onNext: () => void;
   onCancel: () => void;
+  isEditing?: boolean;
 }
 
 export default function WizardFooter({
@@ -18,6 +19,7 @@ export default function WizardFooter({
   onBack,
   onNext,
   onCancel,
+  isEditing = false,
 }: WizardFooterProps) {
   return (
     <div className="flex gap-3 px-8 py-4">
@@ -57,7 +59,9 @@ export default function WizardFooter({
             disabled={!isStep2Valid}
             className="flex-1 px-5 py-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-lg hover:from-brand-600 hover:to-brand-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-500/30 text-sm"
           >
-            Criar Meta (+{xpTotal} XP)
+            {isEditing
+              ? `Salvar Alterações (+${xpTotal} XP)`
+              : `Criar Meta (+${xpTotal} XP)`}
           </button>
         </>
       )}

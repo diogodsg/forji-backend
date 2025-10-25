@@ -13,6 +13,7 @@ export interface TeamMember {
   id: string; // membership id
   name: string;
   email: string;
+  avatarId?: string;
   role: "MEMBER" | "MANAGER";
 }
 
@@ -21,7 +22,7 @@ export interface TeamDetail {
   name: string;
   description?: string | null;
   memberships: Array<{
-    user: { id: string; name: string; email: string }; // UUID do backend
+    user: { id: string; name: string; email: string; avatarId?: string }; // UUID do backend
     role: "MEMBER" | "MANAGER";
   }>;
 }
