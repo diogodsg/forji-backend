@@ -25,9 +25,6 @@ export function AddMemberModal({
   );
   const [adding, setAdding] = useState(false);
 
-  // Log para debug
-  console.log("🔍 AddMemberModal - currentMemberIds:", currentMemberIds);
-
   // Filtra usuários que ainda não estão na equipe
   const availableUsers = useMemo(() => {
     return users.filter((user) => !currentMemberIds.includes(user.id));
@@ -57,9 +54,6 @@ export function AddMemberModal({
       // Converte para array e remove duplicatas
       const uniqueUserIds = Array.from(new Set(selectedUserIds));
 
-      console.log("📝 Adicionando membros:", uniqueUserIds);
-      console.log("👥 Membros atuais:", currentMemberIds);
-
       // Adiciona usuários UM POR VEZ para evitar condição de corrida
       // (o hook recarrega o team após cada adição)
       for (const userId of uniqueUserIds) {
@@ -74,12 +68,10 @@ export function AddMemberModal({
           continue;
         }
 
-        console.log(`➕ Adicionando usuário ${userId}...`);
         await onAdd(userId, "MEMBER");
 
         // Marca como adicionado nesta sessão
         addedInThisSession.add(userId);
-        console.log(`✅ Usuário ${userId} adicionado com sucesso`);
       }
 
       handleClose();

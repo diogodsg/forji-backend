@@ -57,14 +57,14 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 export default function App() {
   return (
     <ToastProvider>
-      <AuthProvider>
-        <GamificationProvider>
-          <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <GamificationProvider>
             <InnerApp />
             <ToastContainer />
-          </BrowserRouter>
-        </GamificationProvider>
-      </AuthProvider>
+          </GamificationProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ToastProvider>
   );
 }
@@ -90,8 +90,6 @@ function InnerApp() {
     CelebrationsComponent,
   } = useCelebrations();
 
-  console.log("🔍 InnerApp render - user:", user, "loading:", loading);
-
   // Loading splash while resolving /auth/me
   if (loading) return <ScreenLoading label="Loading..." />;
 
@@ -116,9 +114,6 @@ function InnerApp() {
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  console.log(
-                    "✨ Testing +25 XP (default confetti - 50 pieces)"
-                  );
                   triggerXpAnimation(
                     25,
                     window.innerWidth / 2,
@@ -132,9 +127,6 @@ function InnerApp() {
               </button>
               <button
                 onClick={() => {
-                  console.log(
-                    "✨ Testing +50 XP (achievement confetti - 80 pieces)"
-                  );
                   triggerXpAnimation(
                     50,
                     window.innerWidth / 2,
@@ -148,9 +140,6 @@ function InnerApp() {
               </button>
               <button
                 onClick={() => {
-                  console.log(
-                    "✨ Testing +100 XP (levelup confetti - 120 pieces)"
-                  );
                   triggerXpAnimation(
                     100,
                     window.innerWidth / 2,
@@ -164,9 +153,6 @@ function InnerApp() {
               </button>
               <button
                 onClick={() => {
-                  console.log(
-                    "✨ Testing +350 XP (1:1 simulation - achievement confetti)"
-                  );
                   triggerXpAnimation(
                     350,
                     window.innerWidth / 2,
@@ -189,7 +175,6 @@ function InnerApp() {
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  console.log("� Testing Sparkles!");
                   triggerSparkles();
                 }}
                 className="px-3 py-2 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-all hover:scale-105 font-semibold text-xs"
@@ -199,7 +184,6 @@ function InnerApp() {
               </button>
               <button
                 onClick={() => {
-                  console.log("⭐ Testing Level Up!");
                   triggerLevelUp(5);
                 }}
                 className="px-3 py-2 bg-amber-600 text-white rounded-lg shadow-lg hover:bg-amber-700 transition-all hover:scale-105 font-semibold text-xs"
@@ -209,7 +193,6 @@ function InnerApp() {
               </button>
               <button
                 onClick={() => {
-                  console.log("🏆 Testing Achievement!");
                   triggerAchievement("Meta Trimestral!", "Parabéns!");
                 }}
                 className="px-3 py-2 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition-all hover:scale-105 font-semibold text-xs"
@@ -219,7 +202,6 @@ function InnerApp() {
               </button>
               <button
                 onClick={() => {
-                  console.log("🌈 Testing MEGA!");
                   triggerMega();
                 }}
                 className="px-3 py-2 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 text-white rounded-lg shadow-lg hover:from-pink-700 hover:via-purple-700 hover:to-blue-700 transition-all hover:scale-105 font-semibold text-xs"

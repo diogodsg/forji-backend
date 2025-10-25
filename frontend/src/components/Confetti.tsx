@@ -85,16 +85,12 @@ export function Confetti({
     const pieces = Array.from({ length: count }, (_, i) =>
       generateConfettiPiece(`confetti-${i}`, colors)
     );
-    console.log("✨ Confetti CREATED:", pieces.length, "pieces");
     return pieces;
   });
 
   useEffect(() => {
-    console.log("✨ Confetti MOUNTED with", confetti.length, "confetti");
-
     // Auto-destroy após duração
     const timer = setTimeout(() => {
-      console.log("✨ Confetti DESTROYING");
       setConfetti([]);
       onComplete?.();
     }, duration);
@@ -102,14 +98,9 @@ export function Confetti({
     return () => clearTimeout(timer);
   }, [duration, onComplete]);
 
-  console.log("✨ Confetti RENDER:", confetti.length, "pieces");
-
   if (confetti.length === 0) {
-    console.log("✨ Confetti returning NULL (no pieces)");
     return null;
   }
-
-  console.log("✨ Confetti RENDERING", confetti.length, "pieces to DOM");
 
   return createPortal(
     <div className="fixed inset-0 pointer-events-none z-[9998] overflow-hidden">
@@ -189,13 +180,6 @@ export function useConfetti() {
     globalConfettiSetters.forEach((setter) => {
       setter(type);
     });
-
-    console.log(
-      "🎊 Confetti triggered:",
-      type,
-      "| Total setters:",
-      globalConfettiSetters.length
-    );
 
     // Duração aumentada para dar tempo de todos confetti caírem
     // Considerando: delay máximo (2s) + duração máxima (5.5s) + margem (1s) = ~8.5s

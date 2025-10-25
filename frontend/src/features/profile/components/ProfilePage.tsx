@@ -38,6 +38,9 @@ export function ProfilePage() {
     isCurrentUser,
     canEdit,
     canViewPrivateInfo: profileData?.canViewPrivateInfo,
+    profileStats: profileData?.stats,
+    gamificationProfile,
+    gamificationLoading,
   });
 
   if (profileLoading) {

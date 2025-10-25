@@ -29,8 +29,6 @@ export function TeamCreateView({ onBack, onCreated }: TeamCreateViewProps) {
         await onCreated();
       }
 
-      console.log("✅ Voltando para lista com dados atualizados");
-
       // Voltar para lista após criação bem-sucedida
       onBack();
     } catch (err) {

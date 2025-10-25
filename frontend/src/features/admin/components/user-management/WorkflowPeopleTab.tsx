@@ -94,11 +94,6 @@ export function WorkflowPeopleTab() {
     return matchesQuery && matchesRole;
   });
 
-  // Debug: verificar dados
-  console.log("Users count:", users.length);
-  console.log("Filtered users count:", filteredUsers.length);
-  console.log("First user:", users[0]);
-
   return (
     <div className="space-y-6">
       {/* Seção Unificada: Gestão de Pessoas + Hierarquias */}

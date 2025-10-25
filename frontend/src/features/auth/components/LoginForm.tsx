@@ -140,7 +140,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
           ? "Entrar"
           : "Registrar"}
       </button>
-      <div className="pt-3 text-center">
+      {/* <div className="pt-3 text-center">
         <button
           type="button"
           onClick={() => {
@@ -151,7 +151,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
         >
           {mode === "login" ? "Criar uma conta" : "Já tenho conta"}
         </button>
-      </div>
+      </div> */}
+      <div className="pt-3 text-center"></div>
     </form>
   );
 };

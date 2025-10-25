@@ -158,11 +158,8 @@ export function useAdminTeams(): UseAdminTeamsResult {
     setError(null);
     try {
       const teamsList = await teamsApi.findAll({ includeMemberCount: true });
-      console.log("📊 Teams recebidos do backend:", teamsList);
       setTeams(teamsList.map(toTeamSummary));
       setMetrics(calculateMetrics(teamsList));
-
-      console.log(`🔄 Teams atualizados: ${teamsList.length} equipes`);
     } catch (err) {
       const message = extractErrorMessage(err);
       setError(message);
@@ -225,8 +222,6 @@ export function useAdminTeams(): UseAdminTeamsResult {
 
         // Recarregar lista completa em background para garantir consistência
         await refresh();
-
-        console.log("✅ Equipe criada e lista atualizada");
       } catch (err) {
         const message = extractErrorMessage(err);
         toast.error(message, "Erro ao criar team");
@@ -315,10 +310,8 @@ export function useAdminTeams(): UseAdminTeamsResult {
 
         // Recarrega detalhes do team selecionado
         if (selectedTeam?.id === teamId) {
-          console.log("🔄 Recarregando team após adicionar membro...");
           const updated = await teamsApi.findOne(teamId, true);
           setSelectedTeam(toTeamDetail(updated));
-          console.log("✅ Team recarregado:", updated);
         }
 
         toast.success("Membro adicionado com sucesso!");
@@ -349,10 +342,8 @@ export function useAdminTeams(): UseAdminTeamsResult {
 
         // Recarrega detalhes do team selecionado
         if (selectedTeam?.id === teamId) {
-          console.log("🔄 Recarregando team após remover membro...");
           const updated = await teamsApi.findOne(teamId, true);
           setSelectedTeam(toTeamDetail(updated));
-          console.log("✅ Team recarregado:", updated);
         }
 
         toast.success("Membro removido com sucesso!");
@@ -376,10 +367,8 @@ export function useAdminTeams(): UseAdminTeamsResult {
 
         // Recarrega detalhes do team selecionado
         if (selectedTeam?.id === teamId) {
-          console.log("🔄 Recarregando team após atualizar role...");
           const updated = await teamsApi.findOne(teamId, true);
           setSelectedTeam(toTeamDetail(updated));
-          console.log("✅ Team recarregado:", updated);
         }
 
         toast.success("Role atualizada com sucesso!");

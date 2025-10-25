@@ -38,8 +38,6 @@ export function useTeamManagement() {
 
       setTeams(mockTeams);
       setMetrics(mockMetrics);
-
-      console.log("✅ Times carregados (mock):", mockTeams.length);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Erro ao carregar times";
@@ -70,12 +68,10 @@ export function useTeamManagement() {
       }
 
       setSelectedTeam(teamDetail);
-      console.log("✅ Time selecionado:", teamDetail.name);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Erro ao carregar time";
       setError(message);
-      console.error("❌ Erro ao selecionar time:", err);
     } finally {
       setLoading(false);
     }

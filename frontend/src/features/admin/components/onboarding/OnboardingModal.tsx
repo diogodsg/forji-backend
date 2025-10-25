@@ -90,15 +90,6 @@ export function OnboardingModal({
         const userId = "new"; // Deve corresponder ao usado no StructureAssignmentStep
         const assignment = assignments[userId];
 
-        console.log("📝 Enviando dados de onboarding:", {
-          name: newUserData.name,
-          email: newUserData.email,
-          position: newUserData.position,
-          workspaceRole: newUserData.isAdmin ? "ADMIN" : "MEMBER",
-          managerId: assignment?.managerId,
-          teamId: assignment?.teamId,
-        });
-
         // Criar novo usuário via API de onboarding
         const result = await usersApi.createWithOnboarding({
           name: newUserData.name,
@@ -108,8 +99,6 @@ export function OnboardingModal({
           managerId: assignment?.managerId || undefined,
           teamId: assignment?.teamId || undefined,
         });
-
-        console.log("✅ Usuário criado:", result);
 
         // Mostrar senha gerada se houver
         if (result.generatedPassword) {
@@ -125,12 +114,6 @@ export function OnboardingModal({
           );
         }
       } else {
-        // Aplicar assignments para usuários selecionados
-        console.log("Assignments a aplicar:", {
-          selectedUsers,
-          assignments,
-        });
-
         toast.info(
           "Funcionalidade de bulk assignments em desenvolvimento",
           "Aguarde"

@@ -143,13 +143,6 @@ export function useXpAnimations() {
       setter([...globalXpAnimations]);
     });
 
-    console.log("🎯 XP Animation triggered:", {
-      xp,
-      x: finalX,
-      y: finalY,
-      totalAnimations: globalXpAnimations.length,
-    });
-
     // 🎉 Trigger confetti suave junto com XP!
     // Quantidade de confetti baseada no XP ganho (só para XP positivo)
     if (xp > 0) {
@@ -182,8 +175,6 @@ export function useXpAnimations() {
  */
 export function XpAnimationContainer() {
   const { animations } = useXpAnimations();
-
-  console.log("🎯 XpAnimationContainer render, animations:", animations.length);
 
   return (
     <>

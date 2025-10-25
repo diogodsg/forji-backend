@@ -47,6 +47,15 @@ export function ProfileHeader({
     setShowAvatarSelector(false);
   };
 
+  console.log("🎯 ProfileHeader - Debug dados recebidos:", {
+    profile,
+    stats,
+    totalXP: stats.totalXP,
+    currentLevel: stats.currentLevel,
+    levelProgress: stats.levelProgress,
+    badgesEarned: stats.badgesEarned,
+  });
+
   console.log("🎯 ProfileHeader - profile.avatarId:", profile.avatarId);
 
   // Debug do botão de editar PDI

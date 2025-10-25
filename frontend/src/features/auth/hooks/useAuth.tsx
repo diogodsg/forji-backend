@@ -6,15 +6,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useNavigate } from "react-router-dom";
 import type { AuthUser, AuthContextValue } from "../types/auth";
-import { mockLogin, mockRegister, mockGetUserByToken } from "../data/mockAuth";
 import { authApi, extractErrorMessage } from "@/lib/api";
 import { useToast } from "@/components/Toast";
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 /**
- * Local storage keys para auth mock
+ * Local storage key para auth token
  */
 const STORAGE_TOKEN_KEY = "auth:token";
 
@@ -53,8 +53,8 @@ function transformBackendUser(backendUser: any): AuthUser {
  *   4. Beneficia de composição via Provider pattern
  *
  * - API Integration: Chamadas reais ao backend NestJS
- * - Fallback to Mock: Se VITE_ENABLE_MOCK_API=true, usa mock em caso de erro
  * - Token JWT armazenado no localStorage
+ * - Sem fallbacks para mock - sempre usa API real
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -67,6 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Toast notifications
   const toast = useToast();
+
+  // Navigation hook
+  const navigate = useNavigate();
 
   /**
    * Valida token e carrega usuário ao montar ou quando token muda
@@ -83,37 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.me();
       const transformedUser = transformBackendUser(response.user);
       setUser(transformedUser);
-      console.log("✅ Usuário autenticado via API:", transformedUser.name);
-      console.log("🔐 Permissões:", {
-        isAdmin: transformedUser.isAdmin,
-        isManager: transformedUser.isManager,
-      });
     } catch (error) {
-      console.error(
-        "❌ Erro ao validar token na API:",
-        extractErrorMessage(error)
-      );
-
-      // Fallback para mock se habilitado
-      if (import.meta.env.VITE_ENABLE_MOCK_API === "true") {
-        try {
-          const userData = mockGetUserByToken(token);
-          if (userData) {
-            setUser(userData);
-            console.log("⚠️ Fallback para mock - Usuário:", userData.name);
-            console.log("🔍 Debug user:", {
-              isAdmin: userData.isAdmin,
-              isManager: userData.isManager,
-            });
-            setLoading(false);
-            return;
-          }
-        } catch (mockError) {
-          console.error("❌ Erro no fallback mock:", mockError);
-        }
-      }
-
-      // Token inválido ou erro sem fallback
       localStorage.removeItem(STORAGE_TOKEN_KEY);
       setUser(null);
       setToken(null);
@@ -127,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [validateToken]);
 
   /**
-   * Login com API real + fallback para mock
+   * Login com API real
    */
   const login = useCallback(
     async (email: string, password: string) => {
@@ -143,68 +116,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(response.accessToken);
         setUser(transformedUser);
 
-        console.log(
-          "🔑 Token salvo:",
-          response.accessToken.substring(0, 20) + "..."
-        );
-        console.log("👤 User setado:", transformedUser);
-        console.log("🔐 Permissões:", {
-          isAdmin: transformedUser.isAdmin,
-          isManager: transformedUser.isManager,
-        });
-
         toast.success(
           `Bem-vindo de volta, ${response.user.name}!`,
           "Login realizado"
         );
-        console.log("✅ Login bem-sucedido via API:", response.user.name);
+
+        // Redirecionar para a página inicial
+        navigate("/");
       } catch (error) {
-        const errorMsg = extractErrorMessage(error);
-        console.error("❌ Erro no login via API:", errorMsg);
-
-        // Fallback para mock se habilitado
-        if (import.meta.env.VITE_ENABLE_MOCK_API === "true") {
-          try {
-            const { user: userData, token: authToken } = await mockLogin(
-              email,
-              password
-            );
-
-            localStorage.setItem(STORAGE_TOKEN_KEY, authToken);
-            setToken(authToken);
-            setUser(userData);
-
-            console.log(
-              "🔑 Mock token salvo:",
-              authToken.substring(0, 30) + "..."
-            );
-            console.log("👤 Mock user setado:", userData);
-
-            toast.warning(
-              "Usando dados mockados (modo desenvolvimento)",
-              "Fallback ativo"
-            );
-            console.log("⚠️ Login com fallback mock:", userData.name);
-            return;
-          } catch (mockError) {
-            // Propagar erro do mock para o usuário
-            const mockErrorMsg = extractErrorMessage(mockError);
-            console.error("❌ Erro no fallback mock:", mockErrorMsg);
-            toast.error(mockErrorMsg, "Erro no login");
-            throw new Error(mockErrorMsg);
-          }
-        }
-
-        // Se chegou aqui, erro sem fallback
-        toast.error(errorMsg, "Erro no login");
+        // Sempre mostrar erro
+        toast.error(
+          "Email ou senha incorretos. Verifique suas credenciais.",
+          "Erro no login"
+        );
         throw error;
       }
     },
-    [toast]
+    [toast, navigate]
   );
 
   /**
-   * Registro com API real + fallback para mock
+   * Registro com API real
    */
   const register = useCallback(
     async (data: {
@@ -239,44 +171,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Registro completo"
         );
         console.log("✅ Registro bem-sucedido via API:", response.user.name);
+
+        // Redirecionar para a página inicial
+        navigate("/");
       } catch (error) {
         const errorMsg = extractErrorMessage(error);
         console.error("❌ Erro no registro via API:", errorMsg);
 
-        // Fallback para mock se habilitado
-        if (import.meta.env.VITE_ENABLE_MOCK_API === "true") {
-          try {
-            const { user: userData, token: authToken } = await mockRegister({
-              name: data.name,
-              email: data.email,
-              password: data.password,
-            });
-
-            localStorage.setItem(STORAGE_TOKEN_KEY, authToken);
-            setToken(authToken);
-            setUser(userData);
-
-            toast.warning(
-              "Usando dados mockados (modo desenvolvimento)",
-              "Fallback ativo"
-            );
-            console.log("⚠️ Registro com fallback mock:", userData.name);
-            return;
-          } catch (mockError) {
-            // Propagar erro do mock para o usuário
-            const mockErrorMsg = extractErrorMessage(mockError);
-            console.error("❌ Erro no fallback mock:", mockErrorMsg);
-            toast.error(mockErrorMsg, "Erro no registro");
-            throw new Error(mockErrorMsg);
-          }
-        }
-
-        // Se chegou aqui, erro sem fallback
+        // Sempre mostrar erro, sem fallback para mock
         toast.error(errorMsg, "Erro no registro");
         throw error;
       }
     },
-    [toast]
+    [toast, navigate]
   );
 
   /**
@@ -303,19 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("🔄 Dados do usuário atualizados via API");
     } catch (error) {
       console.error("❌ Erro ao atualizar dados:", extractErrorMessage(error));
-
-      // Fallback para mock se habilitado
-      if (import.meta.env.VITE_ENABLE_MOCK_API === "true") {
-        try {
-          const userData = mockGetUserByToken(token);
-          if (userData) {
-            setUser(userData);
-            console.log("🔄 Dados atualizados com fallback mock");
-          }
-        } catch (mockError) {
-          console.error("❌ Erro no fallback mock:", mockError);
-        }
-      }
+      // Em caso de erro, manter dados atuais sem fazer logout
     }
   }, [token]);
 

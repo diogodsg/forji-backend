@@ -83,16 +83,75 @@ export function useProfile(userId?: string) {
           console.log("⚠️ Usando fallback - userData do context:", userData);
         }
 
-        // Fetch gamification data - only for current user for now
+        // Fetch gamification data
         let gamificationData;
         try {
           if (isCurrentUser) {
+            // Para o usuário atual, usar a API de gamificação
             gamificationData = await getGamificationProfile();
+            console.log(
+              "🎯 Gamification data (current user):",
+              gamificationData
+            );
+          } else {
+            // Para outros usuários, tentar calcular dados baseados em metas/competências
+            console.log(
+              "🔄 Calculando gamificação para outro usuário:",
+              targetUserId
+            );
+            try {
+              // Buscar dados de PDI para calcular XP
+              const [goals] = await Promise.all([
+                managementApi.getSubordinateGoals(targetUserId).catch(() => []),
+              ]);
+
+              // Calcular XP baseado nas metas concluídas
+              const completedGoals = goals.filter(
+                (goal: any) => goal.progress === 100
+              );
+              const totalXP = completedGoals.reduce(
+                (sum: number, goal: any) => sum + (goal.xpReward || 100),
+                0
+              );
+              const currentLevel = Math.floor(totalXP / 500) + 1; // 500 XP por nível
+              const currentXP = totalXP % 500;
+              const nextLevelXP = 500;
+
+              gamificationData = {
+                totalXP,
+                currentXP,
+                nextLevelXP,
+                level: currentLevel,
+                badges: [], // TODO: implementar badges baseadas em achievements
+              };
+
+              console.log("🎯 Gamification calculada (other user):", {
+                goals: goals.length,
+                completedGoals: completedGoals.length,
+                calculatedData: gamificationData,
+              });
+            } catch (pdiError) {
+              console.warn("Erro ao buscar dados de PDI:", pdiError);
+              // Fallback para dados padrão
+              gamificationData = {
+                totalXP: 0,
+                currentXP: 0,
+                nextLevelXP: 100,
+                level: 1,
+                badges: [],
+              };
+            }
           }
         } catch (gamError) {
           console.warn("Failed to fetch gamification data:", gamError);
-          // Fallback to existing gamificationProfile hook data
-          gamificationData = gamificationProfile;
+          // Fallback para dados padrão
+          gamificationData = {
+            totalXP: 0,
+            currentXP: 0,
+            nextLevelXP: 100,
+            level: 1,
+            badges: [],
+          };
         }
 
         // Build profile from real data
@@ -122,31 +181,45 @@ export function useProfile(userId?: string) {
           showStreak: true,
         };
 
-        // Build complete profile data - usando propriedades que existem em ambos os tipos
+        // Build complete profile data usando dados reais
         const profileStats = {
           totalXP: gamificationData?.totalXP || 0,
           currentLevel: gamificationData?.level || 1,
           levelProgress: {
             current: gamificationData?.currentXP || 0,
             required: gamificationData?.nextLevelXP || 100,
-            percentage: gamificationData?.nextLevelXP
-              ? Math.round(
-                  (gamificationData.currentXP / gamificationData.nextLevelXP) *
-                    100
-                )
-              : 0,
+            percentage:
+              gamificationData?.nextLevelXP && gamificationData?.currentXP
+                ? Math.round(
+                    (gamificationData.currentXP /
+                      gamificationData.nextLevelXP) *
+                      100
+                  )
+                : 0,
           },
           completedPDIs: 0, // TODO: implement PDI backend
           activePDIs: 0, // TODO: implement PDI backend
           completionRate: 0, // TODO: implement PDI backend
           teamContributions: 0, // TODO: implement team contributions
-          badgesEarned: gamificationData?.badges?.length || 0,
+          badgesEarned: Array.isArray(gamificationData?.badges)
+            ? gamificationData.badges.length
+            : 0,
           achievements: {
-            totalBadges: gamificationData?.badges?.length || 0,
+            totalBadges: Array.isArray(gamificationData?.badges)
+              ? gamificationData.badges.length
+              : 0,
             rareBadges: 0, // TODO: calculate rare badges
             recentBadges: [], // TODO: convert badges properly
           },
         };
+
+        console.log("🎯 Profile Stats calculadas:", {
+          totalXP: profileStats.totalXP,
+          currentLevel: profileStats.currentLevel,
+          levelProgress: profileStats.levelProgress,
+          badgesEarned: profileStats.badgesEarned,
+          gamificationDataOriginal: gamificationData,
+        });
 
         // Verificar permissões - se é o próprio usuário, admin, ou gestor do subordinado
         let canViewPrivateInfo = isCurrentUser || !!user.isAdmin;
