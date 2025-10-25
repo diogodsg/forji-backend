@@ -1,0 +1,130 @@
+# ================================
+# Docker Compose para Forge Backend
+# ================================
+
+version: '3.8'
+
+services:
+  # ================================
+  # Banco de Dados PostgreSQL
+  # ================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: forge-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: forge_db
+      POSTGRES_USER: forge_user
+      POSTGRES_PASSWORD: forge_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./prisma/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - forge-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forge_user -d forge_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ================================
+  # Aplicação Backend (Produção)
+  # ================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: forge-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database
+      DATABASE_URL: postgresql://forge_user:forge_password@postgres:5432/forge_db
+      
+      # JWT
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_EXPIRES_IN: 7d
+      
+      # Application
+      NODE_ENV: production
+      PORT: 3001
+      
+      # CORS
+      FRONTEND_URL: http://localhost:3000
+      
+      # Rate Limiting
+      THROTTLE_TTL: 60
+      THROTTLE_LIMIT: 10
+    ports:
+      - "3001:3001"
+    networks:
+      - forge-network
+    volumes:
+      # Mount do schema do Prisma para migrations em runtime se necessário
+      - ./prisma:/app/prisma:ro
+    healthcheck:
+      test: ["CMD", "node", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ================================
+  # Aplicação Backend (Desenvolvimento)
+  # ================================
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: forge-backend-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database
+      DATABASE_URL: postgresql://forge_user:forge_password@postgres:5432/forge_db
+      
+      # JWT
+      JWT_SECRET: dev-secret-key
+      JWT_EXPIRES_IN: 24h
+      
+      # Application
+      NODE_ENV: development
+      PORT: 3001
+      
+      # CORS
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3001:3001"
+      - "9229:9229" # Debug port
+    networks:
+      - forge-network
+    volumes:
+      # Mount do código para hot reload
+      - .:/app
+      - /app/node_modules
+      - /app/dist
+    command: npm run start:debug
+    profiles:
+      - development
+
+# ================================
+# Volumes
+# ================================
+volumes:
+  postgres_data:
+    driver: local
+
+# ================================
+# Networks
+# ================================
+networks:
+  forge-network:
+    driver: bridge
