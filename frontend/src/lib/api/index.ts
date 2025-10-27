@@ -87,4 +87,4 @@ export type {
   CertificationActivityResponseDto,
   ActivityTimelineDto,
   ActivityFiltersDto,
-} from "../../../../shared-types";
+} from "../../../shared-types";

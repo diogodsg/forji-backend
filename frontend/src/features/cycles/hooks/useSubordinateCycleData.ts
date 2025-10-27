@@ -18,7 +18,7 @@ import type {
   GoalResponseDto,
   CompetencyResponseDto,
   ActivityTimelineDto,
-} from "../../../../../shared-types/cycles.types";
+} from "../../../../shared-types/cycles.types";
 
 export interface UseSubordinateCycleDataReturn {
   // Data

@@ -6,8 +6,8 @@
  */
 
 import { useMemo } from "react";
-import type { ActivityTimelineDto } from "../../../../../shared-types/cycles.types";
-import { ActivityType } from "../../../../../shared-types/cycles.types";
+import type { ActivityTimelineDto } from "../../../../shared-types/cycles.types";
+import { ActivityType } from "../../../../shared-types/cycles.types";
 
 // Tipo esperado pela Timeline (frontend)
 export interface Activity {

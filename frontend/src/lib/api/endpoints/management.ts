@@ -4,7 +4,7 @@ import type {
   GoalResponseDto,
   CompetencyResponseDto,
   ActivityTimelineDto,
-} from "../../../../../shared-types/cycles.types";
+} from "../../../../shared-types/cycles.types";
 
 /**
  * Management Rule Types

@@ -30,7 +30,7 @@
       "@/hooks/*": ["hooks/*"],
       "@/lib/*": ["lib/*"],
       "@/types/*": ["types/*"],
-      "@/shared-types": ["../shared-types"]
+      "@/shared-types": ["shared-types"]
     }
   },
   "include": ["src"]

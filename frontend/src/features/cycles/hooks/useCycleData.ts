@@ -22,7 +22,7 @@ import type {
   GoalResponseDto,
   CompetencyResponseDto,
   ActivityTimelineDto,
-} from "../../../../../shared-types";
+} from "../../../../shared-types";
 
 // ==========================================
 // TYPES

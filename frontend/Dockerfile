@@ -1,11 +1,22 @@
 # build environment
 FROM node:20-alpine AS build
-RUN mkdir /app
+
+# Set working directory
 WORKDIR /app
-COPY package.json /app
+
+# Copy package.json first for better Docker layer caching
+COPY package.json package-lock.json* ./
 RUN npm cache clean --force
 RUN npm install --force
-COPY . /app
+
+# Copy shared-types from parent directory
+# Note: This requires building from the parent directory context
+COPY ./shared-types ./shared-types
+
+# Copy frontend source code
+COPY . .
+
+# Build the application
 RUN npm run build
 
 # production environment

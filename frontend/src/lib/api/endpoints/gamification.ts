@@ -10,7 +10,7 @@ import { apiClient } from "../client";
 import type {
   GamificationProfileResponseDto,
   BadgeResponseDto,
-} from "../../../../../shared-types/cycles.types";
+} from "../../../../shared-types/cycles.types";
 
 /**
  * GET /api/gamification/profile - Buscar perfil de gamificação

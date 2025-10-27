@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type {
   CycleResponseDto,
   GoalResponseDto,
-} from "../../../../../shared-types";
+} from "../../../../shared-types";
 import {
   getCurrentCycle,
   listGoals,
