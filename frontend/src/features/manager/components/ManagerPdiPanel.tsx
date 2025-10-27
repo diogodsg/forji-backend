@@ -5,7 +5,7 @@ interface ManagerPdiPanelProps {
   loading: boolean;
   error: string | null;
   plan: any;
-  currentUserId?: number;
+  currentUserId?: string;
   onCreate: () => void;
 }
 

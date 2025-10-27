@@ -68,208 +68,17 @@ export function useSubordinateCycleData(
 
   // State - Loading
   const [loadingCycle, setLoadingCycle] = useState(true);
-  const [loadingGoals, setLoadingGoals] = useState(false);
-  const [loadingCompetencies, setLoadingCompetencies] = useState(false);
-  const [loadingActivities, setLoadingActivities] = useState(false);
 
   // State - Errors
   const [errorCycle, setErrorCycle] = useState<string | null>(null);
-  const [errorGoals, setErrorGoals] = useState<string | null>(null);
-  const [errorCompetencies, setErrorCompetencies] = useState<string | null>(
-    null
-  );
-  const [errorActivities, setErrorActivities] = useState<string | null>(null);
 
   // ==========================================
   // FETCH USER PROFILE TO GET CYCLE DATA
   // ==========================================
 
-  // Função auxiliar para gerar dados mock do subordinado
-  const generateMockCycleData = useCallback(
-    (userId: string, userName: string) => {
-      const now = new Date();
-      const startDate = new Date(now.getFullYear(), 0, 1); // Janeiro
-      const endDate = new Date(now.getFullYear(), 11, 31); // Dezembro
-
-      // Mock de ciclo ativo
-      const mockCycle: CycleResponseDto = {
-        id: `cycle-${userId}`,
-        name: `Ciclo de Desenvolvimento ${now.getFullYear()}`,
-        type: "ANUAL" as any,
-        status: "ACTIVE" as any,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        userId: userId,
-        workspaceId: "workspace-1",
-        createdAt: startDate.toISOString(),
-        updatedAt: now.toISOString(),
-        totalXP: 250,
-        goalsCount: 3,
-        competenciesCount: 2,
-        activitiesCount: 5,
-      };
-
-      // Mock de goals
-      const mockGoals: GoalResponseDto[] = [
-        {
-          id: `goal-1-${userId}`,
-          title: "Melhorar habilidades de comunicação",
-          description: "Desenvolver apresentações mais eficazes e claras",
-          type: "PERCENTAGE" as any,
-          status: "ACTIVE" as any,
-          progress: 60,
-          currentValue: 60,
-          targetValue: 100,
-          startValue: 0,
-          unit: "%",
-          cycleId: `cycle-${userId}`,
-          userId: userId,
-          workspaceId: "workspace-1",
-          xpReward: 15,
-          createdAt: startDate.toISOString(),
-          updatedAt: now.toISOString(),
-          lastUpdate: new Date(
-            now.getTime() - 2 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 2 dias atrás
-        },
-        {
-          id: `goal-2-${userId}`,
-          title: "Concluir certificação técnica",
-          description:
-            "Obter certificação em tecnologia relevante para o papel",
-          type: "BINARY" as any,
-          status: "ACTIVE" as any,
-          progress: 80,
-          currentValue: 80,
-          targetValue: 100,
-          startValue: 0,
-          unit: "%",
-          cycleId: `cycle-${userId}`,
-          userId: userId,
-          workspaceId: "workspace-1",
-          xpReward: 20,
-          createdAt: startDate.toISOString(),
-          updatedAt: now.toISOString(),
-          lastUpdate: new Date(
-            now.getTime() - 5 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 5 dias atrás
-        },
-        {
-          id: `goal-3-${userId}`,
-          title: "Liderar projeto de melhoria",
-          description:
-            "Assumir liderança em iniciativa de otimização de processos",
-          type: "PERCENTAGE" as any,
-          status: "ACTIVE" as any,
-          progress: 35,
-          currentValue: 35,
-          targetValue: 100,
-          startValue: 0,
-          unit: "%",
-          cycleId: `cycle-${userId}`,
-          userId: userId,
-          workspaceId: "workspace-1",
-          xpReward: 25,
-          createdAt: startDate.toISOString(),
-          updatedAt: now.toISOString(),
-          lastUpdate: new Date(
-            now.getTime() - 7 * 24 * 60 * 60 * 1000
-          ).toISOString(), // 7 dias atrás
-        },
-      ];
-
-      // Mock de competências
-      const mockCompetencies: CompetencyResponseDto[] = [
-        {
-          id: `comp-1-${userId}`,
-          name: "Liderança",
-          description: "Capacidade de inspirar e guiar equipes",
-          category: "LEADERSHIP" as any,
-          currentLevel: 3,
-          targetLevel: 4,
-          progress: 65,
-          cycleId: `cycle-${userId}`,
-          userId: userId,
-          workspaceId: "workspace-1",
-          xpReward: 15,
-          createdAt: startDate.toISOString(),
-          updatedAt: now.toISOString(),
-          evidences: [],
-        },
-        {
-          id: `comp-2-${userId}`,
-          name: "Resolução de Problemas",
-          description: "Habilidade de analisar e solucionar desafios complexos",
-          category: "BEHAVIORAL" as any,
-          currentLevel: 4,
-          targetLevel: 5,
-          progress: 45,
-          cycleId: `cycle-${userId}`,
-          userId: userId,
-          workspaceId: "workspace-1",
-          xpReward: 15,
-          createdAt: startDate.toISOString(),
-          updatedAt: now.toISOString(),
-          evidences: [],
-        },
-      ];
-
-      // Mock de atividades
-      const mockActivities: ActivityTimelineDto[] = [
-        {
-          id: `activity-1-${userId}`,
-          type: "ONE_ON_ONE" as any,
-          title: `1:1 com ${userName}`,
-          description: "Sessão de acompanhamento de desenvolvimento",
-          userId: userId,
-          cycleId: `cycle-${userId}`,
-          workspaceId: "workspace-1",
-          xpEarned: 15,
-          createdAt: new Date(
-            now.getTime() - 1 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-          updatedAt: new Date(
-            now.getTime() - 1 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-        },
-        {
-          id: `activity-2-${userId}`,
-          type: "MENTORING" as any,
-          title: "Sessão de Mentoria",
-          description: "Mentoria sobre desenvolvimento de carreira",
-          userId: userId,
-          cycleId: `cycle-${userId}`,
-          workspaceId: "workspace-1",
-          xpEarned: 20,
-          createdAt: new Date(
-            now.getTime() - 5 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-          updatedAt: new Date(
-            now.getTime() - 5 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-        },
-        {
-          id: `activity-3-${userId}`,
-          type: "GOAL_UPDATE" as any,
-          title: "Atualização de Meta",
-          description: "Progresso em comunicação",
-          userId: userId,
-          cycleId: `cycle-${userId}`,
-          workspaceId: "workspace-1",
-          xpEarned: 15,
-          createdAt: new Date(
-            now.getTime() - 2 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-          updatedAt: new Date(
-            now.getTime() - 2 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-        },
-      ];
-
-      return { mockCycle, mockGoals, mockCompetencies, mockActivities };
-    },
-    []
-  );
+  // ==========================================
+  // FETCH SUBORDINATE DATA FROM API
+  // ==========================================
 
   const fetchSubordinateData = useCallback(async () => {
     if (!userId) {
@@ -288,16 +97,17 @@ export function useSubordinateCycleData(
 
       console.log("👤 Dados do subordinado obtidos:", user);
 
-      // Gerar dados mock baseados no perfil do subordinado
-      const { mockCycle, mockGoals, mockCompetencies, mockActivities } =
-        generateMockCycleData(userId, user.name);
+      // TODO: Implementar busca de dados reais quando endpoints estiverem prontos
+      // Por enquanto, retornar estados vazios ao invés de mocks
+      setCycle(null);
+      setGoals([]);
+      setCompetencies([]);
+      setActivities([]);
 
-      setCycle(mockCycle);
-      setGoals(mockGoals);
-      setCompetencies(mockCompetencies);
-      setActivities(mockActivities);
-
-      console.log("✅ Dados mock gerados para subordinado:", user.name);
+      console.log(
+        "✅ Dados do subordinado configurados (vazios temporariamente):",
+        user.name
+      );
     } catch (err) {
       const message =
         err instanceof Error
@@ -306,18 +116,15 @@ export function useSubordinateCycleData(
       console.error("❌ Erro ao buscar dados do subordinado:", message);
       setErrorCycle(message);
 
-      // Em caso de erro, ainda gerar dados mock básicos
-      const { mockCycle, mockGoals, mockCompetencies, mockActivities } =
-        generateMockCycleData(userId, "Subordinado");
-
-      setCycle(mockCycle);
-      setGoals(mockGoals);
-      setCompetencies(mockCompetencies);
-      setActivities(mockActivities);
+      // Em caso de erro, também retornar estados vazios
+      setCycle(null);
+      setGoals([]);
+      setCompetencies([]);
+      setActivities([]);
     } finally {
       setLoadingCycle(false);
     }
-  }, [userId, generateMockCycleData]);
+  }, [userId]);
 
   // ==========================================
   // REFRESH FUNCTIONS (placeholders)
@@ -361,22 +168,18 @@ export function useSubordinateCycleData(
 
     loading: {
       cycle: loadingCycle,
-      goals: loadingGoals,
-      competencies: loadingCompetencies,
-      activities: loadingActivities,
-      any:
-        loadingCycle ||
-        loadingGoals ||
-        loadingCompetencies ||
-        loadingActivities,
+      goals: false,
+      competencies: false,
+      activities: false,
+      any: loadingCycle,
     },
 
     error: {
       cycle: errorCycle,
-      goals: errorGoals,
-      competencies: errorCompetencies,
-      activities: errorActivities,
-      any: !!(errorCycle || errorGoals || errorCompetencies || errorActivities),
+      goals: null,
+      competencies: null,
+      activities: null,
+      any: !!errorCycle,
     },
 
     refresh,

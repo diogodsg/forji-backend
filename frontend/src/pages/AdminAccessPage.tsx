@@ -5,12 +5,12 @@ import {
   WorkflowPeopleTab,
   TeamsManagement,
 } from "@/features/admin";
-import { FiUser, FiUsers, FiShield, FiLogOut } from "react-icons/fi";
+import { FiUser, FiUsers, FiShield } from "react-icons/fi";
 
 type TabKey = "people" | "teams";
 
 export default function AdminAccessPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>("people");
 
   const tabs = [

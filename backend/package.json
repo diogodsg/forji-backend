@@ -2,7 +2,7 @@
   "name": "forge-backend",
   "version": "1.0.0",
   "description": "Forge Backend - NestJS + Prisma + PostgreSQL",
-  "author": "Driva Tecnologia",
+  "author": "Forji Tecnologia",
   "license": "MIT",
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

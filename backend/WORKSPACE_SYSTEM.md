@@ -30,8 +30,8 @@ Implementar um sistema **multi-workspace** onde:
 ```prisma
 model Workspace {
   id          String      @id @default(uuid()) @db.Uuid
-  name        String      // "Driva", "Acme Corp"
-  slug        String      @unique  // "driva", "acme-corp"
+  name        String      // "Forji", "Acme Corp"
+  slug        String      @unique  // "forji", "acme-corp"
   description String?
   avatar_url  String?     // Logo do workspace
   status      WorkspaceStatus @default(ACTIVE)
@@ -205,8 +205,8 @@ POST /api/auth/login
     },
     {
       "id": "uuid-2",
-      "name": "Driva Tecnologia",
-      "slug": "driva-tecnologia",
+      "name": "Forji Tecnologia",
+      "slug": "forji-tecnologia",
       "role": "MEMBER"
     }
   ],
@@ -232,8 +232,8 @@ Authorization: Bearer <token>
 {
   "workspace": {
     "id": "uuid-2",
-    "name": "Driva Tecnologia",
-    "slug": "driva-tecnologia",
+    "name": "Forji Tecnologia",
+    "slug": "forji-tecnologia",
     "role": "MEMBER"
   },
   "accessToken": "jwt-with-workspace-context..."

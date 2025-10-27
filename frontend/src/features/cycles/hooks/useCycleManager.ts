@@ -63,11 +63,11 @@ export const useCycleManager = () => {
 
   const completedGoals =
     goals?.filter((goal) => {
-      if (goal.type === "deadline") return goal.completed;
-      if (goal.type === "quantity")
-        return (goal.currentNumber || 0) >= (goal.targetNumber || 0);
-      if (goal.type === "improvement")
+      if (goal.type === "BINARY") return !!goal.completedAt;
+      if (goal.type === "INCREASE" || goal.type === "PERCENTAGE")
         return (goal.currentValue || 0) >= (goal.targetValue || 0);
+      if (goal.type === "DECREASE")
+        return (goal.currentValue || 0) <= (goal.targetValue || 0);
       return false;
     }) || [];
 

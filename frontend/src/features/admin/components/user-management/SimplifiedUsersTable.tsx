@@ -9,9 +9,9 @@ interface Props {
   filtered: AdminUser[];
   loading: boolean;
   error: string | null;
-  onRemove: (id: number) => Promise<void> | void;
+  onRemove: (id: string) => Promise<void> | void;
   onChangePassword: (
-    userId: number,
+    userId: string,
     newPassword?: string
   ) => Promise<{ success: boolean; generatedPassword?: string }>;
 }
@@ -25,11 +25,11 @@ export function SimplifiedUsersTable({
   onChangePassword,
 }: Props) {
   const navigate = useNavigate();
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [changePasswordUser, setChangePasswordUser] =
     useState<AdminUser | null>(null);
 
-  const handleCardClick = (userId: number) => {
+  const handleCardClick = (userId: string) => {
     navigate(`/admin/users/${userId}`);
   };
 

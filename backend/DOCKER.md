@@ -48,18 +48,18 @@ docker-compose up --build -d backend postgres
 
 ### Script de Deploy (`./docker-deploy.sh`)
 
-| Comando | Descrição |
-|---------|-----------|
-| `dev` | Iniciar em modo desenvolvimento com hot reload |
-| `prod` | Iniciar em modo produção |
-| `build` | Fazer build da imagem Docker |
-| `migrate` | Executar migrações do Prisma |
-| `seed` | Executar seed do banco de dados |
-| `logs` | Mostrar logs da aplicação |
-| `stop` | Parar todos os serviços |
-| `clean` | Limpar containers, images e volumes |
-| `restart` | Reiniciar os serviços |
-| `help` | Mostrar ajuda |
+| Comando   | Descrição                                      |
+| --------- | ---------------------------------------------- |
+| `dev`     | Iniciar em modo desenvolvimento com hot reload |
+| `prod`    | Iniciar em modo produção                       |
+| `build`   | Fazer build da imagem Docker                   |
+| `migrate` | Executar migrações do Prisma                   |
+| `seed`    | Executar seed do banco de dados                |
+| `logs`    | Mostrar logs da aplicação                      |
+| `stop`    | Parar todos os serviços                        |
+| `clean`   | Limpar containers, images e volumes            |
+| `restart` | Reiniciar os serviços                          |
+| `help`    | Mostrar ajuda                                  |
 
 ### Exemplos de Uso
 
@@ -91,10 +91,10 @@ O Dockerfile usa multi-stage build para otimizar a imagem final:
 
 ### Serviços
 
-| Serviço | Porta | Descrição |
-|---------|--------|-----------|
-| `postgres` | 5432 | Banco de dados PostgreSQL 15 |
-| `backend` | 3001 | API NestJS (produção) |
+| Serviço       | Porta      | Descrição                            |
+| ------------- | ---------- | ------------------------------------ |
+| `postgres`    | 5432       | Banco de dados PostgreSQL 15         |
+| `backend`     | 3001       | API NestJS (produção)                |
 | `backend-dev` | 3001, 9229 | API NestJS (desenvolvimento + debug) |
 
 ## 🔧 Configuração

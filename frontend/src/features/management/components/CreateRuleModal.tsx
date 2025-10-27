@@ -3,6 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { FiX, FiUsers, FiUser, FiCheck, FiAlertCircle } from "react-icons/fi";
 import { useManagementRules } from "../hooks/useManagementRules";
 import { api } from "@/lib/apiClient";
+import { useAuth } from "@/features/auth";
 import type { CreateManagementRuleDto, ManagementRuleType } from "../types";
 
 interface Team {
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export function CreateRuleModal({ isOpen, onClose }: Props) {
+  const { user } = useAuth();
   const { rules: existingRules, createRule, reload } = useManagementRules();
   const [ruleType, setRuleType] = useState<ManagementRuleType>("TEAM");
   const [selectedTeamIds, setSelectedTeamIds] = useState<number[]>([]);
@@ -78,8 +80,9 @@ export function CreateRuleModal({ isOpen, onClose }: Props) {
       const createPromises = selectedIds.map((id) => {
         const rule: CreateManagementRuleDto = {
           ruleType,
-          teamId: ruleType === "TEAM" ? id : undefined,
-          subordinateId: ruleType === "INDIVIDUAL" ? id : undefined,
+          managerId: user?.id || "",
+          teamId: ruleType === "TEAM" ? String(id) : undefined,
+          subordinateId: ruleType === "INDIVIDUAL" ? String(id) : undefined,
         };
         return createRule(rule);
       });
@@ -167,13 +170,14 @@ export function CreateRuleModal({ isOpen, onClose }: Props) {
   // Verificar se equipe/usuário já está em regra existente
   const isTeamInRule = (teamId: number) => {
     return existingRules.some(
-      (rule) => rule.ruleType === "TEAM" && rule.teamId === teamId
+      (rule) => rule.ruleType === "TEAM" && rule.teamId === String(teamId)
     );
   };
 
   const isUserInRule = (userId: number) => {
     return existingRules.some(
-      (rule) => rule.ruleType === "INDIVIDUAL" && rule.subordinateId === userId
+      (rule) =>
+        rule.ruleType === "INDIVIDUAL" && rule.subordinateId === String(userId)
     );
   };
 

@@ -9,13 +9,13 @@ export function ActionSimulator() {
       action: () => {
         if (goals?.[0]) {
           const goal = goals[0];
-          if (goal.type === "quantity") {
+          if (goal.type === "INCREASE" || goal.type === "PERCENTAGE") {
             const newValue = Math.floor(
-              Math.random() * (goal.targetNumber || 5)
+              Math.random() * (goal.targetValue || 5)
             );
-            actions.updateGoalProgress(goal.id, { currentNumber: newValue });
+            actions.updateGoalProgress(goal.id, { newValue: newValue });
             console.log(
-              `Debug: Updated goal "${goal.title}" to ${newValue}/${goal.targetNumber}`
+              `Debug: Updated goal "${goal.title}" to ${newValue}/${goal.targetValue}`
             );
           }
         }
@@ -26,12 +26,15 @@ export function ActionSimulator() {
       action: () => {
         if (goals?.length) {
           const randomGoal = goals[Math.floor(Math.random() * goals.length)];
-          if (randomGoal.type === "deadline") {
-            actions.updateGoalProgress(randomGoal.id, { completed: true });
+          if (randomGoal.type === "BINARY") {
+            actions.updateGoalProgress(randomGoal.id, { newValue: 1 });
             console.log(`Debug: Completed goal "${randomGoal.title}"`);
-          } else if (randomGoal.type === "quantity") {
+          } else if (
+            randomGoal.type === "INCREASE" ||
+            randomGoal.type === "PERCENTAGE"
+          ) {
             actions.updateGoalProgress(randomGoal.id, {
-              currentNumber: randomGoal.targetNumber,
+              newValue: randomGoal.targetValue,
             });
             console.log(`Debug: Completed quantity goal "${randomGoal.title}"`);
           }

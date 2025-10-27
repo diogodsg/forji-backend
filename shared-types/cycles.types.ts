@@ -10,39 +10,50 @@
 // ENUMS
 // ==========================================
 
-export enum CycleType {
-  TRIMESTRAL = "TRIMESTRAL",
-  SEMESTRAL = "SEMESTRAL",
-  ANUAL = "ANUAL",
-}
+export const CycleType = {
+  TRIMESTRAL: "TRIMESTRAL",
+  SEMESTRAL: "SEMESTRAL",
+  ANUAL: "ANUAL",
+} as const;
 
-export enum GoalType {
-  INCREASE = "INCREASE",
-  DECREASE = "DECREASE",
-  PERCENTAGE = "PERCENTAGE",
-  BINARY = "BINARY",
-}
+export type CycleType = (typeof CycleType)[keyof typeof CycleType];
 
-export enum GoalStatus {
-  ACTIVE = "ACTIVE",
-  COMPLETED = "COMPLETED",
-  BLOCKED = "BLOCKED",
-  CANCELLED = "CANCELLED",
-}
+export const GoalType = {
+  INCREASE: "INCREASE",
+  DECREASE: "DECREASE",
+  PERCENTAGE: "PERCENTAGE",
+  BINARY: "BINARY",
+} as const;
 
-export enum CompetencyCategory {
-  TECHNICAL = "TECHNICAL",
-  LEADERSHIP = "LEADERSHIP",
-  BEHAVIORAL = "BEHAVIORAL",
-}
+export type GoalType = (typeof GoalType)[keyof typeof GoalType];
 
-export enum ActivityType {
-  ONE_ON_ONE = "ONE_ON_ONE",
-  MENTORING = "MENTORING",
-  CERTIFICATION = "CERTIFICATION",
-  GOAL_UPDATE = "GOAL_UPDATE",
-  COMPETENCY_UPDATE = "COMPETENCY_UPDATE",
-}
+export const GoalStatus = {
+  ACTIVE: "ACTIVE",
+  COMPLETED: "COMPLETED",
+  BLOCKED: "BLOCKED",
+  CANCELLED: "CANCELLED",
+} as const;
+
+export type GoalStatus = (typeof GoalStatus)[keyof typeof GoalStatus];
+
+export const CompetencyCategory = {
+  TECHNICAL: "TECHNICAL",
+  LEADERSHIP: "LEADERSHIP",
+  BEHAVIORAL: "BEHAVIORAL",
+} as const;
+
+export type CompetencyCategory =
+  (typeof CompetencyCategory)[keyof typeof CompetencyCategory];
+
+export const ActivityType = {
+  ONE_ON_ONE: "ONE_ON_ONE",
+  MENTORING: "MENTORING",
+  CERTIFICATION: "CERTIFICATION",
+  GOAL_UPDATE: "GOAL_UPDATE",
+  COMPETENCY_UPDATE: "COMPETENCY_UPDATE",
+} as const;
+
+export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType];
 
 // ==========================================
 // CYCLE DTOs
@@ -235,7 +246,7 @@ export interface CreateOneOnOneDto {
 }
 
 export interface OneOnOneActivityResponseDto extends ActivityResponseDto {
-  type: ActivityType.ONE_ON_ONE;
+  type: "ONE_ON_ONE";
   participantId: string;
   meetingDate: string;
   topics: string[];
@@ -254,7 +265,7 @@ export interface CreateMentoringDto {
 }
 
 export interface MentoringActivityResponseDto extends ActivityResponseDto {
-  type: ActivityType.MENTORING;
+  type: "MENTORING";
   mentorId: string;
   sessionDate: string;
   topics: string[];
@@ -273,7 +284,7 @@ export interface CreateCertificationDto {
 }
 
 export interface CertificationActivityResponseDto extends ActivityResponseDto {
-  type: ActivityType.CERTIFICATION;
+  type: "CERTIFICATION";
   platform: string;
   completionDate: string;
   certificateUrl: string | null;

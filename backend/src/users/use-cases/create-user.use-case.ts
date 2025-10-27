@@ -2,6 +2,7 @@ import { Injectable, ConflictException, ForbiddenException } from '@nestjs/commo
 import { UsersRepository } from '../repositories/users.repository';
 import { PasswordService } from '../services/password.service';
 import { PermissionsService } from '../services/permissions.service';
+import { GamificationService } from '../../gamification/gamification.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 
 /**
@@ -14,6 +15,7 @@ export class CreateUserUseCase {
     private readonly usersRepository: UsersRepository,
     private readonly passwordService: PasswordService,
     private readonly permissionsService: PermissionsService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   async execute(createUserDto: CreateUserDto, creatorId: string) {
@@ -33,9 +35,9 @@ export class CreateUserUseCase {
     }
 
     // 4. Create user and add to workspace in transaction
-    return this.usersRepository.transaction(async (tx) => {
+    const user = await this.usersRepository.transaction(async (tx) => {
       // Create user
-      const user = await tx.user.create({
+      const newUser = await tx.user.create({
         data: {
           email: createUserDto.email,
           password: hashedPassword,
@@ -57,13 +59,23 @@ export class CreateUserUseCase {
       // Add user to creator's workspace as member
       await tx.workspaceMember.create({
         data: {
-          userId: user.id,
+          userId: newUser.id,
           workspaceId,
           role: 'MEMBER',
         },
       });
 
-      return user;
+      return newUser;
     });
+
+    // 5. Create gamification profile for the new user
+    try {
+      await this.gamificationService.createProfile(user.id, workspaceId);
+    } catch (error) {
+      // Log error but don't fail user creation
+      console.error(`Failed to create gamification profile for user ${user.id}:`, error);
+    }
+
+    return user;
   }
 }

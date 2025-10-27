@@ -9,8 +9,8 @@
 ```prisma
 model Workspace {
   id            String          @id @default(uuid())
-  name          String          // "Driva Tecnologia"
-  slug          String          @unique  // "driva-tecnologia"
+  name          String          // "Forji Tecnologia"
+  slug          String          @unique  // "forji-tecnologia"
   description   String?
   avatar_url    String?
   status        WorkspaceStatus @default(ACTIVE)

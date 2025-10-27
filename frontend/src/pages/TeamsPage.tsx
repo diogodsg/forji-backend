@@ -106,7 +106,7 @@ export function TeamsPage() {
     },
   ];
 
-  const mockTeamData = {
+  const teamData = {
     id: currentTeamId,
     name: "Equipe Alpha",
     description: "Time de desenvolvimento frontend",
@@ -234,20 +234,20 @@ export function TeamsPage() {
             <div className="space-y-8">
               <div className="rounded-2xl border border-gray-300 bg-white shadow-sm p-6">
                 <h2 className="text-xl font-medium text-gray-800 mb-6">
-                  {mockTeamData.name}
+                  {teamData.name}
                 </h2>
                 <div className="space-y-6">
                   {/* Métricas compactas */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="text-center p-3 bg-blue-50 rounded-lg">
                       <div className="text-lg font-bold text-blue-600">
-                        {(mockTeamData.totalXP / 1000).toFixed(1)}K
+                        {(teamData.totalXP / 1000).toFixed(1)}K
                       </div>
                       <div className="text-xs text-gray-600">XP Total</div>
                     </div>
                     <div className="text-center p-3 bg-green-50 rounded-lg">
                       <div className="text-lg font-bold text-green-600">
-                        {mockTeamData.avgPerformance}%
+                        {teamData.avgPerformance}%
                       </div>
                       <div className="text-xs text-gray-600">Performance</div>
                     </div>
@@ -259,7 +259,7 @@ export function TeamsPage() {
                       Membros da Equipe
                     </h3>
                     <div className="space-y-2">
-                      {mockTeamData.members.map((member) => (
+                      {teamData.members.map((member) => (
                         <div
                           key={member.id}
                           className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
@@ -339,19 +339,19 @@ export function TeamsPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 bg-blue-50 rounded-lg text-center">
                       <div className="text-lg font-bold text-blue-600">
-                        {mockTeamData.members.length}
+                        {teamData.members.length}
                       </div>
                       <div className="text-xs text-gray-600">Membros</div>
                     </div>
                     <div className="p-3 bg-green-50 rounded-lg text-center">
                       <div className="text-lg font-bold text-green-600">
-                        {mockTeamData.avgPerformance}%
+                        {teamData.avgPerformance}%
                       </div>
                       <div className="text-xs text-gray-600">Performance</div>
                     </div>
                     <div className="p-3 bg-yellow-50 rounded-lg text-center">
                       <div className="text-lg font-bold text-yellow-600">
-                        {(mockTeamData.totalXP / 1000).toFixed(1)}K
+                        {(teamData.totalXP / 1000).toFixed(1)}K
                       </div>
                       <div className="text-xs text-gray-600">XP Total</div>
                     </div>
@@ -392,7 +392,7 @@ export function TeamsPage() {
             <div className="space-y-8">
               <div className="rounded-2xl border border-gray-300 bg-white shadow-sm p-6">
                 <h2 className="text-lg font-medium text-gray-800 mb-4">
-                  {mockTeamData.name}
+                  {teamData.name}
                 </h2>
                 <div className="space-y-4">
                   {/* Team members compacto */}
@@ -401,7 +401,7 @@ export function TeamsPage() {
                       Membros da Equipe
                     </h3>
                     <div className="space-y-2">
-                      {mockTeamData.members.map((member) => (
+                      {teamData.members.map((member) => (
                         <div
                           key={member.id}
                           className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
@@ -451,7 +451,7 @@ export function TeamsPage() {
                       Atividades Recentes
                     </h3>
                     <div className="space-y-2">
-                      {mockTeamData.recentActivities
+                      {teamData.recentActivities
                         .slice(0, 3)
                         .map((activity) => (
                           <div

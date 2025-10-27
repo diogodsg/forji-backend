@@ -4,8 +4,8 @@ import type { AdminUser } from "@/features/admin/types";
 interface ManagerPickerPopoverProps {
   target: AdminUser; // user whose managers we're editing
   allUsers: AdminUser[];
-  onAdd: (userId: number, managerId: number) => void | Promise<void>;
-  onRemove: (userId: number, managerId: number) => void | Promise<void>;
+  onAdd: (userId: string, managerId: string) => void | Promise<void>;
+  onRemove: (userId: string, managerId: string) => void | Promise<void>;
   onClose: () => void;
 }
 

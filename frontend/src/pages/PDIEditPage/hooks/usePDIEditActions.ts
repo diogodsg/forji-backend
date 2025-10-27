@@ -321,7 +321,10 @@ export function usePDIEditActions(
 
         const { createGoal } = await import("@/lib/api/endpoints/cycles");
 
-        const typeMapping: Record<string, string> = {
+        const typeMapping: Record<
+          string,
+          "INCREASE" | "DECREASE" | "PERCENTAGE" | "BINARY"
+        > = {
           increase: "INCREASE",
           decrease: "DECREASE",
           percentage: "PERCENTAGE",
@@ -497,7 +500,10 @@ export function usePDIEditActions(
 
         const { createCompetency } = await import("@/lib/api/endpoints/cycles");
 
-        const categoryMapping: Record<string, string> = {
+        const categoryMapping: Record<
+          string,
+          "TECHNICAL" | "LEADERSHIP" | "BEHAVIORAL"
+        > = {
           technical: "TECHNICAL",
           leadership: "LEADERSHIP",
           behavioral: "BEHAVIORAL",

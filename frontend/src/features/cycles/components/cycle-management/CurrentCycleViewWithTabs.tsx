@@ -4,7 +4,7 @@ import { useCurrentCycle } from "../../hooks";
 import { QuickCycleCreator } from "./QuickCycleCreator";
 import { OneOnOneRecorder } from "../tracking-recorders/OneOnOneRecorder";
 import { CompetencyManager } from "../competency-management/CompetencyManager";
-import type { OneOnOneRecord } from "../../types";
+import type { OneOnOneData } from "../tracking-recorders/one-on-one/types";
 
 type TabType = "overview" | "create" | "competencies" | "oneononnes";
 
@@ -331,7 +331,7 @@ export const CurrentCycleView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [showOneOnOneModal, setShowOneOnOneModal] = useState(false);
 
-  const handleSaveOneOnOne = (oneOnOne: OneOnOneRecord) => {
+  const handleSaveOneOnOne = (oneOnOne: OneOnOneData) => {
     console.log("1:1 salvo:", oneOnOne);
     setShowOneOnOneModal(false);
   };

@@ -7,7 +7,7 @@ export interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
   const { login, register } = useAuth();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");

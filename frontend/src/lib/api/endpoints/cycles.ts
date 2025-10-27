@@ -43,7 +43,7 @@ import type {
   CertificationActivityResponseDto,
   ActivityTimelineDto,
   ActivityFiltersDto,
-} from "@/shared-types";
+} from "../../../../../shared-types";
 
 // ==========================================
 // CYCLES ENDPOINTS

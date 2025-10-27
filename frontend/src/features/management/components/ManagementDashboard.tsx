@@ -8,9 +8,9 @@ export function ManagementDashboard() {
   const { rules, subordinates, loading, error, removeRule } =
     useManagementRules();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const handleRemoveRule = async (ruleId: number) => {
+  const handleRemoveRule = async (ruleId: string) => {
     try {
       await removeRule(ruleId);
       setConfirmDelete(null);
@@ -216,9 +216,9 @@ export function ManagementDashboard() {
 
 interface RuleCardProps {
   rule: ManagementRule;
-  onRemove: (ruleId: number) => void;
-  confirmDelete: number | null;
-  setConfirmDelete: (id: number | null) => void;
+  onRemove: (ruleId: string) => void;
+  confirmDelete: string | null;
+  setConfirmDelete: (id: string | null) => void;
 }
 
 function RuleCard({

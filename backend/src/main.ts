@@ -53,7 +53,6 @@ async function bootstrap() {
     .setDescription('Backend API for Forge - Team Management & Gamification Platform')
     .setVersion('1.0')
     .addTag('auth', 'Authentication endpoints')
-    .addTag('workspaces', 'Workspace management')
     .addTag('users', 'User management')
     .addTag('teams', 'Team management')
     .addTag('management', 'Hierarchical management rules')

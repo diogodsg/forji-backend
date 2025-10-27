@@ -28,5 +28,5 @@ export type {
 } from "./useCycleMutations";
 export {
   useActivitiesTimeline,
-  type TimelineActivity,
+  type Activity as TimelineActivity,
 } from "./useActivitiesTimeline";

@@ -92,8 +92,8 @@ export function useActivitiesTimeline(
             improvementPoints: oneOnOneData.improvementPoints || [],
             nextSteps: oneOnOneData.nextSteps || [],
             topics: oneOnOneData.workingOn || [], // workingOn serve como topics
-            description: activity.description,
-            duration: activity.duration,
+            description: activity.description || undefined,
+            // duration: activity.duration, // Campo não existe no ActivityResponseDto
             oneOnOne: oneOnOneData, // Preservar dados originais para edição
           };
         }

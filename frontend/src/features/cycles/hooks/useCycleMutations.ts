@@ -30,7 +30,7 @@ import type {
   OneOnOneActivityResponseDto,
   MentoringActivityResponseDto,
   CertificationActivityResponseDto,
-} from "@/shared-types";
+} from "../../../../../shared-types";
 
 // ==========================================
 // GOAL MUTATIONS

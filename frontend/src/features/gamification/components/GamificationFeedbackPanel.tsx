@@ -3,7 +3,7 @@ import { FiStar, FiMessageCircle, FiTrendingUp, FiCheck } from "react-icons/fi";
 import { api } from "@/lib/apiClient";
 
 interface GamificationFeedbackPanelProps {
-  targetUserId: number;
+  targetUserId: string;
   targetUserName: string;
   onClose?: () => void;
 }

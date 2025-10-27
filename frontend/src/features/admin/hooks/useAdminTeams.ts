@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState, useMemo } from "react";
 import {
   teamsApi,
   type Team,
-  type CreateTeamDto,
   type UpdateTeamDto,
   type TeamMemberRole,
 } from "@/lib/api/endpoints/teams";

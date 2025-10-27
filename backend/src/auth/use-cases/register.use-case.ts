@@ -1,6 +1,7 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthRepository } from '../repositories/auth.repository';
+import { GamificationService } from '../../gamification/gamification.service';
 import * as bcrypt from 'bcrypt';
 
 interface RegisterDto {
@@ -20,6 +21,7 @@ export class RegisterUseCase {
   constructor(
     private readonly authRepository: AuthRepository,
     private readonly jwtService: JwtService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   async execute(registerDto: RegisterDto) {
@@ -63,6 +65,14 @@ export class RegisterUseCase {
 
       return { user, workspace };
     });
+
+    // 4. Create gamification profile for the new user
+    try {
+      await this.gamificationService.createProfile(result.user.id, result.workspace.id);
+    } catch (error) {
+      // Log error but don't fail registration
+      console.error(`Failed to create gamification profile for user ${result.user.id}:`, error);
+    }
 
     // Generate JWT token with workspace context
     const payload = {

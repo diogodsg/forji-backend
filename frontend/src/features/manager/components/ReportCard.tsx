@@ -2,7 +2,7 @@ import type { ReportSummary } from "../types/manager";
 
 interface ReportCardProps {
   report: ReportSummary;
-  onSelect: (userId: number) => void;
+  onSelect: (userId: string) => void;
   active: boolean;
 }
 

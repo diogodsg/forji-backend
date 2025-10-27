@@ -7,6 +7,7 @@ import {
 import { UsersRepository } from '../repositories/users.repository';
 import { PasswordService } from '../services/password.service';
 import { PermissionsService } from '../services/permissions.service';
+import { GamificationService } from '../../gamification/gamification.service';
 import { CreateUserOnboardingDto } from '../dto/create-user-onboarding.dto';
 
 /**
@@ -20,6 +21,7 @@ export class OnboardUserUseCase {
     private readonly usersRepository: UsersRepository,
     private readonly passwordService: PasswordService,
     private readonly permissionsService: PermissionsService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   async execute(dto: CreateUserOnboardingDto, creatorId: string) {
@@ -83,7 +85,7 @@ export class OnboardUserUseCase {
       }
     }
 
-    return this.usersRepository.transaction(async (tx) => {
+    const result = await this.usersRepository.transaction(async (tx) => {
       // Add to workspace
       const workspaceRole = dto.workspaceRole || 'MEMBER';
       await tx.workspaceMember.create({
@@ -139,6 +141,16 @@ export class OnboardUserUseCase {
         workspaceRole,
       };
     });
+
+    // Create gamification profile for the user in this workspace
+    try {
+      await this.gamificationService.createProfile(userId, workspaceId);
+    } catch (error) {
+      // Log error but don't fail user addition
+      console.error(`Failed to create gamification profile for user ${userId}:`, error);
+    }
+
+    return result;
   }
 
   /**
@@ -168,7 +180,7 @@ export class OnboardUserUseCase {
       }
     }
 
-    return this.usersRepository.transaction(async (tx) => {
+    const result = await this.usersRepository.transaction(async (tx) => {
       // 1. Create user
       const user = await tx.user.create({
         data: {
@@ -232,5 +244,15 @@ export class OnboardUserUseCase {
         workspaceRole,
       };
     });
+
+    // 5. Create gamification profile (outside transaction to avoid blocking user creation)
+    try {
+      await this.gamificationService.createProfile(result.id, workspaceId);
+    } catch (error) {
+      // Log error but don't fail user creation
+      console.error(`Failed to create gamification profile for user ${result.id}:`, error);
+    }
+
+    return result;
   }
 }

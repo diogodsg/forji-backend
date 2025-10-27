@@ -388,7 +388,7 @@ Authorization: Bearer <token>
 # 1. Fazer login
 POST http://localhost:8000/api/auth/login
 {
-  "email": "diego@driva.com.br",
+  "email": "diego@forji.com.br",
   "password": "senha123"
 }
 

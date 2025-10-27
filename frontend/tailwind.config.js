@@ -55,6 +55,13 @@ export default {
       animation: {
         "bounce-subtle": "bounce 1s ease-in-out 2",
         "pulse-soft": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        shimmer: "shimmer 2s ease-in-out infinite",
+      },
+      keyframes: {
+        shimmer: {
+          "0%": { "background-position": "200% 0" },
+          "100%": { "background-position": "-200% 0" },
+        },
       },
       transitionDuration: {
         150: "150ms",

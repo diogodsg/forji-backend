@@ -1,5 +1,5 @@
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "https://services.driva.io/forge";
+  import.meta.env.VITE_API_BASE_URL || "https://services.forji.io/forge";
 
 export interface ApiOptions extends RequestInit {
   auth?: boolean;

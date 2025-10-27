@@ -1001,4 +1001,4 @@ npm run prisma:migrate
 
 ## 📝 Licença
 
-MIT © Driva Tecnologia
+MIT © Forji Tecnologia

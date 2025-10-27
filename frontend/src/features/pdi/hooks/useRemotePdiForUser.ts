@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../../../lib/apiClient";
 import type { PdiPlan } from "..";
 
-export function useRemotePdiForUser(userId?: number) {
+export function useRemotePdiForUser(userId?: string) {
   const [plan, setPlan] = useState<PdiPlan | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

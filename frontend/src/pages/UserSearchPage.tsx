@@ -187,7 +187,7 @@ export function UserSearchPage() {
               <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
                 {showFeedbackPanel ? (
                   <GamificationFeedbackPanel
-                    targetUserId={selectedUser.id}
+                    targetUserId={String(selectedUser.id)}
                     targetUserName={selectedUser.name}
                     onClose={handleCloseFeedback}
                   />

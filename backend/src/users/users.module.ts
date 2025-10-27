@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { PrismaModule } from '../prisma/prisma.module';
+import { GamificationModule } from '../gamification/gamification.module';
 
 // Repository
 import { UsersRepository } from './repositories/users.repository';
@@ -24,7 +25,7 @@ import {
 } from './use-cases';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, GamificationModule],
   controllers: [UsersController],
   providers: [
     // Main Service (Facade)

@@ -1,5 +1,5 @@
 export interface ReportSummary {
-  userId: number;
+  userId: string;
   name: string;
   email: string;
   githubId?: string;

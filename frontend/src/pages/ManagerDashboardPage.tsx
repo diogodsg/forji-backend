@@ -32,7 +32,7 @@ export function ManagerDashboardPage() {
       pdi: { exists: false, progress: 0 },
     }));
 
-  const handleSelectUser = (id: number) => {
+  const handleSelectUser = (id: string) => {
     const report = myDirectReports.find((r) => r.userId === id);
     navigate(
       `/manager/users/${id}`,
@@ -81,12 +81,12 @@ export function ManagerDashboardPage() {
     if (!allTeams.teams.length || !myDirectReports.length)
       return myDirectReports;
 
-    const peopleInTeams = new Set<number>();
+    const peopleInTeams = new Set<string>();
 
     // Coletar todos os IDs de pessoas que estão em times
     allTeams.teams.forEach((team) => {
       team.memberships.forEach((m) => {
-        peopleInTeams.add(Number(m.user.id));
+        peopleInTeams.add(String(m.user.id));
       });
     });
 
@@ -432,7 +432,7 @@ export function ManagerDashboardPage() {
                                     )
                                     .map((m) => {
                                       const report: ReportSummary = {
-                                        userId: m.user.id,
+                                        userId: String(m.user.id),
                                         name: m.user.name,
                                         email: m.user.email,
                                         position: null,

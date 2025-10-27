@@ -7,7 +7,7 @@ export function useAdminUpdateProfile() {
   const [error, setError] = useState<string | null>(null);
 
   const updateUserProfile = async (
-    userId: number,
+    userId: string,
     data: UpdateProfileDto
   ): Promise<UserProfile | null> => {
     setLoading(true);

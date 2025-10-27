@@ -345,7 +345,7 @@ src/features/
 
 ```bash
 # Clone
-git clone https://github.com/Driva-tecnologia/forge.git
+git clone https://github.com/Forji-tecnologia/forge.git
 cd forge
 
 # Backend

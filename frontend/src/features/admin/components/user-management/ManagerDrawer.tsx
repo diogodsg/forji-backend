@@ -5,8 +5,8 @@ interface Props {
   target: AdminUser;
   allUsers: AdminUser[];
   onClose: () => void;
-  onAdd: (userId: number, managerId: number) => void;
-  onRemove: (userId: number, managerId: number) => void;
+  onAdd: (userId: string, managerId: string) => void;
+  onRemove: (userId: string, managerId: string) => void;
 }
 
 export function ManagerDrawer({
@@ -28,7 +28,7 @@ export function ManagerDrawer({
         .sort((a, b) => a.name.localeCompare(b.name)),
     [allUsers, target.id, currentSet]
   );
-  const [selectedId, setSelectedId] = useState<number | "">("");
+  const [selectedId, setSelectedId] = useState<string>("");
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/40" onClick={onClose} />
@@ -57,7 +57,7 @@ export function ManagerDrawer({
                 value={selectedId === "" ? "" : String(selectedId)}
                 onChange={(e) => {
                   const v = e.target.value;
-                  setSelectedId(v ? Number(v) : "");
+                  setSelectedId(v || "");
                 }}
                 className="flex-1 rounded-xl border border-surface-300 px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/60"
               >
@@ -72,7 +72,7 @@ export function ManagerDrawer({
                 disabled={selectedId === ""}
                 onClick={() => {
                   if (selectedId !== "") {
-                    onAdd(target.id, selectedId as number);
+                    onAdd(target.id, selectedId);
                     setSelectedId("");
                   }
                 }}

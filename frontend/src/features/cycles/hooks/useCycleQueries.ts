@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
-import type { Cycle, CycleGoal } from "../types";
-import { mockAPI } from "../data/mockData";
+import type {
+  CycleResponseDto,
+  GoalResponseDto,
+} from "../../../../../shared-types";
+import {
+  getCurrentCycle,
+  listGoals,
+  updateGoalProgress,
+} from "@/lib/api/endpoints/cycles";
 
-// Hook simulando React Query para dados do ciclo
+// Hook para dados do ciclo
 export const useCycleData = () => {
-  const [data, setData] = useState<Cycle | null>(null);
+  const [data, setData] = useState<CycleResponseDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -13,7 +20,7 @@ export const useCycleData = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const cycle = await mockAPI.getCurrentCycle();
+        const cycle = await getCurrentCycle();
         setData(cycle);
       } catch (err) {
         setError(err instanceof Error ? err : new Error("Unknown error"));
@@ -29,7 +36,7 @@ export const useCycleData = () => {
     const fetchCycle = async () => {
       try {
         setIsLoading(true);
-        const cycle = await mockAPI.getCurrentCycle();
+        const cycle = await getCurrentCycle();
         setData(cycle);
       } catch (err) {
         setError(err instanceof Error ? err : new Error("Unknown error"));
@@ -53,7 +60,7 @@ export const useCycleData = () => {
 
 // Hook para metas do ciclo
 export const useCycleGoals = (cycleId?: string) => {
-  const [data, setData] = useState<CycleGoal[]>([]);
+  const [data, setData] = useState<GoalResponseDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -67,8 +74,8 @@ export const useCycleGoals = (cycleId?: string) => {
       try {
         setIsLoading(true);
         setError(null);
-        const goals = await mockAPI.getCycleGoals(cycleId);
-        setData(goals);
+        const goals = await listGoals({ cycleId });
+        setData(goals || []);
       } catch (err) {
         setError(err instanceof Error ? err : new Error("Unknown error"));
       } finally {
@@ -88,16 +95,19 @@ export const useCycleGoals = (cycleId?: string) => {
   };
 };
 
-// Hook para mutações (atualizar progresso das metas)
+// Hook para atualizar progresso das metas
 export const useUpdateGoalProgress = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const mutate = async (goalId: string, progress: Partial<CycleGoal>) => {
+  const mutate = async (
+    goalId: string,
+    progress: { newValue: number; notes?: string }
+  ) => {
     try {
       setIsLoading(true);
       setError(null);
-      const updatedGoal = await mockAPI.updateGoalProgress(goalId, progress);
+      const updatedGoal = await updateGoalProgress(goalId, progress);
       console.log("✅ Goal updated successfully:", updatedGoal);
       return updatedGoal;
     } catch (err) {

@@ -43,7 +43,7 @@ export function useManagementRules() {
   };
 
   // Remover uma regra
-  const removeRule = async (ruleId: number) => {
+  const removeRule = async (ruleId: string) => {
     try {
       setError(null);
       await managementApi.removeRule(ruleId);
