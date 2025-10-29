@@ -9,7 +9,7 @@ const MAX_GOALS_PER_CYCLE = 5;
 interface Goal {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   type: string;
   progress: number;
   currentValue?: number;
