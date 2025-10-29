@@ -9,6 +9,7 @@ interface Step2PlanningProps {
   setFormData: (data: Partial<GoalData>) => void;
   xpTotal: number;
   xpBonuses: XPBonus[];
+  isEditing?: boolean;
 }
 
 export default function Step2Planning({
@@ -16,11 +17,14 @@ export default function Step2Planning({
   setFormData,
   xpTotal,
   xpBonuses,
+  isEditing = false,
 }: Step2PlanningProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Coluna Principal - Formulário */}
-      <div className="lg:col-span-2 space-y-3">
+      <div
+        className={`${isEditing ? "lg:col-span-3" : "lg:col-span-2"} space-y-3`}
+      >
         {/* Recap do título */}
         <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
           <div className="flex items-center gap-2">
@@ -121,12 +125,14 @@ export default function Step2Planning({
         )}
       </div>
 
-      {/* Coluna Lateral - XP Breakdown Fixo */}
-      <div className="lg:col-span-1">
-        <div className="lg:sticky lg:top-0">
-          <XPBreakdown total={xpTotal} bonuses={xpBonuses} />
+      {/* Coluna Lateral - XP Breakdown Fixo - Oculto no modo de edição */}
+      {!isEditing && (
+        <div className="lg:col-span-1">
+          <div className="lg:sticky lg:top-0">
+            <XPBreakdown total={xpTotal} bonuses={xpBonuses} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

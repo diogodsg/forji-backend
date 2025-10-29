@@ -1,7 +1,7 @@
 /**
  * Skeleton Components - Design System Compliant
  *
- * Componentes de skeleton loading seguindo o design system da Forge
+ * Componentes de skeleton loading seguindo o design system da Forji
  * Baseado nos tokens de design violet e superfícies
  */
 

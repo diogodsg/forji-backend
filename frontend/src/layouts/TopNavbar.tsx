@@ -10,7 +10,7 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import { usersApi, type User } from "@/lib/api/endpoints/users";
-import { useGamificationProfile } from "../features/cycles/hooks/useGamificationProfile";
+import { useGamificationContext } from "../features/gamification/context/GamificationContext";
 import { useAuth } from "@/features/auth";
 import { Avatar } from "@/features/profile/components/Avatar";
 
@@ -36,7 +36,7 @@ export function TopNavbar({ userName, onLogout }: TopNavbarProps) {
 
   // Get user and gamification data
   const { user } = useAuth();
-  const { profile: gamificationProfile } = useGamificationProfile();
+  const { profile: gamificationProfile } = useGamificationContext();
 
   // Auto-focus quando abrir busca
   useEffect(() => {

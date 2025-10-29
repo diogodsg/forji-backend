@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useToast } from "../components/Toast";
 import { useGoalMutations } from "../features/cycles/hooks";
-import { useXpAnimations } from "../components/XpFloating";
+import { useGamificationContext } from "../features/gamification/context/GamificationContext";
 
 interface Goal {
   id: string;
@@ -37,7 +37,7 @@ export function useGoalHandlers(
   handleClose: () => void
 ) {
   const toast = useToast();
-  const { triggerXpAnimation } = useXpAnimations();
+  const { processActivityResponse } = useGamificationContext();
   const { createGoal, updateGoal, updateGoalProgress, deleteGoal } =
     useGoalMutations();
 
@@ -82,16 +82,24 @@ export function useGoalHandlers(
 
       if (newGoal) {
         await refreshGoals();
-        // Refresh dos dados de gamificação para mostrar o XP ganho
-        refreshGamificationProfile();
 
-        // Disparar animação de XP (+25 XP por criar meta)
-        triggerXpAnimation(25);
+        // 🎯 Usar função centralizada para processar resposta (XP e level-up)
+        processActivityResponse(newGoal);
 
-        toast.success(
-          `Meta "${newGoal.title}" criada! Você ganhou 25 XP! 🎯`,
-          "Meta Criada"
-        );
+        // Toast baseado no que aconteceu
+        if (newGoal.leveledUp) {
+          toast.success(
+            `Level Up! Você subiu para o nível ${newGoal.newLevel}! 🎉`,
+            "Meta Criada + Level Up!",
+            4000
+          );
+        } else {
+          toast.success(
+            `Meta "${newGoal.title}" criada! +${newGoal.xpEarned || 25} XP! 🎯`,
+            "Meta Criada"
+          );
+        }
+
         handleClose();
       }
     } catch (err: any) {
@@ -144,8 +152,9 @@ export function useGoalHandlers(
         // Refresh dos dados de gamificação para mostrar XP removido
         refreshGamificationProfile();
 
-        // Disparar animação de XP negativo (perda de XP)
-        triggerXpAnimation(-deleteModalState.xpLoss);
+        // Para perda de XP, usar animação manual (negativa)
+        // TODO: Implementar animação de perda de XP no contexto se necessário
+        // triggerXpAnimation(-deleteModalState.xpLoss);
 
         toast.success(
           `Meta "${deleteModalState.goalTitle}" excluída. ${deleteModalState.xpLoss} XP foi removido.`,
@@ -366,20 +375,25 @@ export function useGoalHandlers(
         await Promise.all([refreshGoals(), refreshGamificationProfile()]);
         console.log("✅ Refresh concluído");
 
-        // Trigger XP animation at center of screen
-        if (updatedGoal.xpReward && updatedGoal.xpReward > 0) {
-          triggerXpAnimation(
-            updatedGoal.xpReward,
-            window.innerWidth / 2,
-            window.innerHeight / 2
-          );
+        // Processar resposta se tiver informações de XP
+        if (updatedGoal.xpEarned || updatedGoal.leveledUp) {
+          processActivityResponse(updatedGoal);
         }
 
-        toast.success(
-          `+${updatedGoal.xpReward || 0} XP ganho! Continue assim! 🔥`,
-          "Progresso Atualizado",
-          4000
-        );
+        // Toast baseado se houve level-up ou apenas XP
+        if (updatedGoal.leveledUp) {
+          toast.success(
+            `Level Up! Você subiu para o nível ${updatedGoal.newLevel}! 🎉`,
+            "Progresso + Level Up!",
+            4000
+          );
+        } else {
+          toast.success(
+            `+${updatedGoal.xpReward || 0} XP ganho! Continue assim! 🔥`,
+            "Progresso Atualizado",
+            4000
+          );
+        }
         handleClose();
       }
     } catch (err: any) {

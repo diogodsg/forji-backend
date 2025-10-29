@@ -6,7 +6,6 @@ export interface UserProfile {
   email: string;
   position?: string;
   bio?: string;
-  githubId?: string;
   avatar?: string;
   avatarId?: string; // ID do avatar selecionado
   isCurrentUser: boolean;

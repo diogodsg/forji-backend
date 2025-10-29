@@ -1,4 +1,4 @@
-# Forge Backend API Documentation
+# Forji Backend API Documentation
 
 Complete REST API for team management and gamification platform with multi-workspace support.
 

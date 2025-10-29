@@ -9,7 +9,7 @@ import { GamificationService } from '../gamification/gamification.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 import { ActivityResponseDto, TimelineResponseDto } from './dto/activity-response.dto';
-import { ActivityType } from '@prisma/client';
+import { ActivityType, XpSource } from '@prisma/client';
 
 @Injectable()
 export class ActivitiesService {
@@ -23,13 +23,75 @@ export class ActivitiesService {
    */
   private calculateXP(type: ActivityType): number {
     const xpMap = {
-      [ActivityType.ONE_ON_ONE]: 50, // 1:1 = 50 XP
+      [ActivityType.ONE_ON_ONE]: 0, // XP calculado dinamicamente no calculateOneOnOneXP()
       [ActivityType.MENTORING]: 35, // Mentoria = 35 XP
       [ActivityType.CERTIFICATION]: 100, // Certificação = 100 XP
       [ActivityType.GOAL_UPDATE]: 0, // XP já calculado no goal.service
       [ActivityType.COMPETENCY_UPDATE]: 0, // XP já calculado no competency.service
     };
     return xpMap[type] || 0;
+  }
+
+  /**
+   * Calcula XP para atividades 1:1 baseado no conteúdo preenchido:
+   * - Base: 300 XP
+   * - Itens de trabalho: +50 XP se preenchido
+   * - Pontos positivos: +50 XP se preenchido
+   * - Pontos de melhoria: +50 XP se preenchido
+   * - Próximos passos: +50 XP se preenchido
+   * - Anotações detalhadas: +50 XP se >50 caracteres
+   * Total máximo: 550 XP
+   */
+  private calculateOneOnOneXP(oneOnOneData: any): number {
+    let totalXP = 300; // Base 1:1
+
+    // Bônus por conteúdo preenchido
+    if (oneOnOneData.workingOn && oneOnOneData.workingOn.length > 0) {
+      totalXP += 50; // Itens de trabalho
+    }
+    if (oneOnOneData.positivePoints && oneOnOneData.positivePoints.length > 0) {
+      totalXP += 50; // Pontos positivos
+    }
+    if (oneOnOneData.improvementPoints && oneOnOneData.improvementPoints.length > 0) {
+      totalXP += 50; // Pontos de melhoria
+    }
+    if (oneOnOneData.nextSteps && oneOnOneData.nextSteps.length > 0) {
+      totalXP += 50; // Próximos passos
+    }
+    if (oneOnOneData.generalNotes && oneOnOneData.generalNotes.length > 50) {
+      totalXP += 50; // Anotações detalhadas
+    }
+
+    return totalXP;
+  }
+
+  /**
+   * Verifica se o usuário já criou uma atividade 1:1 que gerou XP na semana atual
+   * Limitação: Máximo 1 1:1 por semana que pode gerar XP
+   */
+  private async canEarnXPThisWeek(userId: string): Promise<boolean> {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Domingo da semana atual
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7); // Próximo domingo
+
+    const oneOnOneWithXPThisWeek = await this.prisma.activity.findFirst({
+      where: {
+        userId,
+        type: ActivityType.ONE_ON_ONE,
+        xpEarned: { gt: 0 }, // Só considera atividades que geraram XP
+        createdAt: {
+          gte: startOfWeek,
+          lt: endOfWeek,
+        },
+        deletedAt: null,
+      },
+    });
+
+    return !oneOnOneWithXPThisWeek; // Retorna true se não encontrou nenhuma atividade 1:1 com XP esta semana
   }
 
   /**
@@ -154,8 +216,18 @@ export class ActivitiesService {
       );
     }
 
-    // Calcula XP
-    const xpEarned = this.calculateXP(type);
+    // Calcula XP baseado no tipo e conteúdo
+    let xpEarned = this.calculateXP(type);
+
+    // Para atividades 1:1, calcula XP baseado no conteúdo e verifica limite semanal
+    if (type === ActivityType.ONE_ON_ONE && oneOnOneData) {
+      const canEarnXP = await this.canEarnXPThisWeek(userId);
+      if (canEarnXP) {
+        xpEarned = this.calculateOneOnOneXP(oneOnOneData);
+      } else {
+        xpEarned = 0; // Não ganha XP se já criou 1:1 esta semana
+      }
+    }
 
     // Cria atividade base e dados específicos em uma transação
     const activity = await this.prisma.$transaction(async (tx) => {
@@ -213,18 +285,60 @@ export class ActivitiesService {
       return baseActivity;
     });
 
-    // Adiciona XP ao usuário
+    // Adiciona XP ao usuário e verifica level up
+    let leveledUp = false;
+    let previousLevel = 0;
+    let newLevel = 0;
+
     if (xpEarned > 0) {
-      await this.gamificationService.addXP({
+      // Buscar nível atual antes de adicionar XP
+      const currentProfile = await this.gamificationService.getProfile(userId, cycle.workspaceId);
+      previousLevel = currentProfile.level;
+
+      // Determina a fonte do XP baseada no tipo de atividade
+      let xpSource: XpSource;
+      switch (type) {
+        case ActivityType.ONE_ON_ONE:
+          xpSource = XpSource.ACTIVITY_ONE_ON_ONE;
+          break;
+        case ActivityType.MENTORING:
+          xpSource = XpSource.ACTIVITY_MENTORING;
+          break;
+        case ActivityType.CERTIFICATION:
+          xpSource = XpSource.ACTIVITY_CERTIFICATION;
+          break;
+        default:
+          xpSource = XpSource.MANUAL;
+      }
+
+      const updatedProfile = await this.gamificationService.addXP({
         userId,
-        workspaceId: cycle.workspaceId, // ✅ Workspace do ciclo
+        workspaceId: cycle.workspaceId,
         xpAmount: xpEarned,
         reason: `Atividade: ${title}`,
+        source: xpSource,
+        sourceId: activity.id,
       });
+
+      newLevel = updatedProfile.level;
+      leveledUp = newLevel > previousLevel;
+
+      if (leveledUp) {
+        console.log(`🎉 LEVEL UP! Usuário ${userId}: ${previousLevel} → ${newLevel}`);
+      }
     }
 
     // Busca atividade completa com dados específicos
-    return this.findOne(activity.id, currentUserId, cycle.workspaceId);
+    const fullActivity = await this.findOne(activity.id, currentUserId, cycle.workspaceId);
+
+    // Adiciona informações de level up se ocorreu
+    if (leveledUp) {
+      (fullActivity as any).leveledUp = true;
+      (fullActivity as any).previousLevel = previousLevel;
+      (fullActivity as any).newLevel = newLevel;
+    }
+
+    return fullActivity;
   }
 
   /**

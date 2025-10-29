@@ -90,7 +90,7 @@ export function HorizontalNavbar({
                 </span>
               </div>
               <span className="font-semibold tracking-tight text-gray-800 text-lg select-none">
-                forge<span className="text-indigo-500">·</span>
+                forji<span className="text-indigo-500">·</span>
               </span>
             </div>
 

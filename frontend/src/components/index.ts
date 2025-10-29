@@ -2,7 +2,7 @@
  * Skeleton Components Index
  *
  * Exportações centralizadas de todos os componentes de skeleton
- * Seguindo o design system da Forge
+ * Seguindo o design system da Forji
  */
 
 // Base skeleton components

@@ -1,8 +1,8 @@
-# Sistema de Gamificação Team-First - Forge
+# Sistema de Gamificação Team-First - Forji
 
 ## 🎯 **Visão Geral**
 
-O Forge implementa um sistema de gamificação revolucionário baseado na **filosofia "Team First"**, onde o crescimento individual é amplificado pelo sucesso coletivo. Eliminamos rankings individuais competitivos em favor de um ambiente colaborativo que incentiva mentoria, compartilhamento de conhecimento e desenvolvimento conjunto.
+O Forji implementa um sistema de gamificação revolucionário baseado na **filosofia "Team First"**, onde o crescimento individual é amplificado pelo sucesso coletivo. Eliminamos rankings individuais competitivos em favor de um ambiente colaborativo que incentiva mentoria, compartilhamento de conhecimento e desenvolvimento conjunto.
 
 ## 🏆 **Filosofia Team-First**
 
@@ -1557,4 +1557,4 @@ const antiGaming = {
 
 ---
 
-**O sistema de gamificação do Forge não é apenas sobre pontos e badges - é sobre criar uma cultura onde crescimento individual e sucesso coletivo se reforçam mutuamente, resultando em times mais fortes, pessoas mais desenvolvidas e organizações mais bem-sucedidas.**
+**O sistema de gamificação do Forji não é apenas sobre pontos e badges - é sobre criar uma cultura onde crescimento individual e sucesso coletivo se reforçam mutuamente, resultando em times mais fortes, pessoas mais desenvolvidas e organizações mais bem-sucedidas.**

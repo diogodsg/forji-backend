@@ -1,6 +1,6 @@
 # Admin Components
 
-Sistema modular de componentes para a seção administrativa do Forge.
+Sistema modular de componentes para a seção administrativa do Forji.
 
 ## 📁 Estrutura
 

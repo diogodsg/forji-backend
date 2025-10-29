@@ -1,8 +1,8 @@
-# Sistema de Management - Plataforma Forge
+# Sistema de Management - Plataforma Forji
 
 ## Visão Geral
 
-Este documento descreve o sistema de gerenciamento de usuários, equipes, hierarquias e permissões da plataforma Forge, incluindo controle de acesso a PDIs e gestão organizacional.
+Este documento descreve o sistema de gerenciamento de usuários, equipes, hierarquias e permissões da plataforma Forji, incluindo controle de acesso a PDIs e gestão organizacional.
 
 **🎯 Abordagem MVP**: Sistema simples e pragmático que pode evoluir conforme necessidade real, evitando over-engineering.
 

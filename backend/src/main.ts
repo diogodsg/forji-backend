@@ -49,8 +49,8 @@ async function bootstrap() {
 
   // Swagger/OpenAPI configuration
   const config = new DocumentBuilder()
-    .setTitle('Forge API')
-    .setDescription('Backend API for Forge - Team Management & Gamification Platform')
+    .setTitle('Forji API')
+    .setDescription('Backend API for Forji - Team Management & Gamification Platform')
     .setVersion('1.0')
     .addTag('auth', 'Authentication endpoints')
     .addTag('users', 'User management')
@@ -84,7 +84,7 @@ async function bootstrap() {
   const port = process.env.PORT || 8000;
   await app.listen(port);
 
-  console.log(`🚀 Forge Backend running on: http://localhost:${port}`);
+  console.log(`🚀 Forji Backend running on: http://localhost:${port}`);
   console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
 }
 

@@ -115,11 +115,11 @@
 
 | Nome                 | Email            | Admin | Manager | Uso            |
 | -------------------- | ---------------- | ----- | ------- | -------------- |
-| Diego Santos         | diego@forge.com  | ✅    | ✅      | Testes admin   |
-| Maria da Silva Sauro | maria@forge.com  | ❌    | ✅      | Testes manager |
-| Ana Silva            | ana@forge.com    | ❌    | ❌      | Testes user    |
-| Carlos Oliveira      | carlos@forge.com | ❌    | ❌      | Testes user    |
-| Pedro Costa          | pedro@forge.com  | ❌    | ❌      | Testes user    |
+| Diego Santos         | diego@forji.com  | ✅    | ✅      | Testes admin   |
+| Maria da Silva Sauro | maria@forji.com  | ❌    | ✅      | Testes manager |
+| Ana Silva            | ana@forji.com    | ❌    | ❌      | Testes user    |
+| Carlos Oliveira      | carlos@forji.com | ❌    | ❌      | Testes user    |
+| Pedro Costa          | pedro@forji.com  | ❌    | ❌      | Testes user    |
 
 **Senha:** Qualquer coisa (mock aceita todas)
 
@@ -181,7 +181,7 @@
 npm run dev
 
 # 2. Tente fazer login
-Email: diego@forge.com
+Email: diego@forji.com
 Senha: 123
 
 # 3. Verifique console

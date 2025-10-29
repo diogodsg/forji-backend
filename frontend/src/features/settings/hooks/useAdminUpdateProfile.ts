@@ -14,14 +14,11 @@ export function useAdminUpdateProfile() {
     setError(null);
 
     try {
-      const response = await api<UserProfile>(
-        `/auth/admin/update-profile/${userId}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify(data),
-          auth: true,
-        }
-      );
+      const response = await api<UserProfile>(`/users/${userId}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+        auth: true,
+      });
       return response;
     } catch (err: any) {
       setError(err.message || "Erro ao atualizar perfil");

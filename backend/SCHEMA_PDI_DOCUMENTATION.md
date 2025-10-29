@@ -2,13 +2,13 @@
 
 **Data:** 19 de outubro de 2025  
 **Versão:** 1.0.0  
-**Autor:** Backend Team - Forge
+**Autor:** Backend Team - Forji
 
 ---
 
 ## 🎯 Visão Geral
 
-Este documento detalha o schema Prisma criado para suportar o sistema de **PDI (Plano de Desenvolvimento Individual)** e **Gamificação** da plataforma Forge.
+Este documento detalha o schema Prisma criado para suportar o sistema de **PDI (Plano de Desenvolvimento Individual)** e **Gamificação** da plataforma Forji.
 
 ### **Novos Módulos Adicionados:**
 
@@ -542,9 +542,9 @@ const workspace = await prisma.workspace.create({...});
 
 // 2. Criar 3 usuários
 const users = await Promise.all([
-  prisma.user.create({ email: 'joao@forge.com', ... }),
-  prisma.user.create({ email: 'maria@forge.com', ... }),
-  prisma.user.create({ email: 'pedro@forge.com', ... }),
+  prisma.user.create({ email: 'joao@forji.com', ... }),
+  prisma.user.create({ email: 'maria@forji.com', ... }),
+  prisma.user.create({ email: 'pedro@forji.com', ... }),
 ]);
 
 // 3. Criar gamification profiles

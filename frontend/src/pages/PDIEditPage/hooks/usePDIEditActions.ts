@@ -2,8 +2,9 @@ import { useCallback } from "react";
 import { useToast } from "@/components/Toast";
 import { useAuth } from "@/features/auth";
 import { useXpAnimations } from "@/components/XpFloating";
-import { useGamificationProfile } from "@/features/cycles/hooks/useGamificationProfile";
+import { useGamificationContext } from "@/features/gamification/context/GamificationContext";
 import { useGoalMutations } from "@/features/cycles";
+import { deleteCompetency } from "@/lib/api/endpoints/cycles";
 import type { UsePDIEditDataReturn } from "./usePDIEditData";
 
 export interface UsePDIEditActionsReturn {
@@ -49,7 +50,7 @@ export function usePDIEditActions(
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const { triggerXpAnimation } = useXpAnimations();
-  const { refreshProfile } = useGamificationProfile();
+  const { refreshProfile } = useGamificationContext();
   const { updateGoalProgress, deleteGoal } = useGoalMutations();
 
   const {
@@ -414,14 +415,10 @@ export function usePDIEditActions(
           "@/lib/api/endpoints/cycles"
         );
 
-        const newLevel = Math.min(
-          data.targetLevel,
-          Math.floor(data.newProgress / 20) + 1
-        );
-
+        // ✅ Enviar progressPercentage (0-100) diretamente
         const updateData = {
-          currentLevel: newLevel,
-          notes: `Atualização de progresso: ${data.newProgress}%`,
+          progressPercentage: data.newProgress, // O modal já fornece o valor 0-100
+          notes: data.notes || `Atualização de progresso: ${data.newProgress}%`,
         };
 
         await updateCompetencyProgress(data.competenceId, updateData);
@@ -453,37 +450,48 @@ export function usePDIEditActions(
     [subordinate, refreshCompetencies, closeModal, toast]
   );
 
-  const handleCompetencyDelete = useCallback(
-    async (competencyId: string) => {
-      try {
-        const { deleteCompetency } = await import("@/lib/api/endpoints/cycles");
-        await deleteCompetency(competencyId);
+  const handleCompetencyDelete = async (
+    competencyId: string
+  ): Promise<void> => {
+    console.log("🎯 handleCompetencyDelete CHAMADO! ID:", competencyId);
+    try {
+      console.log("🗑️ Iniciando exclusão da competência:", competencyId);
+      console.log("✅ Chamando função deleteCompetency (import estático)");
 
-        toast({
-          type: "success",
-          title: "Competência Removida",
-          message: `Competência removida do PDI de ${subordinate.name}.`,
-        });
+      await deleteCompetency(competencyId);
+      console.log("✅ Competência deletada no backend");
 
-        await refreshCompetencies();
-      } catch (err: any) {
-        console.error("❌ Erro ao deletar competência:", err);
+      toast({
+        type: "success",
+        title: "Competência Removida",
+        message: `Competência removida do PDI de ${subordinate.name}.`,
+      });
 
-        const errorMessage = err?.response?.data?.message
-          ? Array.isArray(err.response.data.message)
-            ? err.response.data.message.join(", ")
-            : err.response.data.message
-          : "Não foi possível deletar a competência.";
+      console.log("🔄 Iniciando refresh das competências...");
+      await refreshCompetencies();
+      console.log("✅ Refresh concluído");
+    } catch (err: any) {
+      console.error("❌ Erro ao deletar competência:", err);
+      console.error("❌ Detalhes do erro:", {
+        message: err?.message,
+        response: err?.response,
+        status: err?.response?.status,
+        data: err?.response?.data,
+      });
 
-        toast({
-          type: "error",
-          title: "Erro ao Deletar Competência",
-          message: errorMessage,
-        });
-      }
-    },
-    [subordinate, refreshCompetencies, toast]
-  );
+      const errorMessage = err?.response?.data?.message
+        ? Array.isArray(err.response.data.message)
+          ? err.response.data.message.join(", ")
+          : err.response.data.message
+        : "Não foi possível deletar a competência.";
+
+      toast({
+        type: "error",
+        title: "Erro ao Deletar Competência",
+        message: errorMessage,
+      });
+    }
+  };
 
   const handleCompetencySave = useCallback(
     async (data: any) => {

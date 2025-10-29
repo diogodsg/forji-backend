@@ -4,7 +4,6 @@ import {
   FiUser,
   FiMail,
   FiMapPin,
-  FiGithub,
   FiMessageCircle,
 } from "react-icons/fi";
 import { api } from "@/lib/apiClient";
@@ -16,7 +15,7 @@ interface User {
   email: string;
   position?: string;
   bio?: string;
-  githubId?: string;
+  avatarId?: string;
 }
 
 export function UserSearchPage() {
@@ -52,7 +51,7 @@ export function UserSearchPage() {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const response = await api<User[]>("/auth/users", { auth: true });
+      const response = await api<User[]>("/users", { auth: true });
       setUsers(response);
     } catch (error) {
       console.error("Erro ao carregar usuários:", error);
@@ -216,14 +215,6 @@ export function UserSearchPage() {
                           {selectedUser.email}
                         </span>
                       </div>
-                      {selectedUser.githubId && (
-                        <div className="flex items-center gap-3 text-sm">
-                          <FiGithub className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600">
-                            @{selectedUser.githubId}
-                          </span>
-                        </div>
-                      )}
                     </div>
 
                     {/* Bio */}

@@ -85,11 +85,11 @@ Refatoração completa do sistema de autenticação para usar exclusivamente dad
 
 ```typescript
 mockAuthUsers: AuthUser[] = [
-  { id: 1, name: "Diego Santos", email: "diego@forge.com", isAdmin: true, isManager: true },
-  { id: 2, name: "Maria da Silva Sauro", email: "maria@forge.com", isManager: true },
-  { id: 3, name: "Ana Silva", email: "ana@forge.com" },
-  { id: 4, name: "Carlos Oliveira", email: "carlos@forge.com" },
-  { id: 5, name: "Pedro Costa", email: "pedro@forge.com" },
+  { id: 1, name: "Diego Santos", email: "diego@forji.com", isAdmin: true, isManager: true },
+  { id: 2, name: "Maria da Silva Sauro", email: "maria@forji.com", isManager: true },
+  { id: 3, name: "Ana Silva", email: "ana@forji.com" },
+  { id: 4, name: "Carlos Oliveira", email: "carlos@forji.com" },
+  { id: 5, name: "Pedro Costa", email: "pedro@forji.com" },
 ]
 ```
 
@@ -245,7 +245,7 @@ const userData = mockGetUserByToken(token);
 ### Admin + Manager
 
 ```typescript
-Email: diego@forge.com
+Email: diego@forji.com
 Senha: qualquer coisa
 Role: Admin, Manager
 ```
@@ -253,7 +253,7 @@ Role: Admin, Manager
 ### Manager
 
 ```typescript
-Email: maria@forge.com
+Email: maria@forji.com
 Senha: qualquer coisa
 Role: Manager
 ```
@@ -261,7 +261,7 @@ Role: Manager
 ### Usuários Normais
 
 ```typescript
-Email: ana@forge.com | carlos@forge.com | pedro@forge.com
+Email: ana@forji.com | carlos@forji.com | pedro@forji.com
 Senha: qualquer coisa
 Role: User
 ```

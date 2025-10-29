@@ -16,7 +16,7 @@ export function ProfileSection() {
     email: user.email,
     position: user.position,
     bio: user.bio,
-    githubId: user.githubId,
+    avatarId: user.avatarId,
   };
 
   const handleSuccess = async () => {

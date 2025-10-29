@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { api } from "@/lib/apiClient";
 import type { ChangePasswordDto } from "../types/settings";
+import { useAuth } from "@/features/auth";
 
 export function useChangePassword() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const changePassword = async (data: ChangePasswordDto): Promise<boolean> => {
+    if (!user?.id) {
+      setError("Usuário não autenticado");
+      return false;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(false);
@@ -26,7 +33,7 @@ export function useChangePassword() {
     }
 
     try {
-      await api("/auth/change-password", {
+      await api(`/users/${user.id}/password`, {
         method: "PATCH",
         body: JSON.stringify({
           currentPassword: data.currentPassword,

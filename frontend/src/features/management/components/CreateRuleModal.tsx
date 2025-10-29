@@ -47,7 +47,7 @@ export function CreateRuleModal({ isOpen, onClose }: Props) {
       setLoading(true);
       const [teamsData, usersData] = await Promise.all([
         api<Team[]>("/teams", { auth: true }),
-        api<User[]>("/auth/users", { auth: true }),
+        api<User[]>("/users", { auth: true }),
       ]);
       setTeams(teamsData);
       setUsers(usersData);

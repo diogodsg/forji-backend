@@ -2,7 +2,7 @@
 
 ## 🐛 Problema
 
-**Sintoma:** Após login com `diego@forge.com` (usuário admin), a aba "Admin" não aparecia no menu de navegação.
+**Sintoma:** Após login com `diego@forji.com` (usuário admin), a aba "Admin" não aparecia no menu de navegação.
 
 **Causa Raiz:** Bug no parsing do token mock em `mockGetUserByToken()`.
 
@@ -136,7 +136,7 @@ console.log("🔍 Debug user:", {
 ```bash
 1. Fazer logout (se logado)
 2. Abrir: http://localhost:5173/login
-3. Email: diego@forge.com
+3. Email: diego@forji.com
 4. Senha: senha123
 5. Clicar "Entrar"
 
@@ -163,7 +163,7 @@ console.log("🔍 Debug user:", {
 
 ```bash
 1. Fazer logout
-2. Login: ana@forge.com / senha123
+2. Login: ana@forji.com / senha123
 
 ✅ Esperado:
 - Redireciona para /development
@@ -176,23 +176,23 @@ console.log("🔍 Debug user:", {
 
 | Email            | isAdmin  | isManager | Posição         |
 | ---------------- | -------- | --------- | --------------- |
-| diego@forge.com  | ✅ true  | ✅ true   | Tech Lead       |
-| maria@forge.com  | ❌ false | ✅ true   | Product Manager |
-| ana@forge.com    | ❌ false | ❌ false  | Developer       |
-| carlos@forge.com | ❌ false | ❌ false  | Frontend Dev    |
-| pedro@forge.com  | ❌ false | ❌ false  | UX Designer     |
+| diego@forji.com  | ✅ true  | ✅ true   | Tech Lead       |
+| maria@forji.com  | ❌ false | ✅ true   | Product Manager |
+| ana@forji.com    | ❌ false | ❌ false  | Developer       |
+| carlos@forji.com | ❌ false | ❌ false  | Frontend Dev    |
+| pedro@forji.com  | ❌ false | ❌ false  | UX Designer     |
 
 ## 🎯 Resultado
 
 ### Antes:
 
-- ❌ Login com diego@forge.com não mostrava aba Admin
+- ❌ Login com diego@forji.com não mostrava aba Admin
 - ❌ `user.isAdmin` retornava `undefined` ou `false`
 - ❌ mockGetUserByToken retornava usuário errado ou null
 
 ### Agora:
 
-- ✅ Login com diego@forge.com mostra aba Admin
+- ✅ Login com diego@forji.com mostra aba Admin
 - ✅ `user.isAdmin` retorna `true` corretamente
 - ✅ mockGetUserByToken extrai UUID do token corretamente
 - ✅ Badge de debug mostra status em tempo real

@@ -22,7 +22,7 @@ frontend/src/components/Toast/
    - Fallback mock: `toast.warning("Usando dados mockados")`
    - Logout: `toast.info("Até logo! Sessão encerrada.")`
 
-### Design System Forge v2.4
+### Design System Forji v2.4
 
 | Tipo    | Gradiente               | Ícone (Lucide) | Cor Principal |
 | ------- | ----------------------- | -------------- | ------------- |

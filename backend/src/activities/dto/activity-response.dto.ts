@@ -107,6 +107,16 @@ export class ActivityResponseDto {
   @ApiProperty({ example: '2025-01-15T10:30:00.000Z' })
   createdAt: Date;
 
+  // Informações de level up para animações no frontend
+  @ApiProperty({ example: false, required: false })
+  leveledUp?: boolean;
+
+  @ApiProperty({ example: 5, required: false })
+  previousLevel?: number;
+
+  @ApiProperty({ example: 6, required: false })
+  newLevel?: number;
+
   @ApiProperty({ type: OneOnOneResponseDto, required: false })
   oneOnOne?: OneOnOneResponseDto;
 

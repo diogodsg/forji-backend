@@ -5,7 +5,7 @@ import type { Toast, ToastType } from "./ToastContext";
 
 /**
  * Configuração visual por tipo de toast
- * Segue o Design System Forge (tokens brand, success, error, warning)
+ * Segue o Design System Forji (tokens brand, success, error, warning)
  */
 const toastConfig: Record<
   ToastType,

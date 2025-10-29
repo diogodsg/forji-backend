@@ -57,7 +57,7 @@ export function TopBar({
   return (
     <div className="md:hidden flex-none flex items-center justify-between h-14 px-4 border-b border-surface-300/70 bg-white/75 backdrop-blur sticky top-0 z-40">
       <span className="font-semibold tracking-tight text-gray-800 text-lg select-none">
-        forge<span className="text-indigo-500">·</span>
+        forji<span className="text-indigo-500">·</span>
       </span>
       <div className="flex items-center gap-3">
         <button

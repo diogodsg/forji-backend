@@ -10,7 +10,7 @@ import WizardFooter from "./WizardFooter";
 interface GoalCreatorWizardProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: GoalData) => void;
+  onSave: (data: GoalData) => Promise<void>; // Mudou para Promise<void>
   prefillData?: Partial<GoalData>;
   isEditing?: boolean; // Novo prop para indicar modo de edição
 }
@@ -39,6 +39,7 @@ export default function GoalCreatorWizard({
   isEditing = false,
 }: GoalCreatorWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<Partial<GoalData>>({
     title: prefillData?.title || "",
     description: prefillData?.description || "",
@@ -75,11 +76,20 @@ export default function GoalCreatorWizard({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isStep1Valid && isStep2Valid) {
-      onSave(formData as GoalData);
-      onClose();
+    if (isStep1Valid && isStep2Valid && !isSubmitting) {
+      setIsSubmitting(true);
+      try {
+        // Chamar onSave e aguardar completar
+        await onSave(formData as GoalData);
+        // O modal será fechado em handleGoalCreate após sucesso
+      } catch (error) {
+        console.error("Erro ao salvar meta:", error);
+        // O erro já é tratado em handleGoalCreate
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -119,6 +129,7 @@ export default function GoalCreatorWizard({
               setFormData={setFormData}
               xpTotal={xpTotal}
               xpBonuses={xpBonuses}
+              isEditing={isEditing}
             />
           )}
 
@@ -128,6 +139,7 @@ export default function GoalCreatorWizard({
               setFormData={setFormData}
               xpTotal={xpTotal}
               xpBonuses={xpBonuses}
+              isEditing={isEditing}
             />
           )}
         </div>
@@ -142,6 +154,7 @@ export default function GoalCreatorWizard({
             onNext={handleNext}
             onCancel={handleClose}
             isEditing={isEditing}
+            isSubmitting={isSubmitting}
           />
         </form>
       </div>

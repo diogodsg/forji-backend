@@ -86,7 +86,7 @@ export function StatsGrid({ stats, isPublic = false }: StatsGridProps) {
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {/* Gamification Panel */}
       <StatsPanel
-        title="Gamificação"
+        title="Progresso"
         badge="XP"
         badgeColor="bg-brand-100 text-brand-700"
       >

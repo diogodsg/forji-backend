@@ -194,6 +194,10 @@ export function WorkflowPeopleTab() {
         onClose={() => setShowOnboardingModal(false)}
         users={onboardingUsers}
         allUsers={users}
+        onUserCreated={() => {
+          // Recarregar lista de usuários
+          refresh();
+        }}
       />
 
       {/* Modal de Edição */}

@@ -1,6 +1,6 @@
 # Profile Feature - Sistema de Perfil 3.0
 
-Sistema completo de perfil para a plataforma Forge, seguindo o design system v2.0 violet e a filosofia team-first.
+Sistema completo de perfil para a plataforma Forji, seguindo o design system v2.0 violet e a filosofia team-first.
 
 ## 🎯 Visão Geral
 

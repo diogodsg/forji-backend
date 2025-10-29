@@ -33,7 +33,7 @@ Transformar a CurrentCyclePage em uma **plataforma gamificada e eficiente** que 
 5. **Desktop-First Only**: Layout 100% otimizado para desktop (>1200px), sem mobile
 6. **Instant Gratification**: XP preview e micro-celebrations
 7. **Quality Data**: Forms inteligentes que incentivam completude
-8. **Forge Design System**: 100% compliance com tokens Violet
+8. **Forji Design System**: 100% compliance com tokens Violet
 
 ### 🚀 **Resultados Esperados (Metas Realistas)**
 

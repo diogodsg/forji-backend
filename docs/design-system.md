@@ -1,4 +1,4 @@
-# Forge Design System
+# Forji Design System
 
 **Status**: Implementado — Sistema visual unificado v2.4 baseado em Violet (#7c3aed)  
 **Última Atualização**: Outubro 2025
@@ -837,4 +837,4 @@ Ao criar novos componentes, validar:
 ---
 
 **Design System v2.4 - Outubro 2025**  
-_Forge - Plataforma Gamificada de Gestão de Times_
+_Forji - Plataforma Gamificada de Gestão de Times_

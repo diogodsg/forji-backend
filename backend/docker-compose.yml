@@ -1,5 +1,5 @@
 # ================================
-# Docker Compose para Forge Backend
+# Docker Compose para Forji Backend
 # ================================
 
 version: '3.8'
@@ -10,21 +10,21 @@ services:
   # ================================
   postgres:
     image: postgres:15-alpine
-    container_name: forge-postgres
+    container_name: forji-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: forge_db
-      POSTGRES_USER: forge_user
-      POSTGRES_PASSWORD: forge_password
+      POSTGRES_DB: forji_db
+      POSTGRES_USER: forji_user
+      POSTGRES_PASSWORD: forji_password
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./prisma/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
-      - forge-network
+      - forji-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U forge_user -d forge_db']
+      test: ['CMD-SHELL', 'pg_isready -U forji_user -d forji_db']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,14 +37,14 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
-    container_name: forge-backend
+    container_name: forji-backend
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       # Database
-      DATABASE_URL: postgresql://forge_user:forge_password@postgres:5432/forge_db
+      DATABASE_URL: postgresql://forji_user:forji_password@postgres:5432/forji_db
 
       # JWT
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
@@ -63,7 +63,7 @@ services:
     ports:
       - '3001:3001'
     networks:
-      - forge-network
+      - forji-network
     volumes:
       # Mount do schema do Prisma para migrations em runtime se necessário
       - ./prisma:/app/prisma:ro
@@ -82,14 +82,14 @@ services:
       context: .
       dockerfile: Dockerfile
       target: base
-    container_name: forge-backend-dev
+    container_name: forji-backend-dev
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       # Database
-      DATABASE_URL: postgresql://forge_user:forge_password@postgres:5432/forge_db
+      DATABASE_URL: postgresql://forji_user:forji_password@postgres:5432/forji_db
 
       # JWT
       JWT_SECRET: dev-secret-key
@@ -105,7 +105,7 @@ services:
       - '3001:3001'
       - '9229:9229' # Debug port
     networks:
-      - forge-network
+      - forji-network
     volumes:
       # Mount do código para hot reload
       - .:/app
@@ -126,5 +126,5 @@ volumes:
 # Networks
 # ================================
 networks:
-  forge-network:
+  forji-network:
     driver: bridge

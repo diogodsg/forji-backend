@@ -1,7 +1,7 @@
 {
-  "name": "forge-backend",
+  "name": "forji-backend",
   "version": "1.0.0",
-  "description": "Forge Backend - NestJS + Prisma + PostgreSQL",
+  "description": "Forji Backend - NestJS + Prisma + PostgreSQL",
   "author": "Forji Tecnologia",
   "license": "MIT",
   "prisma": {

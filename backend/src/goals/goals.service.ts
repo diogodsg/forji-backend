@@ -59,7 +59,7 @@ export class GoalsService {
   /**
    * Enriquece meta com progresso calculado
    */
-  private enrichGoal(goal: any): GoalResponseDto {
+  private async enrichGoal(goal: any): Promise<GoalResponseDto> {
     const progress = this.calculateProgress(
       goal.type,
       goal.startValue,
@@ -67,9 +67,37 @@ export class GoalsService {
       goal.targetValue,
     );
 
+    // Verifica se pode atualizar (limite de 1 atualização por semana)
+    const lastUpdate = await this.prisma.goalUpdate.findFirst({
+      where: {
+        goalId: goal.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    let canUpdateNow = true;
+    let nextUpdateDate: string | undefined;
+
+    if (lastUpdate) {
+      const daysSinceLastUpdate = Math.floor(
+        (Date.now() - lastUpdate.createdAt.getTime()) / (1000 * 60 * 60 * 24),
+      );
+
+      if (daysSinceLastUpdate < 7) {
+        canUpdateNow = false;
+        const nextDate = new Date(lastUpdate.createdAt);
+        nextDate.setDate(nextDate.getDate() + 7);
+        nextUpdateDate = nextDate.toISOString();
+      }
+    }
+
     return {
       ...goal,
       progress,
+      canUpdateNow,
+      nextUpdateDate,
     };
   }
 
@@ -127,6 +155,71 @@ export class GoalsService {
   /**
    * Cria nova meta
    */
+  /**
+   * Calcula o XP de uma meta baseado nos critérios de qualidade
+   */
+  private calculateGoalXP(
+    title: string,
+    description: string | null,
+    type: GoalType,
+    startValue: number | null,
+    targetValue: number | null,
+    unit: string,
+  ): number {
+    const BASE_XP = 40;
+    let total = BASE_XP;
+
+    // Bonus: Descrição detalhada (8 XP)
+    if (description && description.length > 100) {
+      total += 8;
+      console.log('🎯 Bonus XP: Descrição detalhada (+8 XP)');
+    }
+
+    // Bonus: Critério bem definido (12 XP)
+    let hasGoodCriterion = false;
+    if (type === 'INCREASE' || type === 'DECREASE' || type === 'PERCENTAGE') {
+      hasGoodCriterion = !!(
+        startValue !== undefined &&
+        startValue !== null &&
+        targetValue !== undefined &&
+        targetValue !== null
+      );
+    } else {
+      hasGoodCriterion = true; // Binary sempre tem critério bem definido
+    }
+
+    if (hasGoodCriterion) {
+      total += 12;
+      console.log('🎯 Bonus XP: Critério bem definido (+12 XP)');
+    }
+
+    // Bonus: Meta ambiciosa (15 XP) - para increase/decrease
+    if (
+      (type === 'INCREASE' || type === 'DECREASE') &&
+      startValue &&
+      targetValue &&
+      startValue > 0
+    ) {
+      const change = Math.abs(((targetValue - startValue) / startValue) * 100);
+      if (change >= 50) {
+        total += 15;
+        console.log(`🎯 Bonus XP: Meta ambiciosa (${change.toFixed(1)}% ≥ 50%) (+15 XP)`);
+      }
+    }
+
+    // Bonus: Meta ambiciosa (15 XP) - para percentage
+    if (type === 'PERCENTAGE' && startValue !== null && targetValue !== null) {
+      const improvement = targetValue - startValue;
+      if (improvement >= 20) {
+        total += 15;
+        console.log(`🎯 Bonus XP: Meta ambiciosa (+${improvement}% ≥ +20%) (+15 XP)`);
+      }
+    }
+
+    console.log(`🎯 XP Total da meta "${title}": ${total} XP`);
+    return total;
+  }
+
   async create(createGoalDto: CreateGoalDto, currentUserId: string): Promise<GoalResponseDto> {
     const {
       cycleId,
@@ -185,20 +278,65 @@ export class GoalsService {
       },
     });
 
-    // Adicionar XP por criar uma meta (25 XP)
+    // Calcular XP baseado nos critérios de qualidade da meta
+    const calculatedXP = this.calculateGoalXP(
+      title,
+      description || null,
+      type,
+      startValue,
+      targetValue,
+      unit,
+    );
+
+    // Adicionar XP dinâmico por criar uma meta e detectar level-up
+    let xpEarned = 0;
+    let leveledUp = false;
+    let previousLevel: number | undefined;
+    let newLevel: number | undefined;
+
     try {
-      await this.gamificationService.addXP({
+      // Buscar nível atual antes de adicionar XP
+      const profileBefore = await this.gamificationService.getProfile(userId, workspaceId);
+      previousLevel = profileBefore?.level;
+
+      const xpResult = await this.gamificationService.addXP({
         userId,
         workspaceId,
-        xpAmount: 25,
-        reason: `Meta criada: "${title}"`,
+        xpAmount: calculatedXP,
+        reason: `Meta criada: "${title}" (${calculatedXP} XP)`,
+        sourceId: goal.id, // Link para rastrear XP desta meta
       });
+
+      xpEarned = calculatedXP;
+
+      // Buscar nível atual depois de adicionar XP
+      const profileAfter = await this.gamificationService.getProfile(userId, workspaceId);
+      newLevel = profileAfter?.level;
+
+      // Detectar level-up
+      if (previousLevel && newLevel && newLevel > previousLevel) {
+        leveledUp = true;
+        console.log(`🆙 LEVEL UP DETECTADO! Meta criada: ${previousLevel} → ${newLevel}`);
+      }
     } catch (error) {
       console.error('Erro ao adicionar XP por criar meta:', error);
       // Não falha a criação da meta se XP falhar
     }
 
-    return this.enrichGoal(goal);
+    const enrichedGoal = await this.enrichGoal(goal);
+
+    // Adicionar informações de XP se houve ganho
+    if (xpEarned > 0) {
+      return {
+        ...enrichedGoal,
+        xpEarned,
+        leveledUp,
+        previousLevel,
+        newLevel,
+      };
+    }
+
+    return enrichedGoal;
   }
 
   /**
@@ -222,7 +360,7 @@ export class GoalsService {
       },
     });
 
-    return goals.map((goal) => this.enrichGoal(goal));
+    return Promise.all(goals.map((goal) => this.enrichGoal(goal)));
   }
 
   /**
@@ -243,7 +381,7 @@ export class GoalsService {
     // Verifica permissão
     await this.checkPermission(currentUserId, goal.userId, workspaceId);
 
-    return this.enrichGoal(goal);
+    return await this.enrichGoal(goal);
   }
 
   /**
@@ -275,8 +413,10 @@ export class GoalsService {
     // Verifica permissão
     await this.checkPermission(currentUserId, goal.userId, workspaceId);
 
+    const enrichedGoal = await this.enrichGoal(goal);
+
     return {
-      ...this.enrichGoal(goal),
+      ...enrichedGoal,
       updates: goal.updates,
     };
   }
@@ -399,7 +539,7 @@ export class GoalsService {
       },
     });
 
-    return this.enrichGoal(updatedGoal);
+    return await this.enrichGoal(updatedGoal);
   }
 
   /**
@@ -427,6 +567,30 @@ export class GoalsService {
 
     // Verifica permissão
     await this.checkPermission(currentUserId, goal.userId, workspaceId);
+
+    // 🆕 Verifica se já houve atualização nos últimos 7 dias
+    const lastUpdate = await this.prisma.goalUpdate.findFirst({
+      where: {
+        goalId: id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (lastUpdate) {
+      const daysSinceLastUpdate = Math.floor(
+        (Date.now() - lastUpdate.createdAt.getTime()) / (1000 * 60 * 60 * 24),
+      );
+
+      if (daysSinceLastUpdate < 7) {
+        const nextDate = new Date(lastUpdate.createdAt);
+        nextDate.setDate(nextDate.getDate() + 7);
+        throw new BadRequestException(
+          `Você já atualizou esta meta recentemente. Próxima atualização disponível em ${nextDate.toLocaleDateString('pt-BR')}.`,
+        );
+      }
+    }
 
     // Calcula progresso anterior e novo
     const oldProgress = this.calculateProgress(
@@ -475,7 +639,12 @@ export class GoalsService {
       }),
     ]);
 
-    // Adiciona XP se houve progresso
+    // Adiciona XP se houve progresso e detecta level-up
+    let xpEarned = 0;
+    let leveledUp = false;
+    let previousLevel: number | undefined;
+    let newLevel: number | undefined;
+
     if (xpReward > 0) {
       // Busca workspace do ciclo
       const cycle = await this.prisma.cycle.findUnique({
@@ -484,12 +653,39 @@ export class GoalsService {
       });
 
       if (cycle) {
-        await this.gamificationService.addXP({
-          userId: goal.userId,
-          workspaceId: cycle.workspaceId, // ✅ Workspace do ciclo
-          xpAmount: xpReward,
-          reason: `Meta: ${goal.title} (+${progressGain.toFixed(1)}% progresso)`,
-        });
+        try {
+          // Buscar nível atual antes de adicionar XP
+          const profileBefore = await this.gamificationService.getProfile(
+            goal.userId,
+            cycle.workspaceId,
+          );
+          previousLevel = profileBefore?.level;
+
+          await this.gamificationService.addXP({
+            userId: goal.userId,
+            workspaceId: cycle.workspaceId,
+            xpAmount: xpReward,
+            reason: `Meta: ${goal.title} (+${progressGain.toFixed(1)}% progresso)`,
+            sourceId: goal.id, // Link para rastrear XP desta meta
+          });
+
+          xpEarned = xpReward;
+
+          // Buscar nível atual depois de adicionar XP
+          const profileAfter = await this.gamificationService.getProfile(
+            goal.userId,
+            cycle.workspaceId,
+          );
+          newLevel = profileAfter?.level;
+
+          // Detectar level-up
+          if (previousLevel && newLevel && newLevel > previousLevel) {
+            leveledUp = true;
+            console.log(`🆙 LEVEL UP DETECTADO! Progresso da meta: ${previousLevel} → ${newLevel}`);
+          }
+        } catch (error) {
+          console.error('Erro ao adicionar XP por progresso da meta:', error);
+        }
       }
     }
 
@@ -505,13 +701,31 @@ export class GoalsService {
       xpEarned: xpReward,
     });
 
-    return this.enrichGoal(updatedGoal);
+    const enrichedGoal = await this.enrichGoal(updatedGoal);
+
+    // Adicionar informações de XP se houve ganho
+    if (xpEarned > 0) {
+      return {
+        ...enrichedGoal,
+        xpReward: xpEarned,
+        xpEarned,
+        leveledUp,
+        previousLevel,
+        newLevel,
+      };
+    }
+
+    return enrichedGoal;
   }
 
   /**
    * Deleta meta (soft delete)
    */
-  async remove(id: string, currentUserId: string, workspaceId: string): Promise<void> {
+  async remove(
+    id: string,
+    currentUserId: string,
+    workspaceId: string,
+  ): Promise<{ xpReverted: number; profile: any }> {
     const goal = await this.prisma.goal.findFirst({
       where: {
         id,
@@ -526,20 +740,38 @@ export class GoalsService {
     // Verifica permissão
     await this.checkPermission(currentUserId, goal.userId, workspaceId);
 
-    // Calcular XP total associado à meta para remover
-    // Por enquanto, remove apenas o XP da criação (25 XP)
-    // TODO: Implementar tracking preciso de XP por meta no futuro
-    const totalXpToRemove = 25;
+    // Buscar todas as transações de XP associadas a esta meta pelo sourceId
+    const xpTransactions = await this.prisma.xpTransaction.findMany({
+      where: {
+        sourceId: id,
+      },
+      select: {
+        amount: true,
+      },
+    });
 
-    // Remover XP do usuário (XP negativo)
+    console.log(`🔍 Buscando XP para meta ${id}: encontradas ${xpTransactions.length} transações`);
+
+    // Calcular total de XP para reverter
+    const totalXpToRemove = xpTransactions.reduce((sum, tx) => sum + tx.amount, 0);
+
+    console.log(`💰 Total de XP a remover: ${totalXpToRemove} XP`);
+
+    let profile = null;
+
+    // Remover XP do usuário se houver XP associado
     if (totalXpToRemove > 0) {
       try {
-        await this.gamificationService.addXP({
+        profile = await this.gamificationService.subtractXP({
           userId: goal.userId,
           workspaceId,
-          xpAmount: -totalXpToRemove, // XP negativo remove XP
+          xpAmount: totalXpToRemove,
           reason: `Meta excluída: "${goal.title}" (remoção de ${totalXpToRemove} XP)`,
         });
+
+        console.log(
+          `✅ XP revertido: ${totalXpToRemove} XP removido por exclusão da meta "${goal.title}"`,
+        );
       } catch (error) {
         console.error('Erro ao remover XP por exclusão de meta:', error);
         // Continue com a exclusão mesmo se XP falhar
@@ -553,5 +785,10 @@ export class GoalsService {
         deletedAt: new Date(),
       },
     });
+
+    return {
+      xpReverted: totalXpToRemove,
+      profile,
+    };
   }
 }

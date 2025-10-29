@@ -5,6 +5,7 @@ export interface OnboardingModalProps {
   onClose: () => void;
   users: AdminUser[]; // Se vazio, é criação de nova pessoa
   allUsers: AdminUser[]; // Todos os usuários do sistema (para selecionar gerentes)
+  onUserCreated?: () => void; // Callback chamado após criar usuário
 }
 
 export interface OnboardingStep {

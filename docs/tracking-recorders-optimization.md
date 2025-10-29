@@ -27,7 +27,7 @@ Os **Tracking Recorders** (1:1, Mentoria, Certificação) são pontos críticos 
 2. **🎯 Progressive Disclosure**: Mostrar só o essencial, expandir sob demanda
 3. **🎮 Instant Gratification**: XP preview e recompensas visuais imediatas
 4. **📊 Smart Defaults**: Auto-complete inteligente baseado em histórico
-5. **💜 Design System**: 100% compliance com Forge Design System v2.4 (Violet)
+5. **💜 Design System**: 100% compliance com Forji Design System v2.4 (Violet)
 
 ### Métricas de Sucesso
 
@@ -243,7 +243,7 @@ Os **Tracking Recorders** (1:1, Mentoria, Certificação) são pontos críticos 
 
 ## Design System Compliance
 
-### **🎨 Forge Design System v2.4 Application**
+### **🎨 Forji Design System v2.4 Application**
 
 #### **Core Components**
 
@@ -531,7 +531,7 @@ const DetailedFields = () => (
 2. **⚡ Friction Reduction**: 60% menos campos obrigatórios
 3. **🧠 Smart Assistance**: Autocomplete e templates inteligentes
 4. **🏆 Achievement System**: Badges e streaks por consistency
-5. **💜 Beautiful Design**: 100% Forge Design System compliance
+5. **💜 Beautiful Design**: 100% Forji Design System compliance
 
 #### **Technical Implementation Priority**
 
@@ -545,4 +545,4 @@ const DetailedFields = () => (
 **Documentação criada por**: Claude (Anthropic)  
 **Baseado em**: Análise atual dos Tracking Recorders  
 **Última atualização**: Outubro 2025  
-**Design System**: Forge v2.4 (Violet #7c3aed)
+**Design System**: Forji v2.4 (Violet #7c3aed)

@@ -161,6 +161,9 @@ export class OnboardUserUseCase {
     const plainPassword = dto.password || this.passwordService.generate();
     const hashedPassword = await this.passwordService.hash(plainPassword);
 
+    // Generate random avatar ID (1-12 for different avatar variations)
+    const randomAvatarId = `avatar-${Math.floor(Math.random() * 12) + 1}`;
+
     // Validate manager if provided
     if (dto.managerId) {
       const managerInWorkspace = await this.usersRepository.findWorkspaceMember(
@@ -189,6 +192,7 @@ export class OnboardUserUseCase {
           name: dto.name,
           position: dto.position,
           bio: dto.bio,
+          avatarId: randomAvatarId,
         },
         select: {
           id: true,
@@ -200,7 +204,7 @@ export class OnboardUserUseCase {
           updatedAt: true,
         },
       });
-      console.log('✅ User created:', user.id);
+      console.log('✅ User created:', user.id, 'with avatar:', randomAvatarId);
 
       // 2. Add to workspace
       const workspaceRole = dto.workspaceRole || 'MEMBER';

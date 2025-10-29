@@ -8,10 +8,10 @@ export async function seedUsers(prisma: PrismaClient) {
 
   const users = await Promise.all([
     prisma.user.upsert({
-      where: { email: 'diego@forge.com' },
+      where: { email: 'diego@forji.com' },
       update: {},
       create: {
-        email: 'diego@forge.com',
+        email: 'diego@forji.com',
         password: hashedPassword,
         name: 'Diego Santos',
         position: 'Engineering Manager',
@@ -19,10 +19,10 @@ export async function seedUsers(prisma: PrismaClient) {
       },
     }),
     prisma.user.upsert({
-      where: { email: 'ana@forge.com' },
+      where: { email: 'ana@forji.com' },
       update: {},
       create: {
-        email: 'ana@forge.com',
+        email: 'ana@forji.com',
         password: hashedPassword,
         name: 'Ana Silva',
         position: 'Senior Frontend Developer',
@@ -30,10 +30,10 @@ export async function seedUsers(prisma: PrismaClient) {
       },
     }),
     prisma.user.upsert({
-      where: { email: 'carlos@forge.com' },
+      where: { email: 'carlos@forji.com' },
       update: {},
       create: {
-        email: 'carlos@forge.com',
+        email: 'carlos@forji.com',
         password: hashedPassword,
         name: 'Carlos Oliveira',
         position: 'Backend Developer',
@@ -41,10 +41,10 @@ export async function seedUsers(prisma: PrismaClient) {
       },
     }),
     prisma.user.upsert({
-      where: { email: 'maria@forge.com' },
+      where: { email: 'maria@forji.com' },
       update: {},
       create: {
-        email: 'maria@forge.com',
+        email: 'maria@forji.com',
         password: hashedPassword,
         name: 'Maria Costa',
         position: 'Product Designer',
@@ -52,10 +52,10 @@ export async function seedUsers(prisma: PrismaClient) {
       },
     }),
     prisma.user.upsert({
-      where: { email: 'joao@forge.com' },
+      where: { email: 'joao@forji.com' },
       update: {},
       create: {
-        email: 'joao@forge.com',
+        email: 'joao@forji.com',
         password: hashedPassword,
         name: 'João Souza',
         position: 'DevOps Engineer',

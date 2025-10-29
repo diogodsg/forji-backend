@@ -4,14 +4,14 @@ export interface UserProfile {
   email: string;
   position?: string;
   bio?: string;
-  githubId?: string;
+  avatarId?: string;
 }
 
 export interface UpdateProfileDto {
   name?: string;
   position?: string;
   bio?: string;
-  githubId?: string;
+  avatarId?: string;
 }
 
 export interface ChangePasswordDto {

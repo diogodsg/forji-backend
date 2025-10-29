@@ -487,5 +487,5 @@ describe("OnboardingModal", () => {
 
 **Versão**: 2.0.0  
 **Última Atualização**: 16 de Outubro de 2025  
-**Autor**: Forge Team  
+**Autor**: Forji Team  
 **Status**: ✅ Production Ready

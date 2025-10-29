@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded Square Background -->
+  <rect width="64" height="64" rx="14" ry="14" fill="url(#brandGradient)"/>
+
+  <!-- Medal Ring (bigger, bolder) -->
+  <circle cx="32" cy="26" r="11.8" fill="none" stroke="#ffffff" stroke-width="3.6"/>
+
+  <!-- Ribbon tail under the medal (classic award shape with V-cut) -->
+  <path d="M28 39 L36 39 L36 45 L32 48 L28 45 Z" fill="#ffffff"/>
+
+  <!-- Subtle highlight arc on the ring -->
+  <path d="M22 22 a10 10 0 0 1 9 -7" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="2" stroke-linecap="round"/>
+</svg>

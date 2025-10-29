@@ -7,7 +7,7 @@
 **Admin + Manager (Acesso Total)**
 
 ```
-Email: diego@forge.com
+Email: diego@forji.com
 Senha: qualquer coisa (ex: "123" ou "senha" ou "admin")
 ```
 
@@ -18,7 +18,7 @@ Senha: qualquer coisa (ex: "123" ou "senha" ou "admin")
 **Manager (Sem Admin)**
 
 ```
-Email: maria@forge.com
+Email: maria@forji.com
 Senha: qualquer senha
 ```
 
@@ -29,7 +29,7 @@ Senha: qualquer senha
 **Usuário Normal**
 
 ```
-Email: ana@forge.com
+Email: ana@forji.com
 Senha: qualquer senha
 ```
 
@@ -42,7 +42,7 @@ Senha: qualquer senha
 **Email Inexistente**
 
 ```
-Email: naoexiste@forge.com
+Email: naoexiste@forji.com
 Senha: 123
 ```
 
@@ -52,7 +52,7 @@ Senha: 123
 **Senha Vazia**
 
 ```
-Email: diego@forge.com
+Email: diego@forji.com
 Senha: (deixar vazio)
 ```
 
@@ -66,7 +66,7 @@ Senha: (deixar vazio)
 ```
 1. Clicar em "Criar uma conta"
 2. Nome: João Silva
-3. Email: joao@forge.com
+3. Email: joao@forji.com
 4. Senha: 123
 5. Clicar em "Registrar"
 ```
@@ -79,7 +79,7 @@ Senha: (deixar vazio)
 **Email Duplicado**
 
 ```
-1. Tentar registrar com: diego@forge.com
+1. Tentar registrar com: diego@forji.com
 ```
 
 - ✅ Deve mostrar erro: "Email já cadastrado"
@@ -90,7 +90,7 @@ Senha: (deixar vazio)
 **Manter Login Após Reload**
 
 ```
-1. Fazer login (ex: diego@forge.com)
+1. Fazer login (ex: diego@forji.com)
 2. Recarregar página (F5)
 ```
 
@@ -182,14 +182,14 @@ ou
 ```typescript
 describe("Auth Mock System", () => {
   test("Login com usuário existente", async () => {
-    const { user, token } = await mockLogin("diego@forge.com", "123");
+    const { user, token } = await mockLogin("diego@forji.com", "123");
     expect(user.name).toBe("Diego Santos");
     expect(user.isAdmin).toBe(true);
     expect(token).toMatch(/^mock_token_1_/);
   });
 
   test("Login com email inexistente", async () => {
-    await expect(mockLogin("naoexiste@forge.com", "123")).rejects.toThrow(
+    await expect(mockLogin("naoexiste@forji.com", "123")).rejects.toThrow(
       "Email não encontrado"
     );
   });
@@ -197,7 +197,7 @@ describe("Auth Mock System", () => {
   test("Registro de novo usuário", async () => {
     const { user } = await mockRegister({
       name: "Teste",
-      email: "teste@forge.com",
+      email: "teste@forji.com",
       password: "123",
     });
     expect(user.name).toBe("Teste");
@@ -208,7 +208,7 @@ describe("Auth Mock System", () => {
     await expect(
       mockRegister({
         name: "Diego Clone",
-        email: "diego@forge.com",
+        email: "diego@forji.com",
         password: "123",
       })
     ).rejects.toThrow("Email já cadastrado");
@@ -295,15 +295,15 @@ describe("Auth Mock System", () => {
 
 ```bash
 # Admin + Manager
-diego@forge.com
+diego@forji.com
 
 # Só Manager
-maria@forge.com
+maria@forji.com
 
 # User normal
-ana@forge.com
-carlos@forge.com
-pedro@forge.com
+ana@forji.com
+carlos@forji.com
+pedro@forji.com
 ```
 
 ### 2. Limpar Sessão Manualmente
@@ -387,6 +387,6 @@ location.reload();
 - [ ] Roles verificadas
 - [ ] Console logs validados
 
-**Responsável pelos testes:** **********\_**********
+**Responsável pelos testes:** ****\*\*****\_****\*\*****
 
-**Observações:** ****************\_****************
+**Observações:** ******\*\*\*\*******\_******\*\*\*\*******

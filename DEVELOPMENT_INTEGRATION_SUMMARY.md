@@ -364,7 +364,7 @@ npm run start:dev
 ### Frontend
 
 - [ ] `npm run dev` rodando sem erros
-- [ ] Login funciona (`diego@forge.com`)
+- [ ] Login funciona (`diego@forji.com`)
 - [ ] Navegar para `/development`
 - [ ] Ciclo carrega automaticamente
 - [ ] Goals listam corretamente

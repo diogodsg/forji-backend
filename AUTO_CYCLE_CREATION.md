@@ -132,7 +132,7 @@ const userData = user
 ```bash
 # 1. Login com usuário novo
 POST /auth/login
-{ "email": "novo@forge.com", "password": "senha123" }
+{ "email": "novo@forji.com", "password": "senha123" }
 
 # 2. Buscar ciclo atual
 GET /api/cycles/current
@@ -160,7 +160,7 @@ GET /api/cycles/current
 ### Cenário 3: Usuário com Ciclo Ativo (Seed Data)
 
 ```bash
-# Login com diego@forge.com (tem ciclo seedado)
+# Login com diego@forji.com (tem ciclo seedado)
 
 GET /api/cycles/current
 

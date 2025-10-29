@@ -1,6 +1,6 @@
-# 🐳 Docker Setup - Forge Backend
+# 🐳 Docker Setup - Forji Backend
 
-Este documento descreve como configurar e executar o Forge Backend usando Docker.
+Este documento descreve como configurar e executar o Forji Backend usando Docker.
 
 ## 📋 Pré-requisitos
 
@@ -14,7 +14,7 @@ Este documento descreve como configurar e executar o Forge Backend usando Docker
 ```bash
 # Clonar repositório (se ainda não fez)
 git clone <repository-url>
-cd forge/backend
+cd forji/backend
 
 # Tornar script executável
 chmod +x docker-deploy.sh
@@ -105,7 +105,7 @@ Principais variáveis no arquivo `.env`:
 
 ```env
 # Database
-DATABASE_URL=postgresql://forge_user:forge_password@postgres:5432/forge_db
+DATABASE_URL=postgresql://forji_user:forji_password@postgres:5432/forji_db
 
 # JWT
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
@@ -126,7 +126,7 @@ FRONTEND_URL=http://localhost:3000
 
 ### Networks
 
-- **forge-network**: Rede interna para comunicação entre serviços
+- **forji-network**: Rede interna para comunicação entre serviços
 
 ## 🔍 Debug e Logs
 
@@ -160,7 +160,7 @@ docker-compose logs -f postgres
 docker-compose exec backend sh
 
 # Entrar no container do PostgreSQL
-docker-compose exec postgres psql -U forge_user -d forge_db
+docker-compose exec postgres psql -U forji_user -d forji_db
 ```
 
 ## 📊 Health Checks
@@ -179,7 +179,7 @@ docker-compose ps
 
 ```bash
 # Status do PostgreSQL
-docker-compose exec postgres pg_isready -U forge_user -d forge_db
+docker-compose exec postgres pg_isready -U forji_user -d forji_db
 ```
 
 ## 🔄 Migrações e Seeds
@@ -249,7 +249,7 @@ docker image prune -f
 docker swarm init
 
 # Deploy do stack
-docker stack deploy -c docker-compose.yml forge
+docker stack deploy -c docker-compose.yml forji
 ```
 
 ### Exemplo com Kubernetes

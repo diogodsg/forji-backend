@@ -16,7 +16,9 @@ export class ManagementRepository {
   }
 
   async findRules(params: { managerId?: string; subordinateId?: string; workspaceId: string }) {
-    return this.prisma.managementRule.findMany({
+    const startTime = Date.now();
+
+    const result = await this.prisma.managementRule.findMany({
       where: {
         ...params,
         deletedAt: null,
@@ -44,6 +46,13 @@ export class ManagementRepository {
         },
       },
     });
+
+    const executionTime = Date.now() - startTime;
+    console.log(
+      `[ManagementRepository] findRules executed in ${executionTime}ms - query: ${JSON.stringify(params)} - found ${result.length} rules`,
+    );
+
+    return result;
   }
 
   async createRule(data: {

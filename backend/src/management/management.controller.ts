@@ -46,11 +46,11 @@ export class ManagementController {
    */
   @Get('subordinates')
   async getMySubordinates(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: any,
     @Query('includeTeamMembers', new ParseBoolPipe({ optional: true }))
     includeTeamMembers = false,
   ) {
-    return this.managementService.getMySubordinates(user.sub, user.workspaceId, includeTeamMembers);
+    return this.managementService.getMySubordinates(user.id, user.workspaceId, includeTeamMembers);
   }
 
   /**

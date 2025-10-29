@@ -6,7 +6,7 @@ import {
   useIntegratedCycleData,
   useActivitiesTimeline,
 } from "../features/cycles/hooks";
-import { useGamificationProfile } from "../features/cycles/hooks/useGamificationProfile";
+import { useGamificationContext } from "../features/gamification/context/GamificationContext";
 
 // NEW: Custom Hooks for Handlers
 import { useGoalHandlers } from "../hooks/useGoalHandlers";
@@ -64,7 +64,7 @@ export function CurrentCyclePageOptimized() {
     profile: gamificationProfile,
     loading: gamificationLoading,
     refreshProfile: refreshGamificationProfile,
-  } = useGamificationProfile();
+  } = useGamificationContext();
 
   // Custom Handlers
   const goalHandlers = useGoalHandlers(
@@ -156,11 +156,7 @@ export function CurrentCyclePageOptimized() {
   };
 
   const handleViewCompetency = () => {
-    // TODO: Implementar visualiza????o detalhada de compet??ncia
-  };
-
-  const handleDeleteCompetency = () => {
-    // TODO: Implementar exclus??o de compet??ncia
+    // TODO: Implementar visualização detalhada de competência
   };
 
   return (
@@ -192,7 +188,7 @@ export function CurrentCyclePageOptimized() {
           }
           handleViewCompetency={handleViewCompetency}
           handleCompetenceUpdate={handleCompetenceUpdate}
-          handleDeleteCompetency={handleDeleteCompetency}
+          handleDeleteCompetency={competencyHandlers.handleCompetencyDelete}
           handleActivityDetails={handleActivityDetails}
           loading={{
             goals: loading.goals,

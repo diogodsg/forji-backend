@@ -115,8 +115,12 @@ export class GoalsController {
   @ApiResponse({ status: 200, description: 'Meta deletada com sucesso' })
   @ApiResponse({ status: 404, description: 'Meta não encontrada' })
   @ApiResponse({ status: 403, description: 'Sem permissão para deletar esta meta' })
-  async remove(@Param('id') id: string, @CurrentUser() user: any): Promise<{ message: string }> {
-    await this.goalsService.remove(id, user.userId, user.workspaceId);
-    return { message: 'Meta deletada com sucesso' };
+  async remove(@Param('id') id: string, @CurrentUser() user: any) {
+    const result = await this.goalsService.remove(id, user.userId, user.workspaceId);
+    return {
+      message: 'Meta deletada com sucesso',
+      xpReverted: result.xpReverted,
+      profile: result.profile,
+    };
   }
 }

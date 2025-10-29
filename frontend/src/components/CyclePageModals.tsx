@@ -178,7 +178,6 @@ export function CyclePageModals({
         <DeleteGoalModal
           isOpen={deleteModalState.isOpen}
           goalTitle={deleteModalState.goalTitle}
-          xpLoss={25} // 25 XP perdidos por meta excluída
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
         />

@@ -246,7 +246,7 @@ from-slate-500 to-slate-600
 
 **🎉 Quick Wins Concluídos com Sucesso!**
 
-Todas as 4 melhorias prioritárias foram implementadas seguindo fielmente o Design System v2.3 do Forge, com foco em:
+Todas as 4 melhorias prioritárias foram implementadas seguindo fielmente o Design System v2.3 do Forji, com foco em:
 
 - Visual profissional e moderno
 - Consistência com ícones Lucide React

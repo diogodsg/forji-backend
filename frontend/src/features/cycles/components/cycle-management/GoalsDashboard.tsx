@@ -8,9 +8,8 @@ import {
   Sparkles,
   Trash2,
   Edit3,
+  Clock,
 } from "lucide-react";
-import { useState } from "react";
-import { createPortal } from "react-dom";
 
 interface Goal {
   id: string;
@@ -19,6 +18,8 @@ interface Goal {
   progress: number;
   lastUpdate?: Date | string; // Pode vir como Date (mock) ou string ISO (backend)
   status: "on-track" | "needs-attention" | "completed";
+  canUpdateNow?: boolean;
+  nextUpdateDate?: string;
 }
 
 interface GoalsDashboardProps {
@@ -50,12 +51,6 @@ export function GoalsDashboard({
   onDeleteGoal,
   onCreateGoal,
 }: GoalsDashboardProps) {
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [goalToDelete, setGoalToDelete] = useState<{
-    id: string;
-    title: string;
-  } | null>(null);
-
   const allGoalsUpdated = goals.every((goal) => {
     if (goal.status === "completed") return true;
     if (!goal.lastUpdate) return false;
@@ -70,24 +65,6 @@ export function GoalsDashboard({
 
   const totalXPAvailable =
     goals.filter((g) => g.status !== "completed").length * 15;
-
-  const handleDeleteClick = (goalId: string, goalTitle: string) => {
-    setGoalToDelete({ id: goalId, title: goalTitle });
-    setDeleteModalOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (goalToDelete) {
-      onDeleteGoal(goalToDelete.id);
-      setDeleteModalOpen(false);
-      setGoalToDelete(null);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteModalOpen(false);
-    setGoalToDelete(null);
-  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-surface-300 p-6">
@@ -128,7 +105,7 @@ export function GoalsDashboard({
             goal={goal}
             onUpdate={() => onUpdateGoal(goal.id)}
             onEdit={() => onEditGoal(goal.id)}
-            onDelete={() => handleDeleteClick(goal.id, goal.title)}
+            onDelete={() => onDeleteGoal(goal.id)}
           />
         ))}
       </div>
@@ -151,60 +128,6 @@ export function GoalsDashboard({
           )}
         </div>
       )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteModalOpen &&
-        goalToDelete &&
-        createPortal(
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                  <Trash2 className="w-6 h-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Excluir Meta
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Esta ação não pode ser desfeita
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-gray-700 mb-2">
-                Tem certeza que deseja excluir a meta:
-              </p>
-
-              <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                <p className="font-medium text-gray-800">
-                  "{goalToDelete.title}"
-                </p>
-              </div>
-
-              <p className="text-sm text-gray-600 mb-6">
-                Todo o progresso desta meta será perdido permanentemente.
-              </p>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleCancelDelete}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Excluir Meta
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
     </div>
   );
 }
@@ -399,13 +322,38 @@ function GoalCard({
 
         <div className="flex items-center gap-2">
           {goal.status !== "completed" && (
-            <button
-              onClick={onUpdate}
-              className="inline-flex items-center gap-1 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-all"
-            >
-              <TrendingUp className="w-3 h-3" />
-              Update +15 XP
-            </button>
+            <>
+              {goal.canUpdateNow !== false ? (
+                <button
+                  onClick={onUpdate}
+                  className="inline-flex items-center gap-1 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition-all"
+                >
+                  <TrendingUp className="w-3 h-3" />
+                  Update +15 XP
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 text-amber-600">
+                  <Clock className="w-3.5 h-3.5" />
+                  <div className="text-right">
+                    <div className="text-xs font-medium">
+                      Próxima atualização
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      {goal.nextUpdateDate
+                        ? new Date(goal.nextUpdateDate).toLocaleDateString(
+                            "pt-BR",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )
+                        : "Em breve"}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -415,9 +363,7 @@ function GoalCard({
         <div className="mt-3 pt-3 border-t border-surface-200">
           <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-2 rounded-lg border border-amber-200">
             <Zap className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              🔥 QUASE LÁ! Finalize agora!
-            </span>
+            <span className="text-sm font-medium">QUASE LÁ!</span>
           </div>
         </div>
       )}

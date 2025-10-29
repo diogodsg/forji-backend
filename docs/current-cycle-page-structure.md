@@ -29,7 +29,7 @@ A **CurrentCyclePage** foi reestruturada para transformar uma experiência buroc
 3. **Atividades Detalhadas**: Timeline rica com 1:1s, mentorias expandíveis
 4. **Always Updated**: Incentivos constantes para manter dados atualizados
 5. **Desktop-Optimized**: Layout aproveitando espaço de tela grande
-6. **Design System Compliance**: 100% alinhado ao Forge Design System v2.4
+6. **Design System Compliance**: 100% alinhado ao Forji Design System v2.4
 
 ---
 

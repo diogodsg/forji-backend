@@ -82,13 +82,8 @@ function InnerApp() {
 
   // XP Animations & Celebrations (top-level)
   const { triggerXpAnimation } = useXpAnimations();
-  const {
-    triggerSparkles,
-    triggerLevelUp,
-    triggerAchievement,
-    triggerMega,
-    CelebrationsComponent,
-  } = useCelebrations();
+  const { triggerSparkles, triggerLevelUp, triggerAchievement, triggerMega } =
+    useCelebrations();
 
   // Loading splash while resolving /auth/me
   if (loading) return <ScreenLoading label="Loading..." />;
@@ -187,7 +182,7 @@ function InnerApp() {
                   triggerLevelUp(5);
                 }}
                 className="px-3 py-2 bg-amber-600 text-white rounded-lg shadow-lg hover:bg-amber-700 transition-all hover:scale-105 font-semibold text-xs"
-                title="Test Level Up Explosion"
+                title="Test Level Up Celebration (only level-up animation)"
               >
                 ⭐ Level 5
               </button>
@@ -217,8 +212,7 @@ function InnerApp() {
       {/* XP Animation Container - Global */}
       <XpAnimationContainer />
 
-      {/* Epic Celebrations - Global */}
-      {CelebrationsComponent}
+      {/* Epic Celebrations são fornecidas pelo GamificationProvider */}
 
       <AppLayout
         userName={user.name}

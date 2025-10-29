@@ -131,7 +131,7 @@ setError("Preencha todos os campos obrigatórios.");
 1. **Usuário entra credenciais válidas**
 
    ```
-   Email: diego@forge.com
+   Email: diego@forji.com
    Senha: senha123
    ```
 
@@ -197,7 +197,7 @@ setError("Preencha todos os campos obrigatórios.");
 
 ```
 1. Abrir http://localhost:5173/login
-2. Email: diego@forge.com
+2. Email: diego@forji.com
 3. Senha: senha123
 4. Clicar "Entrar"
 
@@ -214,7 +214,7 @@ setError("Preencha todos os campos obrigatórios.");
 1. Abrir http://localhost:5173/login
 2. Clicar "Criar uma conta"
 3. Nome: Teste
-4. Email: diego@forge.com (já existe)
+4. Email: diego@forji.com (já existe)
 5. Senha: 123
 6. Clicar "Registrar"
 
@@ -271,15 +271,15 @@ setError("Preencha todos os campos obrigatórios.");
 
 ```javascript
 // Admin
-diego@forge.com - senha123 (isAdmin: true, isManager: true)
+diego@forji.com - senha123 (isAdmin: true, isManager: true)
 
 // Manager
-maria@forge.com - senha123 (isManager: true)
+maria@forji.com - senha123 (isManager: true)
 
 // Desenvolvedores
-ana@forge.com - senha123
-carlos@forge.com - senha123
-pedro@forge.com - senha123
+ana@forji.com - senha123
+carlos@forji.com - senha123
+pedro@forji.com - senha123
 ```
 
 **Nota:** No modo mock, qualquer senha é aceita desde que o email exista!

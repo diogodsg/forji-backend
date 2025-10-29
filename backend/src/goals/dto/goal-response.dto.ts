@@ -46,6 +46,37 @@ export class GoalResponseDto {
 
   @ApiProperty({ example: '2025-01-20T14:00:00.000Z' })
   updatedAt: Date;
+
+  // Controle de atualização semanal
+  @ApiProperty({ example: true, description: 'Pode atualizar agora?', required: false })
+  canUpdateNow?: boolean;
+
+  @ApiProperty({
+    example: '2025-11-04T10:30:00.000Z',
+    description: 'Próxima data disponível para atualização (ISO string)',
+    required: false,
+  })
+  nextUpdateDate?: string;
+
+  // Informações de XP e level-up (opcionais, apenas em operações que geram XP)
+  @ApiProperty({ example: 25, description: 'XP ganho nesta operação', required: false })
+  xpEarned?: number;
+
+  @ApiProperty({
+    example: 25,
+    description: 'XP recompensa por completar/progredir',
+    required: false,
+  })
+  xpReward?: number;
+
+  @ApiProperty({ example: true, description: 'Se houve level up', required: false })
+  leveledUp?: boolean;
+
+  @ApiProperty({ example: 4, description: 'Nível anterior', required: false })
+  previousLevel?: number;
+
+  @ApiProperty({ example: 5, description: 'Novo nível', required: false })
+  newLevel?: number;
 }
 
 export class GoalUpdateHistoryDto {

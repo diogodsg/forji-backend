@@ -9,6 +9,7 @@ interface WizardFooterProps {
   onNext: () => void;
   onCancel: () => void;
   isEditing?: boolean;
+  isSubmitting?: boolean;
 }
 
 export default function WizardFooter({
@@ -20,6 +21,7 @@ export default function WizardFooter({
   onNext,
   onCancel,
   isEditing = false,
+  isSubmitting = false,
 }: WizardFooterProps) {
   return (
     <div className="flex gap-3 px-8 py-4">
@@ -56,11 +58,15 @@ export default function WizardFooter({
           </button>
           <button
             type="submit"
-            disabled={!isStep2Valid}
+            disabled={!isStep2Valid || isSubmitting}
             className="flex-1 px-5 py-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-lg hover:from-brand-600 hover:to-brand-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-500/30 text-sm"
           >
-            {isEditing
-              ? `Salvar Alterações (+${xpTotal} XP)`
+            {isSubmitting
+              ? isEditing
+                ? "Salvando..."
+                : "Criando..."
+              : isEditing
+              ? "Salvar Alterações"
               : `Criar Meta (+${xpTotal} XP)`}
           </button>
         </>

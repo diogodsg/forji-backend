@@ -2,7 +2,7 @@
 
 ## 🎮 Overview
 
-This is the Phase 1 implementation of the Forge gamification system, transforming the platform into an engaging team management and development experience. Players earn XP, unlock badges, and compete on leaderboards while collaborating and growing professionally.
+This is the Phase 1 implementation of the Forji gamification system, transforming the platform into an engaging team management and development experience. Players earn XP, unlock badges, and compete on leaderboards while collaborating and growing professionally.
 
 ## 🏗️ Architecture
 

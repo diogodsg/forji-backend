@@ -526,7 +526,7 @@ Overall Progress: ████████████████████ 1
 
 **Running on:** http://localhost:8000  
 **API Prefix:** /api  
-**Database:** PostgreSQL (forge schema)  
+**Database:** PostgreSQL (forji schema)  
 **Environment:** Development
 
 ### Available Endpoints:

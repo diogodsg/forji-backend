@@ -35,6 +35,8 @@ import type {
   CompetencyLibraryDto,
   CompetencyFiltersDto,
   // Activities
+  CreateActivityDto,
+  ActivityResponseDto,
   CreateOneOnOneDto,
   CreateMentoringDto,
   CreateCertificationDto,
@@ -300,13 +302,37 @@ export async function updateCompetencyProgress(
 /**
  * DELETE /competencies/:id - Soft delete da competência
  */
-export async function deleteCompetency(id: string): Promise<void> {
-  await apiClient.delete(`/competencies/${id}`);
+export async function deleteCompetency(id: string): Promise<any> {
+  console.log(
+    "🌐 API deleteCompetency: Enviando requisição DELETE para /competencies/",
+    id
+  );
+  try {
+    const response = await apiClient.delete(`/competencies/${id}`);
+    console.log("✅ API deleteCompetency: Resposta do backend:", response);
+    return response.data; // Retornar os dados da resposta (xpReverted, profile, etc)
+  } catch (error) {
+    console.error("❌ API deleteCompetency: Erro na requisição:", error);
+    throw error;
+  }
 }
 
 // ==========================================
 // ACTIVITIES ENDPOINTS
 // ==========================================
+
+/**
+ * POST /activities - Criar atividade genérica (nova estrutura)
+ */
+export async function createActivity(
+  data: CreateActivityDto
+): Promise<ActivityResponseDto> {
+  const response = await apiClient.post<ActivityResponseDto>(
+    "/activities",
+    data
+  );
+  return response.data;
+}
 
 /**
  * POST /activities - Criar atividade 1:1
@@ -441,6 +467,7 @@ export const cyclesApi = {
   deleteCompetency,
 
   // Activities
+  createActivity,
   createOneOnOneActivity,
   createMentoringActivity,
   createCertificationActivity,

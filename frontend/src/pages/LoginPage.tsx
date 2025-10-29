@@ -58,7 +58,7 @@ export default function LoginPage() {
               <div>
                 <h1 className="text-4xl font-bold tracking-tight leading-tight">
                   <span className="bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">
-                    Forge
+                    Forji
                   </span>
                 </h1>
                 <p className="mt-0.5 text-sm font-medium text-brand-600/80 tracking-wide">

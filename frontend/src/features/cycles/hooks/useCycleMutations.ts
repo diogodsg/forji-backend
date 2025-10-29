@@ -24,10 +24,10 @@ import type {
   UpdateCompetencyDto,
   UpdateCompetencyProgressDto,
   CompetencyResponseDto,
-  CreateOneOnOneDto,
+  CreateActivityDto,
   CreateMentoringDto,
   CreateCertificationDto,
-  OneOnOneActivityResponseDto,
+  ActivityResponseDto,
   MentoringActivityResponseDto,
   CertificationActivityResponseDto,
 } from "../../../../shared-types";
@@ -286,8 +286,8 @@ export function useCompetencyMutations(): UseCompetencyMutationsReturn {
 
 export interface UseActivityMutationsReturn {
   createOneOnOne: (
-    data: CreateOneOnOneDto
-  ) => Promise<OneOnOneActivityResponseDto | null>;
+    data: CreateActivityDto
+  ) => Promise<ActivityResponseDto | null>;
   createMentoring: (
     data: CreateMentoringDto
   ) => Promise<MentoringActivityResponseDto | null>;
@@ -307,13 +307,13 @@ export function useActivityMutations(): UseActivityMutationsReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createOneOnOne = useCallback(async (data: CreateOneOnOneDto) => {
+  const createOneOnOne = useCallback(async (data: CreateActivityDto) => {
     try {
       setLoading(true);
       setError(null);
 
       console.log("👥 Criando atividade 1:1:", data.title);
-      const activity = await cyclesApi.createOneOnOneActivity(data);
+      const activity = await cyclesApi.createActivity(data);
 
       console.log("✅ Atividade 1:1 criada! XP ganho:", activity.xpEarned);
       return activity;

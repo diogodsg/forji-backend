@@ -1,6 +1,6 @@
 # Toast System - Guia de Uso
 
-Sistema de notificações seguindo o **Design System Forge v2.4** com gradientes Violet brand, sombras suaves e micro-interactions.
+Sistema de notificações seguindo o **Design System Forji v2.4** com gradientes Violet brand, sombras suaves e micro-interactions.
 
 ## 📦 Instalação
 
@@ -406,5 +406,5 @@ Console logs automáticos no `useAuth`:
 
 ---
 
-**Toast System v1.0 - Forge Design System v2.4**  
+**Toast System v1.0 - Forji Design System v2.4**  
 _Criado em Outubro 2025_

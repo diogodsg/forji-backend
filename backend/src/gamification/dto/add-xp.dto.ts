@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsPositive, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsPositive, IsOptional, IsString, IsEnum, IsUUID } from 'class-validator';
+import { XpSource } from '@prisma/client';
 
 /**
  * Add XP DTO
@@ -39,4 +40,23 @@ export class AddXpDto {
   @IsString()
   @IsOptional()
   reason?: string;
+
+  @ApiProperty({
+    description: 'Fonte do XP para classificação na transação',
+    example: 'ACTIVITY_ONE_ON_ONE',
+    enum: XpSource,
+    required: false,
+  })
+  @IsEnum(XpSource)
+  @IsOptional()
+  source?: XpSource;
+
+  @ApiProperty({
+    description: 'ID da entidade que gerou o XP (atividade, goal, etc.)',
+    example: '550e8400-e29b-41d4-a716-446655440123',
+    required: false,
+  })
+  @IsUUID()
+  @IsOptional()
+  sourceId?: string;
 }

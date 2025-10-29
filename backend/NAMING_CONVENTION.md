@@ -2,7 +2,7 @@
 
 ## Estratégia de Nomenclatura
 
-O Forge Backend usa **duas convenções de nomenclatura diferentes**:
+O Forji Backend usa **duas convenções de nomenclatura diferentes**:
 
 - **Database (Prisma)**: `snake_case`
 - **Application Code (TypeScript)**: `camelCase`

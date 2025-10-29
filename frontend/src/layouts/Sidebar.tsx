@@ -82,13 +82,13 @@ export function Sidebar({
       <div className="h-14 flex items-center px-3 border-b border-surface-300/60">
         <div className="flex items-center gap-2 select-none flex-1 min-w-0">
           <img
-            src="/logo-forge.webp"
-            alt="Forge"
+            src="/logo-forji.webp"
+            alt="Forji"
             className="h-8 w-8 rounded-md shadow-sm ring-1 ring-surface-300/60 object-cover flex-none"
           />
           <div className="flex flex-col leading-tight overflow-hidden">
             <span className="font-semibold tracking-tight text-gray-800 text-[15px]">
-              Forge
+              Forji
             </span>
             <span
               className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wide text-indigo-600/80 font-semibold"

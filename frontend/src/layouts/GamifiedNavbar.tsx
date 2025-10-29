@@ -159,7 +159,7 @@ export function GamifiedNavbar({ showAdmin }: GamifiedNavbarProps) {
 
   return (
     <aside className="hidden md:flex h-screen flex-col flex-none w-64 border-r border-surface-300 bg-surface-0 fixed left-0 top-0 z-30 shadow-soft">
-      {/* Header com Logo Forge - Design System v2 */}
+      {/* Header com Logo Forji - Design System v2 */}
       <div className="p-6 border-b border-surface-200 bg-gradient-to-br from-surface-50 to-surface-0">
         <div className="flex items-center gap-3 group">
           <div className="w-11 h-11 bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl flex items-center justify-center shadow-md transition-transform duration-150 group-hover:scale-105">
@@ -167,7 +167,7 @@ export function GamifiedNavbar({ showAdmin }: GamifiedNavbarProps) {
           </div>
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">
-              Forge
+              Forji
             </h1>
             <p className="text-xs font-medium text-gray-500 tracking-wide">
               Team-First Growth System

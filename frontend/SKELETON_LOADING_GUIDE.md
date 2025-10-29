@@ -1,6 +1,6 @@
 # Skeleton Loading Components - Página de Ciclo
 
-Implementação completa de skeleton loadings para a página de ciclo seguindo o design system da Forge.
+Implementação completa de skeleton loadings para a página de ciclo seguindo o design system da Forji.
 
 ## 🎨 Design System Compliance
 

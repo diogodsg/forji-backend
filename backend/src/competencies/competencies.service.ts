@@ -169,16 +169,45 @@ export class CompetenciesService {
   /**
    * Enriquece competência com progresso geral calculado
    */
-  private enrichCompetency(competency: any): CompetencyResponseDto {
+  private async enrichCompetency(competency: any): Promise<CompetencyResponseDto> {
     const overallProgress = this.calculateOverallProgress(
       competency.currentLevel,
       competency.currentProgress,
       competency.targetLevel,
     );
 
+    // Verificar última atualização para calcular próxima data disponível
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const lastUpdate = await this.prisma.competencyUpdate.findFirst({
+      where: {
+        competencyId: competency.id,
+        createdAt: {
+          gte: oneWeekAgo,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    let canUpdateNow = true;
+    let nextUpdateDate = null;
+
+    if (lastUpdate) {
+      const nextUpdate = new Date(lastUpdate.createdAt);
+      nextUpdate.setDate(nextUpdate.getDate() + 7);
+
+      canUpdateNow = new Date() >= nextUpdate;
+      nextUpdateDate = nextUpdate.toISOString();
+    }
+
     return {
       ...competency,
       overallProgress,
+      canUpdateNow, // ✅ Pode atualizar agora?
+      nextUpdateDate, // ✅ Próxima data disponível (se não pode atualizar)
     };
   }
 
@@ -188,6 +217,17 @@ export class CompetenciesService {
    */
   private calculateLevelUpXP(newLevel: number): number {
     return newLevel * 100; // Level 2 = 200 XP, Level 3 = 300 XP, etc.
+  }
+
+  /**
+   * Calcula XP para criação de competência baseado na configuração do frontend
+   * Fórmula: Base 100 XP + (progressão de níveis * 33 XP)
+   */
+  private calculateCompetencyCreationXP(initialLevel: number, targetLevel: number): number {
+    const baseXP = 100;
+    const levelDifference = targetLevel - initialLevel;
+    const levelBonus = levelDifference > 0 ? levelDifference * 33 : 0;
+    return baseXP + levelBonus;
   }
 
   /**
@@ -274,6 +314,9 @@ export class CompetenciesService {
     // Verifica permissão (agora que temos o workspaceId do ciclo)
     await this.checkPermission(currentUserId, userId, cycle.workspaceId);
 
+    // Calcula XP a ser dado pela criação
+    const xpReward = this.calculateCompetencyCreationXP(currentLevel, targetLevel);
+
     // Cria competência
     const competency = await this.prisma.competency.create({
       data: {
@@ -287,7 +330,74 @@ export class CompetenciesService {
       },
     });
 
-    return this.enrichCompetency(competency);
+    // Adiciona XP e detecta level-up
+    let xpEarned = 0;
+    let leveledUp = false;
+    let previousLevel: number | undefined;
+    let newLevel: number | undefined;
+
+    if (xpReward > 0) {
+      try {
+        // Buscar nível atual antes de adicionar XP
+        const profileBefore = await this.gamificationService.getProfile(userId, cycle.workspaceId);
+        previousLevel = profileBefore?.level;
+
+        await this.gamificationService.addXP({
+          userId,
+          workspaceId: cycle.workspaceId,
+          xpAmount: xpReward,
+          reason: `Competência criada: ${name}`,
+          source: 'COMPETENCY_LEVEL_UP', // Marcar como relacionado a competência
+          sourceId: competency.id, // ✅ CRÍTICO: Incluir ID da competência para poder reverter depois!
+        });
+
+        xpEarned = xpReward;
+
+        // Buscar nível atual depois de adicionar XP
+        const profileAfter = await this.gamificationService.getProfile(userId, cycle.workspaceId);
+        newLevel = profileAfter?.level;
+
+        // Detectar level-up
+        if (previousLevel && newLevel && newLevel > previousLevel) {
+          leveledUp = true;
+          console.log(
+            `🆙 LEVEL UP DETECTADO! Criação de competência: ${previousLevel} → ${newLevel}`,
+          );
+        }
+      } catch (error) {
+        console.error('Erro ao adicionar XP por criação de competência:', error);
+      }
+    }
+
+    // 🆕 Cria Activity automaticamente na timeline
+    await this.activitiesService.createFromCompetencyUpdate({
+      cycleId: competency.cycleId,
+      userId: competency.userId,
+      competencyId: competency.id,
+      competencyName: competency.name,
+      previousLevel: competency.currentLevel,
+      newLevel: competency.currentLevel, // Criação = mesmo nível inicial
+      previousProgress: 0,
+      newProgress: 0, // Criação = 0% de progresso inicial
+      notes: `Competência criada com meta do nível ${competency.currentLevel} para ${competency.targetLevel}`,
+      xpEarned: xpReward,
+    });
+
+    const enrichedCompetency = await this.enrichCompetency(competency);
+
+    // Adicionar informações de XP se houve ganho
+    if (xpEarned > 0) {
+      return {
+        ...enrichedCompetency,
+        xpReward: xpEarned,
+        xpEarned,
+        leveledUp,
+        previousLevel,
+        newLevel,
+      };
+    }
+
+    return enrichedCompetency;
   }
 
   /**
@@ -311,7 +421,7 @@ export class CompetenciesService {
       },
     });
 
-    return competencies.map((comp) => this.enrichCompetency(comp));
+    return Promise.all(competencies.map((comp) => this.enrichCompetency(comp)));
   }
 
   /**
@@ -336,7 +446,7 @@ export class CompetenciesService {
     // Verifica permissão
     await this.checkPermission(currentUserId, competency.userId, workspaceId);
 
-    return this.enrichCompetency(competency);
+    return await this.enrichCompetency(competency);
   }
 
   /**
@@ -368,8 +478,10 @@ export class CompetenciesService {
     // Verifica permissão
     await this.checkPermission(currentUserId, competency.userId, workspaceId);
 
+    const enriched = await this.enrichCompetency(competency);
+
     return {
-      ...this.enrichCompetency(competency),
+      ...enriched,
       updates: competency.updates,
     };
   }
@@ -414,7 +526,7 @@ export class CompetenciesService {
       },
     });
 
-    return this.enrichCompetency(updatedCompetency);
+    return await this.enrichCompetency(updatedCompetency);
   }
 
   /**
@@ -426,7 +538,7 @@ export class CompetenciesService {
     updateProgressDto: UpdateCompetencyProgressDto,
     currentUserId: string,
     workspaceId: string,
-  ): Promise<CompetencyResponseDto> {
+  ): Promise<CompetencyResponseDto & { profile?: any }> {
     const { progressPercentage, notes } = updateProgressDto;
 
     const competency = await this.prisma.competency.findFirst({
@@ -443,6 +555,31 @@ export class CompetenciesService {
     // Verifica permissão
     await this.checkPermission(currentUserId, competency.userId, workspaceId);
 
+    // 🚫 VERIFICAR LIMITE: Apenas 1 atualização por semana
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const recentUpdate = await this.prisma.competencyUpdate.findFirst({
+      where: {
+        competencyId: id,
+        createdAt: {
+          gte: oneWeekAgo,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (recentUpdate) {
+      const nextUpdateDate = new Date(recentUpdate.createdAt);
+      nextUpdateDate.setDate(nextUpdateDate.getDate() + 7);
+
+      throw new BadRequestException(
+        `Você só pode atualizar esta competência 1 vez por semana. Próxima atualização disponível em: ${nextUpdateDate.toLocaleDateString('pt-BR')}`,
+      );
+    }
+
     const previousLevel = competency.currentLevel;
     const previousProgress = competency.currentProgress;
 
@@ -450,11 +587,30 @@ export class CompetenciesService {
     let newProgress = progressPercentage;
     let xpEarned = 0;
 
-    // Se atingiu 100%, sobe de nível
+    // 🎯 XP BASE por atualização de progresso (como nas metas)
+    const BASE_COMPETENCY_UPDATE_XP = 30; // XP base por atualizar competência
+
+    // Calcular incremento de progresso
+    const progressIncrease = progressPercentage - previousProgress;
+
+    // Dar XP base se houve progresso
+    if (progressIncrease > 0) {
+      xpEarned += BASE_COMPETENCY_UPDATE_XP;
+
+      // Bônus para progresso significativo (20%+)
+      if (progressIncrease >= 20) {
+        xpEarned += 15; // Bônus adicional
+      }
+    }
+
+    // Se atingiu 100%, sobe de nível e ganha bônus adicional
     if (progressPercentage >= 100 && newLevel < competency.targetLevel) {
       newLevel = previousLevel + 1;
       newProgress = 0; // Reseta progresso no novo nível
-      xpEarned = this.calculateLevelUpXP(newLevel);
+
+      // Bônus de level-up (além do XP base já contabilizado)
+      const levelUpBonus = this.calculateLevelUpXP(newLevel);
+      xpEarned += levelUpBonus;
 
       // Se atingiu o nível alvo, mantém 100%
       if (newLevel >= competency.targetLevel) {
@@ -483,7 +639,9 @@ export class CompetenciesService {
       }),
     ]);
 
-    // Adiciona XP ao usuário se subiu de nível
+    let updatedProfile = null;
+
+    // Adiciona XP ao usuário se ganhou XP
     if (xpEarned > 0) {
       // Busca workspace do ciclo
       const cycle = await this.prisma.cycle.findUnique({
@@ -492,11 +650,13 @@ export class CompetenciesService {
       });
 
       if (cycle) {
-        await this.gamificationService.addXP({
+        updatedProfile = await this.gamificationService.addXP({
           userId: competency.userId,
           workspaceId: cycle.workspaceId, // ✅ Workspace do ciclo
           xpAmount: xpEarned,
-          reason: `Competência: ${competency.name} (Nível ${newLevel})`,
+          reason: `Competência: ${competency.name} (${progressPercentage}% progresso)`,
+          source: 'COMPETENCY_UPDATE', // Marcar como atualização de competência
+          sourceId: competency.id, // ✅ CRÍTICO: Incluir ID da competência para poder reverter!
         });
       }
     }
@@ -515,17 +675,33 @@ export class CompetenciesService {
       xpEarned,
     });
 
-    return this.enrichCompetency(updatedCompetency);
+    const enrichedCompetency = await this.enrichCompetency(updatedCompetency);
+
+    // Retornar competência + perfil de gamificação atualizado
+    return {
+      ...enrichedCompetency,
+      xpEarned, // ✅ Incluir XP ganho para o frontend processar
+      leveledUp: newLevel > previousLevel, // ✅ Indicar se subiu de nível
+      newLevel, // ✅ Novo nível (se subiu)
+      profile: updatedProfile, // ✅ Perfil de gamificação atualizado
+    };
   }
 
   /**
    * Deleta competência (soft delete)
    */
-  async remove(id: string, currentUserId: string, workspaceId: string): Promise<void> {
+  async remove(
+    id: string,
+    currentUserId: string,
+    workspaceId: string,
+  ): Promise<{ xpReverted: number; profile?: any }> {
     const competency = await this.prisma.competency.findFirst({
       where: {
         id,
         deletedAt: null,
+      },
+      include: {
+        cycle: true,
       },
     });
 
@@ -536,12 +712,58 @@ export class CompetenciesService {
     // Verifica permissão
     await this.checkPermission(currentUserId, competency.userId, workspaceId);
 
-    // Soft delete
+    console.log(
+      `🔍 Buscando transações de XP para competência ${competency.id} (nome: ${competency.name})`,
+    );
+
+    // 🎯 REVERTER XP: Buscar todas as transações relacionadas a esta competência
+    const xpTransactions = await this.prisma.xpTransaction.findMany({
+      where: {
+        sourceId: id, // sourceId guarda o ID da competência
+        gamificationProfile: {
+          userId: competency.userId,
+        },
+      },
+    });
+
+    console.log(`📊 Encontradas ${xpTransactions.length} transações de XP:`);
+    xpTransactions.forEach((tx) => {
+      console.log(`  - Transação ${tx.id}: ${tx.amount} XP (${tx.reason})`);
+    });
+
+    // Calcular total de XP a ser revertido
+    const totalXpToRevert = xpTransactions.reduce((sum: number, tx: any) => sum + tx.amount, 0);
+
+    console.log(
+      `🗑️ Revertendo ${totalXpToRevert} XP da competência ${competency.name} (${xpTransactions.length} transações)`,
+    );
+
+    let updatedProfile = null;
+
+    // Reverter XP do perfil do usuário
+    if (totalXpToRevert > 0) {
+      // Usar subtractXP para remover o XP
+      updatedProfile = await this.gamificationService.subtractXP({
+        userId: competency.userId,
+        workspaceId,
+        xpAmount: totalXpToRevert,
+        reason: `Competência "${competency.name}" removida`,
+      });
+    }
+
+    // Soft delete da competência
     await this.prisma.competency.update({
       where: { id },
       data: {
         deletedAt: new Date(),
       },
     });
+
+    console.log(`✅ Competência ${competency.name} deletada e XP revertido`);
+
+    return {
+      xpReverted: totalXpToRevert,
+      profile: updatedProfile,
+    };
   }
 }

@@ -9,6 +9,7 @@ interface Step1BasicInfoProps {
   setFormData: (data: Partial<GoalData>) => void;
   xpTotal: number;
   xpBonuses: XPBonus[];
+  isEditing?: boolean;
 }
 
 export default function Step1BasicInfo({
@@ -16,13 +17,18 @@ export default function Step1BasicInfo({
   setFormData,
   xpTotal,
   xpBonuses,
+  isEditing = false,
 }: Step1BasicInfoProps) {
   return (
     <div className="space-y-4">
       {/* Formulário em duas colunas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Coluna Principal - Formulário */}
-        <div className="lg:col-span-2 space-y-4">
+        <div
+          className={`${
+            isEditing ? "lg:col-span-3" : "lg:col-span-2"
+          } space-y-4`}
+        >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Título da Meta *
@@ -55,7 +61,7 @@ export default function Step1BasicInfo({
             />
             <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
               <span>{formData.description?.length || 0} caracteres</span>
-              {(formData.description?.length || 0) > 100 && (
+              {!isEditing && (formData.description?.length || 0) > 100 && (
                 <span className="text-emerald-600 font-medium flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   Bônus +8 XP
@@ -65,16 +71,18 @@ export default function Step1BasicInfo({
           </div>
         </div>
 
-        {/* Coluna Lateral - XP Breakdown Fixo */}
-        <div className="lg:col-span-1">
-          <div className="lg:sticky lg:top-0">
-            <XPBreakdown total={xpTotal} bonuses={xpBonuses} />
+        {/* Coluna Lateral - XP Breakdown Fixo - Oculto no modo de edição */}
+        {!isEditing && (
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-0">
+              <XPBreakdown total={xpTotal} bonuses={xpBonuses} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Guia SMART - Largura completa */}
-      <SMARTGuide />
+      {/* Guia SMART - Largura completa - Oculto no modo de edição */}
+      {!isEditing && <SMARTGuide />}
     </div>
   );
 }

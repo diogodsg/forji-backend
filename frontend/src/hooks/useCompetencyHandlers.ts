@@ -1,7 +1,7 @@
 import { useToast } from "../components/Toast";
 import { useCompetencyMutations } from "../features/cycles/hooks";
-import { useXpAnimations } from "../components/XpFloating";
-import { useCelebrations } from "./useCelebrations";
+import { useGamificationContext } from "../features/gamification/context/GamificationContext";
+import { deleteCompetency } from "../lib/api/endpoints/cycles";
 
 export function useCompetencyHandlers(
   cycle: any,
@@ -9,8 +9,7 @@ export function useCompetencyHandlers(
   handleClose: () => void
 ) {
   const toast = useToast();
-  const { triggerXpAnimation } = useXpAnimations();
-  const { triggerLevelUp } = useCelebrations();
+  const { processActivityResponse } = useGamificationContext();
   const { createCompetency, updateCompetencyProgress } =
     useCompetencyMutations();
 
@@ -51,22 +50,25 @@ export function useCompetencyHandlers(
       if (competency) {
         await refreshCompetencies();
 
-        // Calcular XP baseado na diferença de níveis
-        const levelDifference = data.targetLevel - data.initialLevel;
-        const xpEarned = 100 + levelDifference * 33;
+        // 🎯 Usar função centralizada para processar resposta (XP e level-up)
+        processActivityResponse(competency);
 
-        // Trigger XP animation
-        triggerXpAnimation(
-          xpEarned,
-          window.innerWidth / 2,
-          window.innerHeight / 2
-        );
-
-        toast.success(
-          `+${xpEarned} XP ganho! Competência "${data.name}" registrada 🎯`,
-          "Competência Criada",
-          4000
-        );
+        // Toast baseado no que aconteceu
+        if (competency.leveledUp) {
+          toast.success(
+            `Level Up! Você subiu para o nível ${competency.newLevel}! 🎉`,
+            "Competência Criada + Level Up!",
+            4000
+          );
+        } else {
+          toast.success(
+            `+${
+              competency.xpEarned || competency.xpReward || 0
+            } XP ganho! Competência "${data.name}" registrada 🎯`,
+            "Competência Criada",
+            4000
+          );
+        }
         handleClose();
       }
     } catch (err: any) {
@@ -96,26 +98,56 @@ export function useCompetencyHandlers(
   ) => {
     try {
       const updatedCompetency = await updateCompetencyProgress(competencyId, {
-        currentLevel: data.newLevel || data.level,
-        notes: data.notes || data.description,
+        progressPercentage: data.newProgress, // ✅ Enviar o progresso percentual (0-100)
+        notes: data.notes || data.description || "",
       });
 
       if (updatedCompetency) {
         await refreshCompetencies();
-        const levelUp = updatedCompetency.currentLevel > (data.oldLevel || 0);
 
-        // Trigger LEVEL UP celebration épica para level ups de competência! ⭐
-        if (levelUp) {
-          triggerLevelUp(updatedCompetency.currentLevel);
+        // 🎯 Usar função centralizada para processar resposta (XP e level-up)
+        // Processar sempre que houver XP, level-up ou profile atualizado
+        if (
+          updatedCompetency.xpEarned ||
+          updatedCompetency.leveledUp ||
+          updatedCompetency.profile
+        ) {
+          console.log(
+            "🔄 Processando resposta de atualização de competência:",
+            updatedCompetency
+          );
+          processActivityResponse(updatedCompetency);
         }
 
-        toast.success(
-          levelUp
-            ? `🎉 Level up! Agora você está no nível ${updatedCompetency.currentLevel}`
-            : `Competência atualizada! Continue evoluindo 📈`,
-          "Progresso Atualizado",
-          4000
-        );
+        const levelUp =
+          updatedCompetency.currentLevel > (data.currentLevel || 0);
+
+        // Toast baseado se houve level-up ou apenas progresso
+        if (updatedCompetency.leveledUp || levelUp) {
+          toast.success(
+            `Level Up! Você subiu para o nível ${
+              updatedCompetency.newLevel || updatedCompetency.currentLevel
+            }! 🎉`,
+            "Progresso + Level Up!",
+            4000
+          );
+        } else if (
+          updatedCompetency.xpEarned &&
+          updatedCompetency.xpEarned > 0
+        ) {
+          toast.success(
+            `+${updatedCompetency.xpEarned} XP ganho! Continue evoluindo 📈`,
+            "Progresso Atualizado",
+            4000
+          );
+        } else {
+          // Caso não tenha ganho XP (progresso sem mudança)
+          toast.success(
+            "Progresso atualizado com sucesso!",
+            "Competência Atualizada",
+            3000
+          );
+        }
         handleClose();
       }
     } catch (err) {
@@ -123,8 +155,53 @@ export function useCompetencyHandlers(
     }
   };
 
+  // ==========================================
+  // DELETE HANDLER
+  // ==========================================
+  const handleCompetencyDelete = async (
+    competencyId: string
+  ): Promise<void> => {
+    try {
+      console.log(
+        "🗑️ useCompetencyHandlers: Deletando competência:",
+        competencyId
+      );
+
+      const response = await deleteCompetency(competencyId);
+
+      await refreshCompetencies();
+
+      // 🎯 Processar resposta de XP revertido e atualizar perfil
+      if (response?.profile) {
+        console.log(
+          "🔄 Perfil de gamificação atualizado após deletar competência"
+        );
+        processActivityResponse(response);
+      }
+
+      const xpReverted = response?.xpReverted || 0;
+      const message =
+        xpReverted > 0
+          ? `Competência removida (-${xpReverted} XP revertido)`
+          : "Competência removida com sucesso";
+
+      toast.success(message, "Competência Removida");
+    } catch (err: any) {
+      console.error("❌ Erro ao deletar competência:", err);
+
+      const errorMessage = err?.response?.data?.message
+        ? Array.isArray(err.response.data.message)
+          ? err.response.data.message.join(", ")
+          : err.response.data.message
+        : "Não foi possível deletar a competência.";
+
+      toast.error(errorMessage, "Erro ao Deletar Competência");
+    }
+  };
+
   return {
     handleCompetencyCreate,
     handleCompetencyProgressUpdate,
+    handleCompetencyDelete,
   };
 }

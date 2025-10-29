@@ -2,7 +2,7 @@
 
 **Data:** 16 de outubro de 2025  
 **Pasta:** `frontend/src/features/admin/components/hierarchy/`  
-**Design System:** Forge v2.4 (Brand: Violet #7c3aed)
+**Design System:** Forji v2.4 (Brand: Violet #7c3aed)
 
 ---
 
@@ -444,7 +444,7 @@ import { Search } from "lucide-react";
 
 ```bash
 # 1. Navegar para o diretório
-cd /home/chipanze/dev/test/forge/frontend/src/features/admin/components/hierarchy
+cd /home/chipanze/dev/test/forji/frontend/src/features/admin/components/hierarchy
 
 # 2. Find & Replace (VSCode)
 # Ctrl+Shift+H no VSCode
@@ -456,7 +456,7 @@ cd /home/chipanze/dev/test/forge/frontend/src/features/admin/components/hierarch
 npm install lucide-react
 
 # 4. Validar build
-cd /home/chipanze/dev/test/forge/frontend
+cd /home/chipanze/dev/test/forji/frontend
 npm run build
 
 # 5. Validar TypeScript

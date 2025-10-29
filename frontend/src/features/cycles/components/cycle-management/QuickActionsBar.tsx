@@ -1,12 +1,4 @@
-import {
-  MessageSquare,
-  Users,
-  Award,
-  Target,
-  Clock,
-  Lock,
-  Lightbulb,
-} from "lucide-react";
+import { MessageSquare, Users, Award, Target, Lock } from "lucide-react";
 
 interface QuickAction {
   id: string;
@@ -98,7 +90,7 @@ export function QuickActionsBar({
             </div>
 
             {/* Contextual Info */}
-            {action.context && (
+            {/* {action.context && (
               <div className="mt-3 pt-3 border-t border-surface-200">
                 {action.context.lastActivityDays !== undefined && (
                   <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -118,7 +110,7 @@ export function QuickActionsBar({
                   </div>
                 )}
               </div>
-            )}
+            )} */}
 
             {/* Hover Indicator */}
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -138,7 +130,7 @@ const defaultActions: QuickAction[] = [
     icon: <MessageSquare className="w-6 h-6 text-white" />,
     title: "Registrar 1:1",
     subtitle: "2-3min • Detalhado",
-    xpReward: 50,
+    xpReward: 300,
     gradient: "from-blue-500 to-blue-600",
     context: {
       lastActivityDays: 3,
@@ -151,7 +143,7 @@ const defaultActions: QuickAction[] = [
     icon: <Target className="w-6 h-6 text-white" />,
     title: "Nova Meta",
     subtitle: "Planeje objetivos",
-    xpReward: 25,
+    xpReward: 40,
     gradient: "from-violet-500 to-violet-600",
   },
   {

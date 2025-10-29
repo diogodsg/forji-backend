@@ -46,7 +46,7 @@ echo 'VITE_ENABLE_MOCK_API=true' >> .env.development
 npm run dev
 ```
 
-**Verificar:** http://localhost:5173 (Login com diego@forge.com funciona)
+**Verificar:** http://localhost:5173 (Login com diego@forji.com funciona)
 
 ---
 
@@ -105,7 +105,7 @@ EOF
 
 # .env.production
 cat > .env.production << 'EOF'
-VITE_API_BASE_URL=https://api.forge.com/api
+VITE_API_BASE_URL=https://api.forji.com/api
 VITE_ENABLE_MOCK_API=false
 EOF
 ```
@@ -214,7 +214,7 @@ function App() {
 # 1. Abrir frontend: http://localhost:5173
 # 2. Abrir DevTools (F12)
 # 3. Fazer login:
-Email: diego@forge.com  # Se existir no seed
+Email: diego@forji.com  # Se existir no seed
 Senha: 123456           # Ou a senha do seed
 
 # 4. Console deve mostrar:
@@ -435,7 +435,7 @@ const login = async () => {
   const res = await fetch("http://localhost:8000/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: "diego@forge.com", password: "123456" }),
+    body: JSON.stringify({ email: "diego@forji.com", password: "123456" }),
   });
   const data = await res.json();
   console.log(data);

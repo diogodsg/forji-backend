@@ -149,6 +149,16 @@ export interface GoalResponseDto {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+
+  // Controle de atualização semanal
+  canUpdateNow?: boolean; // Pode atualizar agora?
+  nextUpdateDate?: string; // Próxima data disponível (ISO string)
+
+  // Informações de XP e level-up para animações (apenas em operações que geram XP)
+  xpEarned?: number;
+  leveledUp?: boolean;
+  previousLevel?: number;
+  newLevel?: number;
 }
 
 export interface GoalUpdateHistoryDto {
@@ -180,7 +190,7 @@ export interface UpdateCompetencyDto {
 }
 
 export interface UpdateCompetencyProgressDto {
-  currentLevel: number; // 1-5
+  progressPercentage: number; // 0-100 (progresso percentual dentro do nível atual)
   notes?: string;
 }
 
@@ -196,6 +206,18 @@ export interface CompetencyResponseDto {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+
+  // Informações de XP e level-up para animações (apenas em operações que geram XP)
+  xpEarned?: number;
+  xpReward?: number;
+  leveledUp?: boolean;
+  previousLevel?: number;
+  newLevel?: number;
+  profile?: any; // ✅ Perfil de gamificação atualizado (quando há ganho de XP)
+
+  // ✅ Informações de limite de atualização
+  canUpdateNow?: boolean; // Pode atualizar agora?
+  nextUpdateDate?: string; // Próxima data disponível (ISO string)
 }
 
 export interface CompetencyUpdateHistoryDto {
@@ -232,9 +254,36 @@ export interface ActivityResponseDto {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+
+  // Informações de level up para animações
+  leveledUp?: boolean;
+  previousLevel?: number;
+  newLevel?: number;
 }
 
-// One-on-One Activity
+// Activity DTOs alinhados com backend
+export interface CreateOneOnOneDataDto {
+  participantName: string;
+  workingOn?: string[];
+  generalNotes: string;
+  positivePoints?: string[];
+  improvementPoints?: string[];
+  nextSteps: string[];
+}
+
+export interface CreateActivityDto {
+  cycleId: string;
+  userId: string;
+  type: ActivityType;
+  title: string;
+  description?: string;
+  duration?: number;
+  oneOnOneData?: CreateOneOnOneDataDto;
+  mentoringData?: any; // TODO: definir interface
+  certificationData?: any; // TODO: definir interface
+}
+
+// Legacy - manter para compatibilidade
 export interface CreateOneOnOneDto {
   cycleId: string;
   title: string;

@@ -6,7 +6,6 @@ export interface AuthUser {
   updatedAt: string;
   isManager?: boolean;
   isAdmin?: boolean;
-  githubId?: string;
   position?: string;
   bio?: string;
   avatarId?: string;

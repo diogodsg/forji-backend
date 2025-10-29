@@ -16,4 +16,6 @@ export interface CompetenceData {
   targetLevel: number;
   currentProgress: number;
   nextMilestone: string;
+  canUpdateNow?: boolean; // ✅ Pode atualizar agora?
+  nextUpdateDate?: string; // ✅ Próxima data disponível
 }

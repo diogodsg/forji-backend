@@ -335,7 +335,7 @@ private readonly logger = new Logger(GamificationService.name);
 curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "diego@forge.com",
+    "email": "diego@forji.com",
     "password": "senha123"
   }'
 

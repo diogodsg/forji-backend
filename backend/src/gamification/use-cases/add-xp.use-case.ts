@@ -24,7 +24,7 @@ export class AddXpUseCase {
   ) {}
 
   async execute(addXpDto: AddXpDto): Promise<GamificationProfileResponseDto> {
-    const { userId, workspaceId, xpAmount, reason } = addXpDto;
+    const { userId, workspaceId, xpAmount, reason, source, sourceId } = addXpDto;
 
     this.logger.log(
       `Adicionando ${xpAmount} XP ao usuário ${userId} no workspace ${workspaceId} (razão: ${reason || 'não especificada'})`,
@@ -45,28 +45,53 @@ export class AddXpUseCase {
       );
     }
 
+    const previousXP = profile.totalXP;
+    const previousLevel = profile.level;
     const newTotalXP = profile.totalXP + xpAmount;
     const newLevel = this.calculator.calculateLevel(newTotalXP);
     const leveledUp = newLevel > profile.level;
 
-    // Atualizar perfil (currentXP é calculado dinamicamente no getProfile)
-    await this.prisma.gamificationProfile.update({
-      where: {
-        unique_user_workspace_gamification: {
-          userId,
-          workspaceId,
+    // Usar transação para garantir consistência
+    await this.prisma.$transaction(async (tx) => {
+      // Atualizar perfil de gamificação
+      await tx.gamificationProfile.update({
+        where: {
+          unique_user_workspace_gamification: {
+            userId,
+            workspaceId,
+          },
         },
-      },
-      data: {
-        totalXP: newTotalXP,
-        level: newLevel,
-        lastActiveAt: new Date(),
-      },
+        data: {
+          totalXP: newTotalXP,
+          level: newLevel,
+          lastActiveAt: new Date(),
+        },
+      });
+
+      // Registrar transação de XP
+      await tx.xpTransaction.create({
+        data: {
+          gamificationProfileId: profile.id,
+          amount: xpAmount,
+          source: source || 'MANUAL', // Default para MANUAL se não especificado
+          sourceId: sourceId || null,
+          reason: reason || 'XP adicionado',
+          previousXP,
+          newXP: newTotalXP,
+          previousLevel,
+          newLevel,
+          leveledUp,
+        },
+      });
     });
 
     if (leveledUp) {
-      this.logger.log(`🎉 Usuário ${userId} subiu de nível! Nível ${profile.level} → ${newLevel}`);
+      this.logger.log(`🎉 Usuário ${userId} subiu de nível! Nível ${previousLevel} → ${newLevel}`);
     }
+
+    this.logger.log(
+      `✅ XP registrado: ${xpAmount} XP (${previousXP} → ${newTotalXP}) - Transação salva em xp_transactions`,
+    );
 
     // Atualizar streak
     await this.updateStreakUseCase.execute(userId, workspaceId);

@@ -37,6 +37,22 @@ export class CompetencyResponseDto {
 
   @ApiProperty({ example: '2025-01-20T14:00:00.000Z' })
   updatedAt: Date;
+
+  // Informações de XP e level-up (opcionais, apenas em operações que geram XP)
+  @ApiProperty({ example: 133, description: 'XP ganho nesta operação', required: false })
+  xpEarned?: number;
+
+  @ApiProperty({ example: 133, description: 'XP recompensa por criar/atualizar', required: false })
+  xpReward?: number;
+
+  @ApiProperty({ example: true, description: 'Se houve level up', required: false })
+  leveledUp?: boolean;
+
+  @ApiProperty({ example: 4, description: 'Nível anterior', required: false })
+  previousLevel?: number;
+
+  @ApiProperty({ example: 5, description: 'Novo nível', required: false })
+  newLevel?: number;
 }
 
 export class CompetencyUpdateHistoryDto {

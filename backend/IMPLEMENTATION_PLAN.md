@@ -1,4 +1,4 @@
-# 📋 Plano de Implementação Backend - Forge
+# 📋 Plano de Implementação Backend - Forji
 
 **Versão:** 1.0.0  
 **Data:** 17 de outubro de 2025  
@@ -34,7 +34,7 @@
    - ✅ Banco de dados criado e sincronizado
 
 4. **Seed Data**
-   - ✅ 5 usuários mock (diego@forge.com como admin)
+   - ✅ 5 usuários mock (diego@forji.com como admin)
    - ✅ 4 times (Frontend, Backend, Design, DevOps)
    - ✅ Memberships configuradas
    - ✅ Management rules criadas (hierarquia)
@@ -55,11 +55,11 @@
 #### Credenciais de Teste:
 
 ```
-Email: diego@forge.com | Password: senha123 (Admin)
-Email: ana@forge.com | Password: senha123
-Email: carlos@forge.com | Password: senha123
-Email: maria@forge.com | Password: senha123 (Manager)
-Email: joao@forge.com | Password: senha123
+Email: diego@forji.com | Password: senha123 (Admin)
+Email: ana@forji.com | Password: senha123
+Email: carlos@forji.com | Password: senha123
+Email: maria@forji.com | Password: senha123 (Manager)
+Email: joao@forji.com | Password: senha123
 ```
 
 #### Comandos Úteis:
@@ -212,7 +212,7 @@ backend/src/auth/
 
 ## 🎯 Objetivo
 
-Implementar o backend do Forge focando em:
+Implementar o backend do Forji focando em:
 
 1. **Autenticação JWT** (register, login, validação)
 2. **Gestão de Usuários** (CRUD + admin)
@@ -1173,7 +1173,7 @@ describe('User Onboarding Flow (E2E)', () => {
 
 ```env
 # Database
-DATABASE_URL="postgresql://forge_user:forge_pass@localhost:5433/forge_db?schema=public"
+DATABASE_URL="postgresql://forji_user:forji_pass@localhost:5433/forji_db?schema=public"
 
 # JWT
 JWT_SECRET="85944eca-bcfa-4cb8-ac61-d152596ddd14"
@@ -1198,7 +1198,7 @@ THROTTLE_LIMIT=100
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/forge_db?schema=public"
+DATABASE_URL="postgresql://user:password@localhost:5432/forji_db?schema=public"
 
 # JWT
 JWT_SECRET="change-me-in-production"
@@ -1357,7 +1357,7 @@ Frontend tem 5 usuários mock que devem ser replicados no seed:
 const users = [
   {
     id: '00000000-0000-0000-0000-000000000001', // UUID fixo para desenvolvimento
-    email: 'diego@forge.com',
+    email: 'diego@forji.com',
     name: 'Diego Santos',
     position: 'CTO',
     is_admin: true,
@@ -1365,7 +1365,7 @@ const users = [
   },
   {
     id: '00000000-0000-0000-0000-000000000002',
-    email: 'maria@forge.com',
+    email: 'maria@forji.com',
     name: 'Maria Silva',
     position: 'Engineering Manager',
     is_admin: false,
@@ -1373,7 +1373,7 @@ const users = [
   },
   {
     id: '00000000-0000-0000-0000-000000000003',
-    email: 'ana@forge.com',
+    email: 'ana@forji.com',
     name: 'Ana Costa',
     position: 'Frontend Developer',
     is_admin: false,
@@ -1381,7 +1381,7 @@ const users = [
   },
   {
     id: '00000000-0000-0000-0000-000000000004',
-    email: 'carlos@forge.com',
+    email: 'carlos@forji.com',
     name: 'Carlos Pereira',
     position: 'Backend Developer',
     is_admin: false,
@@ -1389,7 +1389,7 @@ const users = [
   },
   {
     id: '00000000-0000-0000-0000-000000000005',
-    email: 'pedro@forge.com',
+    email: 'pedro@forji.com',
     name: 'Pedro Oliveira',
     position: 'DevOps Engineer',
     is_admin: false,

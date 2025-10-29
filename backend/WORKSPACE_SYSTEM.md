@@ -595,7 +595,7 @@ User → Teams (dentro do contexto do workspace)
 
 - URLs amigáveis
 - Compartilhamento fácil
-- Futuro: workspace.forge.com/slug
+- Futuro: workspace.forji.com/slug
 
 ---
 

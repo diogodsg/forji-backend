@@ -7,6 +7,7 @@ import {
   Users,
   BarChart,
   Trash2,
+  Clock,
 } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -25,13 +26,15 @@ interface Competency {
   targetLevel: number;
   currentProgress: number;
   totalXP?: number;
+  canUpdateNow?: boolean;
+  nextUpdateDate?: string;
 }
 
 interface CompetenciesSectionProps {
   competencies: Competency[];
   onViewCompetency: (competencyId: string) => void;
   onUpdateProgress: (competencyId: string) => void;
-  onDeleteCompetency: (competencyId: string) => void;
+  onDeleteCompetency: (competencyId: string) => Promise<void>;
   onCreateCompetency?: () => void;
 }
 
@@ -68,13 +71,44 @@ export function CompetenciesSection({
   );
 
   const handleDeleteClick = (competencyId: string) => {
+    console.log(
+      "🗑️ CompetenciesSection: Iniciando exclusão da competência:",
+      competencyId
+    );
     setCompetencyToDelete(competencyId);
     setDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (competencyToDelete) {
-      onDeleteCompetency(competencyToDelete);
+      console.log(
+        "✅ CompetenciesSection: Confirmando exclusão da competência:",
+        competencyToDelete
+      );
+      console.log("🔄 CompetenciesSection: Chamando onDeleteCompetency...");
+      console.log(
+        "🔍 CompetenciesSection: Tipo de onDeleteCompetency:",
+        typeof onDeleteCompetency
+      );
+      console.log(
+        "🔍 CompetenciesSection: onDeleteCompetency.name:",
+        onDeleteCompetency.name
+      );
+      try {
+        const result = onDeleteCompetency(competencyToDelete);
+        console.log("🔍 CompetenciesSection: Resultado da chamada:", result);
+        console.log(
+          "🔍 CompetenciesSection: É uma Promise?",
+          result instanceof Promise
+        );
+        await result;
+        console.log("✅ CompetenciesSection: onDeleteCompetency concluído");
+      } catch (error) {
+        console.error(
+          "❌ CompetenciesSection: Erro ao chamar onDeleteCompetency:",
+          error
+        );
+      }
       setDeleteModalOpen(false);
       setCompetencyToDelete(null);
     }
@@ -368,13 +402,34 @@ function CompetencyCard({
           <span>{(competency.totalXP || 0).toLocaleString()} XP</span>
         </div>
 
-        <button
-          onClick={handleUpdateClick}
-          className="inline-flex items-center gap-1 text-brand-600 hover:text-brand-700 font-medium text-sm group-hover:gap-2 transition-all"
-        >
-          Atualizar progresso
-          <ChevronRight className="w-4 h-4" />
-        </button>
+        {competency.canUpdateNow !== false ? (
+          <button
+            onClick={handleUpdateClick}
+            className="inline-flex items-center gap-1 text-brand-600 hover:text-brand-700 font-medium text-sm group-hover:gap-2 transition-all"
+          >
+            Atualizar progresso
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5 text-amber-600">
+            <Clock className="w-3.5 h-3.5" />
+            <div className="text-right">
+              <div className="text-xs font-medium">Próxima atualização</div>
+              <div className="text-xs text-gray-600">
+                {competency.nextUpdateDate
+                  ? new Date(competency.nextUpdateDate).toLocaleDateString(
+                      "pt-BR",
+                      {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }
+                    )
+                  : "Em breve"}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Hover Indicator */}

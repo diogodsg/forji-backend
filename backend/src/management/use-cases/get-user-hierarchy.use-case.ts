@@ -10,17 +10,26 @@ export class GetUserHierarchyUseCase {
   constructor(private readonly managementRepository: ManagementRepository) {}
 
   async execute(userId: string, workspaceId: string) {
-    // Get user's managers
-    const managers = await this.managementRepository.findRules({
-      subordinateId: userId,
-      workspaceId,
-    });
+    const startTime = Date.now();
 
-    // Get user's subordinates
-    const subordinates = await this.managementRepository.findRules({
-      managerId: userId,
-      workspaceId,
-    });
+    // 🚀 OTIMIZAÇÃO: Executar consultas em paralelo
+    const [managers, subordinates] = await Promise.all([
+      // Get user's managers
+      this.managementRepository.findRules({
+        subordinateId: userId,
+        workspaceId,
+      }),
+      // Get user's subordinates
+      this.managementRepository.findRules({
+        managerId: userId,
+        workspaceId,
+      }),
+    ]);
+
+    const executionTime = Date.now() - startTime;
+    console.log(
+      `[GetUserHierarchyUseCase] Hierarchy query executed in ${executionTime}ms for user ${userId} (${managers.length} managers, ${subordinates.length} subordinates)`,
+    );
 
     return {
       managers: managers.map((rule) => ({

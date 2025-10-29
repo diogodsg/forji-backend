@@ -1,7 +1,7 @@
 export interface GoalUpdateData {
   goalId: string;
   goalTitle: string;
-  goalType?: "increase" | "decrease" | "percentage" | "binary";
+  goalType?: "INCREASE" | "DECREASE" | "PERCENTAGE" | "BINARY";
   currentProgress: number;
   newProgress: number;
   description: string;
@@ -17,7 +17,7 @@ export interface GoalData {
   title: string;
   description: string;
   currentProgress: number;
-  type?: "increase" | "decrease" | "percentage" | "binary";
+  type?: "INCREASE" | "DECREASE" | "PERCENTAGE" | "BINARY";
   // Campos para metas de increase/decrease
   currentValue?: number;
   targetValue?: number;

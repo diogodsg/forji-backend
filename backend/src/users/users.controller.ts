@@ -171,11 +171,12 @@ export class UsersController {
     status: 403,
     description: 'Usuário não possui permissão para listar usuários',
   })
-  async findAll(@Query() query: any, @Request() req: any) {
+  async findAll(@Query() query: any, @CurrentUser() user: any) {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 20;
     const search = query.search;
-    const workspaceId = query.workspaceId;
+    // Use workspaceId from query or from logged user's workspace
+    const workspaceId = query.workspaceId || user?.workspaceId;
 
     return this.usersService.findAll(page, limit, search, workspaceId);
   }
@@ -889,5 +890,5 @@ export class UsersController {
  * @see UpdateUserDto Para estrutura de dados de atualização
  *
  * @version 1.0.0
- * @author Driva Tecnologia
+ * @author Forji Tecnologia
  */

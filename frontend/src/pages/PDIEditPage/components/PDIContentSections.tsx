@@ -29,13 +29,13 @@ interface PDIContentSectionsProps {
   onGoalDelete: (goalId: string) => void;
   onGoalUpdateClick: (goalId: string) => void;
   onGoalProgressUpdate: (goalId: string, data: any) => void;
-  onGoalSave: (goalData: any) => void;
+  onGoalSave: (goalData: any) => Promise<void>;
   // Competency handlers
   onCompetencyCreate: () => void;
   onCompetencyView: (competencyId: string) => void;
   onCompetencyProgressUpdate: (competencyId: string) => void;
   onCompetencyProgressSave: (data: any) => void;
-  onCompetencyDelete: (competencyId: string) => void;
+  onCompetencyDelete: (competencyId: string) => Promise<void>;
   onCompetencySave: (data: any) => Promise<void>;
   // Activity handlers
   onActivityCreate: (type?: string) => void;

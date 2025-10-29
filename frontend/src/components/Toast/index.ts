@@ -1,7 +1,7 @@
 /**
  * Toast System - Barrel Export
  *
- * Sistema de notificações seguindo o Design System Forge
+ * Sistema de notificações seguindo o Design System Forji
  *
  * Uso:
  *

@@ -472,7 +472,7 @@ npm run dev
 ### 2. Login
 
 - Acessar http://localhost:5173
-- Login: `diego@forge.com`
+- Login: `diego@forji.com`
 - Senha: qualquer (mock aceita qualquer senha)
 
 ### 3. Navegação

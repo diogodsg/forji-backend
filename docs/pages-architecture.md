@@ -1,6 +1,6 @@
 # Pages Architecture Guide
 
-This document describes how route-level pages are organized and how they interact with feature modules in the Forge frontend.
+This document describes how route-level pages are organized and how they interact with feature modules in the Forji frontend.
 
 ## Goals
 
@@ -109,7 +109,7 @@ Current approach is static PT-BR. To migrate:
 - Headings (`h1`) present once per page.
 - Interactive elements: semantic `<button>`/`<a>` elements not divs.
 - Focus order: modals and drawers should trap focus (handled in feature components, not pages).
-- Provide descriptive alt text for brand imagery (e.g., logo alt="Forge").
+- Provide descriptive alt text for brand imagery (e.g., logo alt="Forji").
 
 ## Page Lifecycle Cheat Sheet
 

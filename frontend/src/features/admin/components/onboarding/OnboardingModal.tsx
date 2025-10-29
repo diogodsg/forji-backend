@@ -18,6 +18,7 @@ export function OnboardingModal({
   onClose,
   users,
   allUsers,
+  onUserCreated,
 }: OnboardingModalProps) {
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,6 +101,9 @@ export function OnboardingModal({
           teamId: assignment?.teamId || undefined,
         });
 
+        // Chamar callback para atualizar lista
+        onUserCreated?.();
+
         // Mostrar senha gerada se houver
         if (result.generatedPassword) {
           toast.success(
@@ -138,6 +142,7 @@ export function OnboardingModal({
     assignments,
     toast,
     onClose,
+    onUserCreated,
   ]);
 
   if (!isOpen) return null;

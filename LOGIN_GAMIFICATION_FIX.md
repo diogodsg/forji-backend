@@ -172,7 +172,7 @@ catch (err: any) {
 1. **Usuário preenche credenciais**
 
    ```
-   Email: diego@forge.com
+   Email: diego@forji.com
    Senha: senha123
    ```
 
@@ -267,7 +267,7 @@ catch (err: any) {
 
 ```bash
 1. Abrir http://localhost:5173/login
-2. Email: diego@forge.com
+2. Email: diego@forji.com
 3. Senha: senha123
 4. Clicar "Entrar"
 
@@ -295,7 +295,7 @@ Esperado:
 ### ✅ Teste 3: Navegação Após Login
 
 ```bash
-1. Fazer login com diego@forge.com
+1. Fazer login com diego@forji.com
 2. Verificar URL: /development
 3. Navegar para outras páginas
 4. Verificar console: sem erros críticos

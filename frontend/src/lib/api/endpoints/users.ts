@@ -21,7 +21,6 @@ export interface User {
   name: string;
   position?: string;
   bio?: string;
-  githubId?: string;
   avatarId?: string;
   createdAt: string;
   updatedAt: string;
@@ -78,12 +77,9 @@ export interface CreateUserOnboardingResponse {
 
 export interface UpdateUserDto {
   name?: string;
-  email?: string;
   position?: string;
   bio?: string;
   avatarId?: string;
-  isAdmin?: boolean;
-  isManager?: boolean;
 }
 
 export interface UpdatePasswordDto {

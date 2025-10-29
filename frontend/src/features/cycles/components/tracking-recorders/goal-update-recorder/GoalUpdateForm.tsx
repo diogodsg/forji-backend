@@ -5,7 +5,6 @@ import {
   ArrowDown,
   Percent,
   CheckCircle,
-  X,
   Check,
   Sparkles,
 } from "lucide-react";
@@ -22,12 +21,12 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
   const bonuses = calculateBonuses(data);
   const totalXP = bonuses.reduce((sum, b) => sum + b.value, 0);
 
-  const progressIncrease = data.newProgress - data.currentProgress;
+  const progressINCREASE = data.newProgress - data.currentProgress;
 
   // Personalização por tipo de meta
   const getGoalTypeConfig = () => {
     switch (data.goalType) {
-      case "increase":
+      case "INCREASE":
         return {
           icon: ArrowUp,
           color: "emerald",
@@ -37,7 +36,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
             : "Quanto mais próximo de 100%, mais você cresceu!",
           showAbsoluteValues: true,
         };
-      case "decrease":
+      case "DECREASE":
         return {
           icon: ArrowDown,
           color: "blue",
@@ -47,7 +46,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
             : "Quanto mais próximo de 100%, mais você reduziu!",
           showAbsoluteValues: true,
         };
-      case "percentage":
+      case "PERCENTAGE":
         return {
           icon: Percent,
           color: "purple",
@@ -55,7 +54,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
           hint: "Qual o percentual atual alcançado?",
           showAbsoluteValues: false,
         };
-      case "binary":
+      case "BINARY":
         return {
           icon: CheckCircle,
           color: "amber",
@@ -77,7 +76,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
   const typeConfig = getGoalTypeConfig();
   const TypeIcon = typeConfig.icon;
 
-  // Calcular valor absoluto baseado no progresso (para increase/decrease)
+  // Calcular valor absoluto baseado no progresso (para INCREASE/DECREASE)
   const calculateAbsoluteValue = (progress: number) => {
     if (!data.startValue || !data.targetValue) return null;
 
@@ -93,13 +92,13 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
   // Classes CSS completas para o Tailwind (não pode ser dinâmico)
   const getTypeBadgeClasses = () => {
     switch (data.goalType) {
-      case "increase":
+      case "INCREASE":
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "decrease":
+      case "DECREASE":
         return "bg-blue-50 text-blue-700 border-blue-200";
-      case "percentage":
+      case "PERCENTAGE":
         return "bg-purple-50 text-purple-700 border-purple-200";
-      case "binary":
+      case "BINARY":
         return "bg-amber-50 text-amber-700 border-amber-200";
       default:
         return "bg-brand-50 text-brand-700 border-brand-200";
@@ -117,13 +116,13 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
           {/* Goal Info */}
           <div
             className={`rounded-lg p-4 border-2 ${
-              data.goalType === "increase"
+              data.goalType === "INCREASE"
                 ? "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200"
-                : data.goalType === "decrease"
+                : data.goalType === "DECREASE"
                 ? "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
-                : data.goalType === "percentage"
+                : data.goalType === "PERCENTAGE"
                 ? "bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200"
-                : data.goalType === "binary"
+                : data.goalType === "BINARY"
                 ? "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200"
                 : "bg-gradient-to-br from-brand-50 to-indigo-50 border-brand-200"
             }`}
@@ -131,13 +130,13 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
             <div className="flex items-start gap-3">
               <div
                 className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  data.goalType === "increase"
+                  data.goalType === "INCREASE"
                     ? "bg-gradient-to-br from-emerald-500 to-emerald-600"
-                    : data.goalType === "decrease"
+                    : data.goalType === "DECREASE"
                     ? "bg-gradient-to-br from-blue-500 to-blue-600"
-                    : data.goalType === "percentage"
+                    : data.goalType === "PERCENTAGE"
                     ? "bg-gradient-to-br from-purple-500 to-purple-600"
-                    : data.goalType === "binary"
+                    : data.goalType === "BINARY"
                     ? "bg-gradient-to-br from-amber-500 to-amber-600"
                     : "bg-gradient-to-br from-brand-500 to-brand-600"
                 }`}
@@ -149,7 +148,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                   {data.goalTitle}
                 </h3>
                 <div className="flex items-center gap-3 flex-wrap">
-                  {/* Valores absolutos para increase/decrease */}
+                  {/* Valores absolutos para INCREASE/DECREASE */}
                   {typeConfig.showAbsoluteValues &&
                     currentAbsoluteValue !== null &&
                     data.targetValue &&
@@ -158,9 +157,9 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                         <span className="text-gray-600">Atual:</span>
                         <span
                           className={`font-bold ${
-                            data.goalType === "increase"
+                            data.goalType === "INCREASE"
                               ? "text-emerald-600"
-                              : data.goalType === "decrease"
+                              : data.goalType === "DECREASE"
                               ? "text-blue-600"
                               : "text-brand-600"
                           }`}
@@ -206,86 +205,64 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
             <div className="flex items-center gap-2 mb-3">
               <div
                 className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  data.goalType === "increase"
+                  data.goalType === "INCREASE"
                     ? "bg-emerald-100"
-                    : data.goalType === "decrease"
+                    : data.goalType === "DECREASE"
                     ? "bg-blue-100"
-                    : data.goalType === "percentage"
+                    : data.goalType === "PERCENTAGE"
                     ? "bg-purple-100"
-                    : data.goalType === "binary"
+                    : data.goalType === "BINARY"
                     ? "bg-amber-100"
                     : "bg-brand-100"
                 }`}
               >
                 <TypeIcon
                   className={`w-5 h-5 ${
-                    data.goalType === "increase"
+                    data.goalType === "INCREASE"
                       ? "text-emerald-600"
-                      : data.goalType === "decrease"
+                      : data.goalType === "DECREASE"
                       ? "text-blue-600"
-                      : data.goalType === "percentage"
+                      : data.goalType === "PERCENTAGE"
                       ? "text-purple-600"
-                      : data.goalType === "binary"
+                      : data.goalType === "BINARY"
                       ? "text-amber-600"
                       : "text-brand-600"
                   }`}
                 />
               </div>
               <label className="text-sm font-semibold text-gray-800">
-                {data.goalType === "binary"
+                {data.goalType === "BINARY"
                   ? "Meta Concluída?"
                   : "Novo Progresso"}{" "}
                 *
               </label>
             </div>
 
-            {data.goalType === "binary" ? (
-              /* Binary: Botões Sim/Não */
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => onChange("newProgress", 0)}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                      data.newProgress === 0
-                        ? "border-error-500 bg-error-50"
-                        : "border-surface-300 bg-white hover:border-error-300"
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-2">
-                        <X className="w-8 h-8 text-error-500" />
-                      </div>
-                      <div className="font-semibold text-sm">Não Concluída</div>
-                      <div className="text-xs text-gray-500">0%</div>
-                    </div>
-                  </button>
+            {data.goalType === "BINARY" ? (
+              /* BINARY: Apenas botão de concluir */
+              <div className="space-y-4">
+                <div className="text-center">
                   <button
                     type="button"
                     onClick={() => onChange("newProgress", 100)}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                      data.newProgress === 100
-                        ? "border-success-500 bg-success-50"
-                        : "border-surface-300 bg-white hover:border-success-300"
-                    }`}
+                    className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-semibold text-base h-12 px-6 rounded-xl transition-all duration-200 hover:from-brand-600 hover:to-brand-700 focus:ring-2 focus:ring-brand-400 focus:outline-none shadow-sm hover:shadow-md"
                   >
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-2">
-                        <Check className="w-8 h-8 text-success-500" />
-                      </div>
-                      <div className="font-semibold text-sm">Concluída!</div>
-                      <div className="text-xs text-gray-500">100%</div>
-                    </div>
+                    <Check className="w-5 h-5" />
+                    <span>Concluir Meta</span>
                   </button>
                 </div>
+
                 {data.newProgress === 100 && (
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                    <p className="text-sm text-amber-800 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" />
-                      <span className="font-medium">
-                        Parabéns! Você ganhará +50 XP bônus por concluir esta
-                        meta!
+                  <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Sparkles className="w-5 h-5 text-amber-600" />
+                      <span className="font-bold text-amber-800">
+                        Parabéns!
                       </span>
+                    </div>
+                    <p className="text-sm text-amber-700">
+                      Você ganhará <span className="font-semibold">+65 XP</span>{" "}
+                      por concluir esta meta!
                     </p>
                   </div>
                 )}
@@ -298,11 +275,11 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                   <div className="w-full bg-surface-200 rounded-full h-8 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-300 flex items-center justify-end pr-3 ${
-                        data.goalType === "increase"
+                        data.goalType === "INCREASE"
                           ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
-                          : data.goalType === "decrease"
+                          : data.goalType === "DECREASE"
                           ? "bg-gradient-to-r from-blue-500 to-blue-600"
-                          : data.goalType === "percentage"
+                          : data.goalType === "PERCENTAGE"
                           ? "bg-gradient-to-r from-purple-500 to-purple-600"
                           : "bg-gradient-to-r from-brand-500 to-brand-600"
                       }`}
@@ -352,12 +329,12 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                       ? `${currentAbsoluteValue} ${data.unit}`
                       : `${data.currentProgress}%`}
                   </span>
-                  {progressIncrease > 0 && (
+                  {progressINCREASE > 0 && (
                     <span
                       className={`font-medium flex items-center gap-1 ${
-                        data.goalType === "increase"
+                        data.goalType === "INCREASE"
                           ? "text-emerald-600"
-                          : data.goalType === "decrease"
+                          : data.goalType === "DECREASE"
                           ? "text-blue-600"
                           : "text-emerald-600"
                       }`}
@@ -370,7 +347,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                         ? `+${newAbsoluteValue - currentAbsoluteValue} ${
                             data.unit
                           }`
-                        : `+${progressIncrease}% de avanço`}
+                        : `+${progressINCREASE}% de avanço`}
                     </span>
                   )}
                   <span className="text-gray-500">

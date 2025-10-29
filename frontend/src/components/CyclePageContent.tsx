@@ -25,7 +25,7 @@ interface CyclePageContentProps {
   handleGoalDelete: (goalId: string) => void;
   handleViewCompetency: () => void;
   handleCompetenceUpdate: (competencyId: string) => void;
-  handleDeleteCompetency: (competencyId: string) => void;
+  handleDeleteCompetency: (competencyId: string) => Promise<void>;
   handleActivityDetails: (activityId: string) => void;
 
   // Loading states para seções específicas

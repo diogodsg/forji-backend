@@ -37,7 +37,6 @@ export function UserProfileEditor({
     name: user.name || "",
     position: user.position || "",
     bio: user.bio || "",
-    githubId: user.githubId || "",
   });
 
   const [isEditing, setIsEditing] = useState(isAdminMode); // Admin mode starts in editing mode
@@ -53,7 +52,6 @@ export function UserProfileEditor({
       name: user.name || "",
       position: user.position || "",
       bio: user.bio || "",
-      githubId: user.githubId || "",
     });
   }, [user]);
 
@@ -65,8 +63,6 @@ export function UserProfileEditor({
     if (formData.position !== user.position)
       updateData.position = formData.position;
     if (formData.bio !== user.bio) updateData.bio = formData.bio;
-    if (formData.githubId !== user.githubId)
-      updateData.githubId = formData.githubId;
 
     if (Object.keys(updateData).length === 0) {
       if (!isAdminMode) setIsEditing(false);
@@ -96,7 +92,6 @@ export function UserProfileEditor({
       name: user.name || "",
       position: user.position || "",
       bio: user.bio || "",
-      githubId: user.githubId || "",
     });
     if (!isAdminMode) {
       setIsEditing(false);
@@ -195,29 +190,6 @@ export function UserProfileEditor({
 
         <div>
           <label
-            htmlFor="githubId"
-            className="block text-sm font-medium text-gray-700"
-          >
-            GitHub Username
-          </label>
-          <input
-            type="text"
-            id="githubId"
-            value={formData.githubId}
-            onChange={(e) =>
-              setFormData({ ...formData, githubId: e.target.value })
-            }
-            disabled={!isEditing}
-            className="mt-1 block w-full rounded-md border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-            placeholder="Ex: johndoe"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            Usado para vincular automaticamente os PRs
-          </p>
-        </div>
-
-        <div>
-          <label
             htmlFor="bio"
             className="block text-sm font-medium text-gray-700"
           >
@@ -230,7 +202,7 @@ export function UserProfileEditor({
             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
             disabled={!isEditing}
             className="mt-1 block w-full rounded-md border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-            placeholder="Conte um pouco sobre esta pessoa..."
+            placeholder="Conte um pouco sobre você..."
           />
         </div>
 

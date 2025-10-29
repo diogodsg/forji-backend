@@ -1,6 +1,6 @@
-# 🔥 Forge Backend
+# 🔥 Forji Backend
 
-Backend do sistema Forge desenvolvido em **NestJS + Prisma + PostgreSQL** com sistema multi-workspace e hierarquia de gestão.
+Backend do sistema Forji desenvolvido em **NestJS + Prisma + PostgreSQL** com sistema multi-workspace e hierarquia de gestão.
 
 ## 📋 Stack Tecnológica
 
@@ -66,7 +66,7 @@ Crie um arquivo `.env` na raiz do projeto:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5433/forge?schema=public"
+DATABASE_URL="postgresql://user:password@localhost:5433/forji?schema=public"
 
 # JWT
 JWT_SECRET="your-super-secret-jwt-key-change-in-production"
@@ -965,7 +965,7 @@ sudo systemctl status postgresql
 sudo ss -tulpn | grep 5432
 
 # Testar conexão
-psql -h localhost -U user -d forge_db
+psql -h localhost -U user -d forji_db
 ```
 
 ### Prisma Client desatualizado
@@ -990,7 +990,7 @@ npm run prisma:migrate
 - [Plano de Implementação](./IMPLEMENTATION_PLAN.md) - Roadmap completo
 - [NestJS Docs](https://docs.nestjs.com/)
 - [Prisma Docs](https://www.prisma.io/docs)
-- [Forge Frontend](../frontend/README.md)
+- [Forji Frontend](../frontend/README.md)
 
 ## 🤝 Contribuindo
 

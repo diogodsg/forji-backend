@@ -251,7 +251,7 @@ VITE_ENABLE_MOCK_API=false
 **Arquivo:** `/frontend/.env.production`
 
 ```env
-VITE_API_BASE_URL=https://api.forge.com/api
+VITE_API_BASE_URL=https://api.forji.com/api
 VITE_ENABLE_MOCK_API=false
 ```
 
@@ -1196,7 +1196,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
 ```typescript
 app.enableCors({
-  origin: ["http://localhost:5173", "https://forge.com"],
+  origin: ["http://localhost:5173", "https://forji.com"],
   credentials: true,
 });
 ```

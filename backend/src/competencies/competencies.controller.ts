@@ -160,8 +160,11 @@ export class CompetenciesController {
   @ApiResponse({ status: 200, description: 'Competência deletada com sucesso' })
   @ApiResponse({ status: 404, description: 'Competência não encontrada' })
   @ApiResponse({ status: 403, description: 'Sem permissão para deletar esta competência' })
-  async remove(@Param('id') id: string, @CurrentUser() user: any): Promise<{ message: string }> {
-    await this.competenciesService.remove(id, user.userId, user.workspaceId);
-    return { message: 'Competência deletada com sucesso' };
+  async remove(@Param('id') id: string, @CurrentUser() user: any): Promise<any> {
+    const result = await this.competenciesService.remove(id, user.userId, user.workspaceId);
+    return {
+      message: 'Competência deletada com sucesso',
+      ...result, // Incluir perfil de gamificação atualizado
+    };
   }
 }

@@ -1,26 +1,19 @@
-import { AlertTriangle, X, Trash2, Zap } from "lucide-react";
+import { AlertTriangle, X, Trash2 } from "lucide-react";
 import { createPortal } from "react-dom";
 
 interface DeleteGoalModalProps {
   isOpen: boolean;
   goalTitle: string;
-  xpLoss: number; // XP que será perdido
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 /**
  * DeleteGoalModal - Modal de confirmação para excluir meta
- *
- * Avisa sobre:
- * - Perda irreversível da meta
- * - Perda de XP associado à meta
- * - Confirmação dupla para evitar exclusão acidental
  */
 export function DeleteGoalModal({
   isOpen,
   goalTitle,
-  xpLoss,
   onConfirm,
   onCancel,
 }: DeleteGoalModalProps) {
@@ -32,10 +25,10 @@ export function DeleteGoalModal({
       onClick={onCancel}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-[500px] overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header com Warning */}
+        {/* Header */}
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -58,65 +51,18 @@ export function DeleteGoalModal({
 
         {/* Conteúdo */}
         <div className="p-6">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Tem certeza que deseja excluir esta meta?
-            </h3>
+          <p className="text-gray-700 mb-4">
+            Tem certeza que deseja excluir a meta <strong>"{goalTitle}"</strong>
+            ?
+          </p>
 
-            <div className="bg-gray-50 rounded-xl p-4 mb-4">
-              <div className="flex items-center gap-2 text-gray-700">
-                <Trash2 className="w-4 h-4" />
-                <span className="font-medium">"{goalTitle}"</span>
-              </div>
-            </div>
-
-            <div className="space-y-3 text-sm text-gray-600">
-              <p className="flex items-start gap-2">
-                <span className="text-red-500 mt-0.5">⚠️</span>
-                <span>
-                  <strong>Esta ação é irreversível.</strong> A meta será
-                  permanentemente excluída do seu ciclo.
-                </span>
-              </p>
-
-              {xpLoss > 0 && (
-                <p className="flex items-start gap-2">
-                  <span className="text-amber-500 mt-0.5">💨</span>
-                  <span>
-                    <strong>Você perderá {xpLoss} XP</strong> obtido com esta
-                    meta (criação + atualizações de progresso).
-                  </span>
-                </p>
-              )}
-
-              <p className="flex items-start gap-2">
-                <span className="text-blue-500 mt-0.5">💡</span>
-                <span>
-                  Considere apenas <strong>pausar</strong> a meta em vez de
-                  excluí-la, para manter seu histórico de XP.
-                </span>
-              </p>
-            </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
+            <p className="text-sm text-amber-800">
+              <strong>
+                Todo o XP ganho com esta meta será perdido permanentemente.
+              </strong>
+            </p>
           </div>
-
-          {/* XP Loss Warning */}
-          {xpLoss > 0 && (
-            <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl p-4 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <div className="text-red-800 font-semibold">
-                    -{xpLoss} XP será removido
-                  </div>
-                  <div className="text-red-600 text-sm">
-                    Seu nível pode diminuir após a exclusão
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Actions */}
           <div className="flex gap-3">

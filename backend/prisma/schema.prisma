@@ -198,6 +198,10 @@ model ManagementRule {
   @@index([subordinateId])
   @@index([teamId])
   @@index([ruleType])
+  // 🚀 ÍNDICES COMPOSTOS OTIMIZADOS para consultas de hierarchy
+  @@index([workspaceId, managerId, deletedAt], name: "idx_workspace_manager_deleted")
+  @@index([workspaceId, subordinateId, deletedAt], name: "idx_workspace_subordinate_deleted")
+  @@index([workspaceId, deletedAt, ruleType], name: "idx_workspace_deleted_ruletype")
   @@map("management_rules")
 }
 

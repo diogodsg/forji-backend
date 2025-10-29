@@ -1,6 +1,6 @@
 import { useToast } from "../components/Toast";
 import { useActivityMutations } from "../features/cycles/hooks";
-import { useXpAnimations } from "../components/XpFloating";
+import { useGamificationContext } from "../features/gamification/context/GamificationContext";
 
 export function useActivityHandlers(
   cycle: any,
@@ -9,7 +9,7 @@ export function useActivityHandlers(
   handleClose: () => void
 ) {
   const toast = useToast();
-  const { triggerXpAnimation } = useXpAnimations();
+  const { processActivityResponse } = useGamificationContext();
   const { createOneOnOne, createMentoring, createCertification } =
     useActivityMutations();
 
@@ -28,40 +28,52 @@ export function useActivityHandlers(
     }
 
     try {
+      // 🚀 CORRIGIDO: Usar nova estrutura de dados do backend
       const activity = await createOneOnOne({
         cycleId: cycle.id,
-        participantId: user.id,
+        userId: user.id,
+        type: "ONE_ON_ONE",
         title: `1:1 com ${data.participant}`,
         description: `Reunião 1:1 em ${data.date}`,
-        meetingDate: data.date,
-        topics: data.workingOn || [],
-        actionItems: data.nextSteps || [],
+        oneOnOneData: {
+          participantName: data.participant,
+          workingOn: data.workingOn || [],
+          generalNotes: data.generalNotes || "",
+          positivePoints: data.positivePoints || [],
+          improvementPoints: data.improvementPoints || [],
+          nextSteps: data.nextSteps || [],
+        },
       });
 
       if (activity) {
         await refreshActivities();
 
+        // 🎯 Usar função centralizada para processar resposta da atividade
+        // Isso vai automaticamente decidir se triggera XP ou level-up
+        processActivityResponse(activity);
+
         // Debug: log da atividade retornada
         console.log("🎯 Activity created:", activity);
 
-        // Trigger XP animation (com confetti automático! 🎉)
-        if (activity.xpEarned && activity.xpEarned > 0) {
-          console.log("🎉 Triggering XP animation:", activity.xpEarned);
-          triggerXpAnimation(
-            activity.xpEarned,
-            window.innerWidth / 2,
-            window.innerHeight / 2
+        // Toast baseado no que aconteceu
+        if (activity.leveledUp) {
+          toast.success(
+            `Level Up! Você subiu para o nível ${activity.newLevel}! 🎉`,
+            "1:1 Criado + Level Up!",
+            4000
+          );
+        } else {
+          toast.success(
+            `+${activity.xpEarned || 0} XP ganho! Reunião 1:1 registrada 👥`,
+            "1:1 Criado",
+            3500
           );
         }
 
-        toast.success(
-          `+${activity.xpEarned || 0} XP ganho! Reunião 1:1 registrada 👥`,
-          "1:1 Criado",
-          3500
-        );
         handleClose();
       }
     } catch (err) {
+      console.error("Erro ao criar 1:1:", err);
       toast.error("Erro ao criar 1:1. Tente novamente.");
     }
   };
@@ -89,20 +101,24 @@ export function useActivityHandlers(
       if (activity) {
         await refreshActivities();
 
-        // Trigger XP animation
-        if (activity.xpEarned && activity.xpEarned > 0) {
-          triggerXpAnimation(
-            activity.xpEarned,
-            window.innerWidth / 2,
-            window.innerHeight / 2
+        // 🎯 Usar função centralizada para processar resposta da atividade
+        processActivityResponse(activity);
+
+        // Toast baseado no que aconteceu
+        if (activity.leveledUp) {
+          toast.success(
+            `Level Up! Você subiu para o nível ${activity.newLevel}! 🎉`,
+            "Mentoria Criada + Level Up!",
+            4000
+          );
+        } else {
+          toast.success(
+            `+${activity.xpEarned} XP ganho! Sessão de mentoria registrada 🎓`,
+            "Mentoria Criada",
+            3500
           );
         }
 
-        toast.success(
-          `+${activity.xpEarned} XP ganho! Sessão de mentoria registrada 🎓`,
-          "Mentoria Criada",
-          3500
-        );
         handleClose();
       }
     } catch (err) {
@@ -133,20 +149,24 @@ export function useActivityHandlers(
       if (activity) {
         await refreshActivities();
 
-        // Trigger XP animation
-        if (activity.xpEarned && activity.xpEarned > 0) {
-          triggerXpAnimation(
-            activity.xpEarned,
-            window.innerWidth / 2,
-            window.innerHeight / 2
+        // 🎯 Usar função centralizada para processar resposta da atividade
+        processActivityResponse(activity);
+
+        // Toast baseado no que aconteceu
+        if (activity.leveledUp) {
+          toast.success(
+            `Level Up! Você subiu para o nível ${activity.newLevel}! 🎉`,
+            "Certificação Criada + Level Up!",
+            4000
+          );
+        } else {
+          toast.success(
+            `+${activity.xpEarned} XP ganho! Certificação registrada 🏆`,
+            "Certificação Criada",
+            4000
           );
         }
 
-        toast.success(
-          `+${activity.xpEarned} XP ganho! Certificação registrada 🏆`,
-          "Certificação Criada",
-          4000
-        );
         handleClose();
       }
     } catch (err) {

@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # ================================
-# Script de Deploy do Forge Backend
+# Script de Deploy do Forji Backend
 # ================================
 
 set -e
 
-echo "🚀 Forge Backend - Script de Deploy"
+echo "🚀 Forji Backend - Script de Deploy"
 echo "=================================="
 
 # Cores para output

@@ -1016,7 +1016,7 @@ VITE_ENABLE_MANAGEMENT=true
 
 ```env
 # API Configuration
-VITE_API_BASE_URL=https://api.forge.com/api
+VITE_API_BASE_URL=https://api.forji.com/api
 
 # Mock API Fallback (desativado em produção)
 VITE_ENABLE_MOCK_API=false

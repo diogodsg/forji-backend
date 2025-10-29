@@ -23,7 +23,7 @@
 **1. Fazer Login com Usuário Admin:**
 
 ```
-Email: diego@forge.com
+Email: diego@forji.com
 Senha: senha123
 ```
 
@@ -109,7 +109,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ### 1. "Acesso Negado" na Página Admin
 
 **Causa:** Usuário não tem `isAdmin: true`
-**Solução:** Usar `diego@forge.com` (mock) ou criar admin no banco
+**Solução:** Usar `diego@forji.com` (mock) ou criar admin no banco
 
 ### 2. Erro 401 no Console
 

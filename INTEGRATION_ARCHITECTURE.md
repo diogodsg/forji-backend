@@ -24,7 +24,7 @@ Visualização da arquitetura de integração Backend-Frontend.
                                  │
 ┌─────────────────────────────────────────────────────────────────┐
 │                    DATABASE (PostgreSQL)                         │
-│                      localhost:5432/forge                        │
+│                      localhost:5432/forji                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -244,7 +244,7 @@ frontend/src/
 │                      JWT Token Created                           │
 │  {                                                               │
 │    sub: "user-uuid",                                             │
-│    email: "user@forge.com",                                      │
+│    email: "user@forji.com",                                      │
 │    workspaceId: "ws-uuid",                                       │
 │    workspaceRole: "ADMIN",                                       │
 │    iat: 1234567890,                                              │
@@ -420,7 +420,7 @@ Layer 4: Manual Testing
 ┌─────────────────┐         ┌─────────────────┐
 │     Vercel      │         │  Railway/Render │
 │   (Frontend)    │         │    (Backend)    │
-│  forge.app      │────────>│  api.forge.app  │
+│  forji.app      │────────>│  api.forji.app  │
 └─────────────────┘  HTTPS  └─────────────────┘
          │                           │
          │                           │ Prisma
@@ -439,13 +439,13 @@ Layer 4: Manual Testing
 Environment Variables:
 ─────────────────────
 Frontend (Vercel):
-  VITE_API_BASE_URL=https://api.forge.app
+  VITE_API_BASE_URL=https://api.forji.app
   VITE_ENABLE_MOCK_API=false
 
 Backend (Railway):
   DATABASE_URL=postgresql://...
   JWT_SECRET=...
-  FRONTEND_URL=https://forge.app
+  FRONTEND_URL=https://forji.app
 ```
 
 ---

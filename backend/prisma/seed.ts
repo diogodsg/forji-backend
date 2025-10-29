@@ -44,11 +44,11 @@ async function main() {
 
   console.log('\n🎉 Seed completed!');
   console.log('\n📧 Login credentials:');
-  console.log('   Email: diego@forge.com | Password: senha123 (Admin)');
-  console.log('   Email: ana@forge.com | Password: senha123');
-  console.log('   Email: carlos@forge.com | Password: senha123');
-  console.log('   Email: maria@forge.com | Password: senha123 (Manager)');
-  console.log('   Email: joao@forge.com | Password: senha123\n');
+  console.log('   Email: diego@forji.com | Password: senha123 (Admin)');
+  console.log('   Email: ana@forji.com | Password: senha123');
+  console.log('   Email: carlos@forji.com | Password: senha123');
+  console.log('   Email: maria@forji.com | Password: senha123 (Manager)');
+  console.log('   Email: joao@forji.com | Password: senha123\n');
   console.log('🎮 Gamification & PDI System:');
   console.log('   ✅ Gamification profiles created for all users');
   console.log('   ✅ Badges assigned');

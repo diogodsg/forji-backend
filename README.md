@@ -1,4 +1,4 @@
-# Forge - Plataforma Gamificada para Desenvolvimento de Times
+# Forji - Plataforma Gamificada para Desenvolvimento de Times
 
 **Stack:** NestJS + Prisma/PostgreSQL (backend) | React 19 + Vite + TailwindCSS (frontend)
 
@@ -29,8 +29,8 @@ cd backend && npm run start:dev
 cd frontend && npm run dev
 
 # Acesse http://localhost:5173
-# Login: diego@forge.com (admin + manager)
-# Login: maria@forge.com (manager)
+# Login: diego@forji.com (admin + manager)
+# Login: maria@forji.com (manager)
 ```
 
 ---
@@ -345,8 +345,8 @@ src/features/
 
 ```bash
 # Clone
-git clone https://github.com/Forji-tecnologia/forge.git
-cd forge
+git clone https://github.com/Forji-tecnologia/forji.git
+cd forji
 
 # Backend
 cd backend
@@ -374,7 +374,7 @@ cd frontend && npm run dev
 **Backend (.env):**
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/forge"
+DATABASE_URL="postgresql://user:password@localhost:5432/forji"
 JWT_SECRET="your-jwt-secret"
 FRONTEND_URL="http://localhost:5173"
 ```
@@ -579,15 +579,15 @@ Todas as features seguem desenvolvimento independente:
 
 ```typescript
 // Admin + Manager
-Email: diego@forge.com
+Email: diego@forji.com
 Senha: qualquer coisa
 
 // Manager
-Email: maria@forge.com
+Email: maria@forji.com
 Senha: qualquer coisa
 
 // Usuário
-Email: ana@forge.com
+Email: ana@forji.com
 Senha: qualquer coisa
 ```
 
@@ -672,7 +672,7 @@ npm run test:cov  # Cobertura
 
 **MVP evoluído para Team-First Platform com Gamificação e Gestão Gerencial Completa.**
 
-O Forge revolucionou a gestão de times ao combinar gamificação inteligente (+25 a +100 XP por ação) com filosofia team-first (rankings colaborativos), design system violet profissional, sistema completo de goals com XP tracking em tempo real, e **novo sistema de gestão gerencial** que permite aos managers editarem completamente o PDI de seus subordinados - incluindo metas, competências e atividades - tudo em uma interface unificada e intuitiva. Uma plataforma que promove colaboração sobre competição individual em um ambiente moderno, engajante e altamente interativo, com ferramentas poderosas para gestores.
+O Forji revolucionou a gestão de times ao combinar gamificação inteligente (+25 a +100 XP por ação) com filosofia team-first (rankings colaborativos), design system violet profissional, sistema completo de goals com XP tracking em tempo real, e **novo sistema de gestão gerencial** que permite aos managers editarem completamente o PDI de seus subordinados - incluindo metas, competências e atividades - tudo em uma interface unificada e intuitiva. Uma plataforma que promove colaboração sobre competição individual em um ambiente moderno, engajante e altamente interativo, com ferramentas poderosas para gestores.
 
 ```
 

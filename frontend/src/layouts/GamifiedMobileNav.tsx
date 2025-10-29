@@ -93,12 +93,12 @@ export function GamifiedMobileNav({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img
-              src="/logo-forge.webp"
-              alt="Forge"
+              src="/logo-forji.webp"
+              alt="Forji"
               className="h-8 w-8 rounded-lg"
             />
             <div>
-              <h1 className="font-bold text-gray-900">Forge</h1>
+              <h1 className="font-bold text-gray-900">Forji</h1>
               <p className="text-xs text-gray-500">Level {playerData.level}</p>
             </div>
           </div>

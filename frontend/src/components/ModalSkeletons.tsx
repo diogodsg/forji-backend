@@ -2,7 +2,7 @@
  * Modal Skeleton Components
  *
  * Skeleton components específicos para uso dentro de modais
- * Seguindo o design system da Forge
+ * Seguindo o design system da Forji
  */
 
 import { Skeleton, SkeletonText, SkeletonAvatar } from "./Skeleton";

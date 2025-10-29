@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   FiUser,
   FiMail,
-  FiGithub,
   FiArrowLeft,
   FiMessageCircle,
   FiCalendar,
@@ -18,7 +17,7 @@ interface UserProfile {
   email: string;
   position?: string;
   bio?: string;
-  githubId?: string;
+  avatarId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,7 +67,7 @@ export function UserProfilePage() {
     try {
       setLoading(true);
       // Buscar perfil básico do usuário
-      const userProfile = await api<UserProfile>(`/auth/users/${userId}`, {
+      const userProfile = await api<UserProfile>(`/users/${userId}`, {
         auth: true,
       });
       setUser(userProfile);
@@ -206,12 +205,6 @@ export function UserProfilePage() {
                       <FiMail className="w-4 h-4 mr-2" />
                       {user.email}
                     </div>
-                    {user.githubId && (
-                      <div className="flex items-center">
-                        <FiGithub className="w-4 h-4 mr-2" />
-                        {user.githubId}
-                      </div>
-                    )}
                     <div className="flex items-center">
                       <FiCalendar className="w-4 h-4 mr-2" />
                       Membro desde {formatDate(user.createdAt)}
