@@ -1,10 +1,13 @@
-import { X, MessageSquare } from "lucide-react";
+import { X, MessageSquare, Calendar, Clock } from "lucide-react";
 
 interface WizardHeaderProps {
   currentStep: number;
   totalXP: number;
   onClose: () => void;
   isEditMode?: boolean;
+  hasRecentOneOnOne?: boolean;
+  nextEligibleDate?: Date | null;
+  daysUntilEligible?: number;
 }
 
 export default function WizardHeader({
@@ -12,8 +15,20 @@ export default function WizardHeader({
   totalXP,
   onClose,
   isEditMode = false,
+  hasRecentOneOnOne = false,
+  nextEligibleDate = null,
+  daysUntilEligible = 0,
 }: WizardHeaderProps) {
   const stepLabels = ["Informações Básicas", "Resultados & Próximos Passos"];
+
+  // Format next eligible date
+  const formatDate = (date: Date | null) => {
+    if (!date) return "";
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "short",
+    }).format(date);
+  };
 
   return (
     <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4">
@@ -33,10 +48,32 @@ export default function WizardHeader({
         </div>
         <div className="flex items-center gap-4">
           {!isEditMode && (
-            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/30">
-              <div className="text-xs text-blue-100 mb-1">XP a ganhar</div>
-              <div className="text-2xl font-bold text-white">+{totalXP} XP</div>
-            </div>
+            <>
+              {hasRecentOneOnOne ? (
+                <div className="bg-amber-500/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-amber-300/30">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="w-3.5 h-3.5 text-amber-200" />
+                    <div className="text-xs text-amber-100">Próximo XP em</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-white" />
+                    <div className="text-lg font-bold text-white">
+                      {formatDate(nextEligibleDate)}
+                    </div>
+                    <div className="text-xs text-amber-100">
+                      ({daysUntilEligible}d)
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/30">
+                  <div className="text-xs text-blue-100 mb-1">XP a ganhar</div>
+                  <div className="text-2xl font-bold text-white">
+                    +{totalXP} XP
+                  </div>
+                </div>
+              )}
+            </>
           )}
           <button
             onClick={onClose}

@@ -305,10 +305,12 @@ function GoalCard({
                   Atualizado há {daysSinceUpdate} dias
                 </span>
               ) : (
-                <span className="text-amber-600 font-medium flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" />
-                  Update há {daysSinceUpdate} dias
-                </span>
+                daysSinceUpdate < 90 && (
+                  <span className="text-amber-600 font-medium flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    Update há {daysSinceUpdate} dias
+                  </span>
+                )
               )}
             </>
           )}

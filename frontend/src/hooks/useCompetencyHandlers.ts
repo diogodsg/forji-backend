@@ -3,8 +3,20 @@ import { useCompetencyMutations } from "../features/cycles/hooks";
 import { useGamificationContext } from "../features/gamification/context/GamificationContext";
 import { deleteCompetency } from "../lib/api/endpoints/cycles";
 
+// Limite de competências por ciclo
+const MAX_COMPETENCIES_PER_CYCLE = 5;
+
+interface Competency {
+  id: string;
+  name: string;
+  category: string;
+  currentLevel: number;
+  targetLevel: number;
+}
+
 export function useCompetencyHandlers(
   cycle: any,
+  competencies: Competency[],
   refreshCompetencies: () => Promise<void>,
   handleClose: () => void
 ) {
@@ -19,6 +31,15 @@ export function useCompetencyHandlers(
   const handleCompetencyCreate = async (data: any) => {
     if (!cycle) {
       toast.error("Nenhum ciclo ativo encontrado");
+      return;
+    }
+
+    // Validar limite de competências
+    if (competencies.length >= MAX_COMPETENCIES_PER_CYCLE) {
+      toast.warning(
+        `O ciclo já possui o máximo de ${MAX_COMPETENCIES_PER_CYCLE} competências permitidas.`,
+        "Limite Atingido"
+      );
       return;
     }
 
@@ -48,10 +69,11 @@ export function useCompetencyHandlers(
       const competency = await createCompetency(payload);
 
       if (competency) {
-        await refreshCompetencies();
-
         // 🎯 Usar função centralizada para processar resposta (XP e level-up)
         processActivityResponse(competency);
+
+        // Refresh competencies ANTES de fechar modal
+        await refreshCompetencies();
 
         // Toast baseado no que aconteceu
         if (competency.leveledUp) {
@@ -69,7 +91,7 @@ export function useCompetencyHandlers(
             4000
           );
         }
-        handleClose();
+        // Não chamar handleClose aqui - deixar o modal fazer isso após onSave
       }
     } catch (err: any) {
       console.error("Erro ao criar competência:", err);

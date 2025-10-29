@@ -148,52 +148,89 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                   {data.goalTitle}
                 </h3>
                 <div className="flex items-center gap-3 flex-wrap">
-                  {/* Valores absolutos para INCREASE/DECREASE */}
-                  {typeConfig.showAbsoluteValues &&
-                    currentAbsoluteValue !== null &&
-                    data.targetValue &&
-                    data.unit && (
+                  {/* BINARY: Mostrar status de conclusão */}
+                  {data.goalType === "BINARY" ? (
+                    <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-gray-600">Atual:</span>
+                        <span className="text-gray-600">Status:</span>
                         <span
-                          className={`font-bold ${
-                            data.goalType === "INCREASE"
-                              ? "text-emerald-600"
-                              : data.goalType === "DECREASE"
-                              ? "text-blue-600"
-                              : "text-brand-600"
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            data.currentProgress === 100
+                              ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
+                              : "bg-gray-100 text-gray-600 border border-gray-300"
                           }`}
                         >
-                          {currentAbsoluteValue} {data.unit}
-                        </span>
-                        <span className="text-gray-400">→</span>
-                        <span className="text-gray-600">Meta:</span>
-                        <span className="font-bold text-gray-800">
-                          {data.targetValue} {data.unit}
+                          {data.currentProgress === 100 ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              Concluída
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                              Pendente
+                            </>
+                          )}
                         </span>
                       </div>
-                    )}
-
-                  {/* Progresso em % */}
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-gray-600">
-                      {typeConfig.showAbsoluteValues
-                        ? "Progresso:"
-                        : "Progresso atual:"}
-                    </span>
-                    <span className="font-bold text-brand-600">
-                      {data.currentProgress}%
-                    </span>
-                  </div>
-
-                  {/* Badge do tipo */}
-                  {data.goalType && (
-                    <div
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium border ${getTypeBadgeClasses()}`}
-                    >
-                      <TypeIcon className="w-3 h-3" />
-                      {typeConfig.label}
+                      {/* Badge do tipo */}
+                      <div
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium border ${getTypeBadgeClasses()}`}
+                      >
+                        <TypeIcon className="w-3 h-3" />
+                        {typeConfig.label}
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      {/* Valores absolutos para INCREASE/DECREASE */}
+                      {typeConfig.showAbsoluteValues &&
+                        currentAbsoluteValue !== null &&
+                        data.targetValue &&
+                        data.unit && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-gray-600">Atual:</span>
+                            <span
+                              className={`font-bold ${
+                                data.goalType === "INCREASE"
+                                  ? "text-emerald-600"
+                                  : data.goalType === "DECREASE"
+                                  ? "text-blue-600"
+                                  : "text-brand-600"
+                              }`}
+                            >
+                              {currentAbsoluteValue} {data.unit}
+                            </span>
+                            <span className="text-gray-400">→</span>
+                            <span className="text-gray-600">Meta:</span>
+                            <span className="font-bold text-gray-800">
+                              {data.targetValue} {data.unit}
+                            </span>
+                          </div>
+                        )}
+
+                      {/* Progresso em % */}
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-600">
+                          {typeConfig.showAbsoluteValues
+                            ? "Progresso:"
+                            : "Progresso atual:"}
+                        </span>
+                        <span className="font-bold text-brand-600">
+                          {data.currentProgress}%
+                        </span>
+                      </div>
+
+                      {/* Badge do tipo */}
+                      {data.goalType && (
+                        <div
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium border ${getTypeBadgeClasses()}`}
+                        >
+                          <TypeIcon className="w-3 h-3" />
+                          {typeConfig.label}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -239,31 +276,60 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
             </div>
 
             {data.goalType === "BINARY" ? (
-              /* BINARY: Apenas botão de concluir */
+              /* BINARY: Switch para marcar como concluída */
               <div className="space-y-4">
-                <div className="text-center">
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl border-2 border-surface-300 hover:border-brand-400 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="goal-complete-switch"
+                        className="text-base font-semibold text-gray-800 cursor-pointer"
+                      >
+                        Marcar como concluída
+                      </label>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Ative quando finalizar esta meta
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Switch Toggle */}
                   <button
+                    id="goal-complete-switch"
                     type="button"
-                    onClick={() => onChange("newProgress", 100)}
-                    className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-semibold text-base h-12 px-6 rounded-xl transition-all duration-200 hover:from-brand-600 hover:to-brand-700 focus:ring-2 focus:ring-brand-400 focus:outline-none shadow-sm hover:shadow-md"
+                    role="switch"
+                    aria-checked={data.newProgress === 100}
+                    onClick={() =>
+                      onChange(
+                        "newProgress",
+                        data.newProgress === 100 ? 0 : 100
+                      )
+                    }
+                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
+                      data.newProgress === 100
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
+                        : "bg-gray-300"
+                    }`}
                   >
-                    <Check className="w-5 h-5" />
-                    <span>Concluir Meta</span>
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${
+                        data.newProgress === 100
+                          ? "translate-x-8"
+                          : "translate-x-1"
+                      }`}
+                    />
                   </button>
                 </div>
 
                 {data.newProgress === 100 && (
-                  <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Sparkles className="w-5 h-5 text-amber-600" />
-                      <span className="font-bold text-amber-800">
-                        Parabéns!
-                      </span>
-                    </div>
-                    <p className="text-sm text-amber-700">
-                      Você ganhará <span className="font-semibold">+65 XP</span>{" "}
-                      por concluir esta meta!
-                    </p>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span className="text-sm font-medium text-emerald-700">
+                      Meta marcada como concluída!
+                    </span>
                   </div>
                 )}
               </div>
@@ -310,7 +376,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                 {/* Slider Input */}
                 <input
                   type="range"
-                  min={data.currentProgress}
+                  min="0"
                   max="100"
                   value={data.newProgress}
                   onChange={(e) =>
@@ -321,33 +387,36 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
 
                 {/* Progress Info */}
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">
-                    Mínimo:{" "}
-                    {typeConfig.showAbsoluteValues &&
-                    currentAbsoluteValue !== null &&
-                    data.unit
-                      ? `${currentAbsoluteValue} ${data.unit}`
-                      : `${data.currentProgress}%`}
-                  </span>
-                  {progressINCREASE > 0 && (
+                  <span className="text-gray-500">Mínimo: 0%</span>
+                  {progressINCREASE !== 0 && (
                     <span
                       className={`font-medium flex items-center gap-1 ${
-                        data.goalType === "INCREASE"
-                          ? "text-emerald-600"
-                          : data.goalType === "DECREASE"
-                          ? "text-blue-600"
-                          : "text-emerald-600"
+                        progressINCREASE > 0
+                          ? data.goalType === "INCREASE"
+                            ? "text-emerald-600"
+                            : data.goalType === "DECREASE"
+                            ? "text-blue-600"
+                            : "text-emerald-600"
+                          : "text-red-600"
                       }`}
                     >
-                      <TrendingUp className="w-3 h-3" />
+                      {progressINCREASE > 0 ? (
+                        <TrendingUp className="w-3 h-3" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3" />
+                      )}
                       {typeConfig.showAbsoluteValues &&
                       newAbsoluteValue !== null &&
                       currentAbsoluteValue !== null &&
                       data.unit
-                        ? `+${newAbsoluteValue - currentAbsoluteValue} ${
-                            data.unit
-                          }`
-                        : `+${progressINCREASE}% de avanço`}
+                        ? `${progressINCREASE > 0 ? "+" : ""}${
+                            newAbsoluteValue - currentAbsoluteValue
+                          } ${data.unit}`
+                        : `${
+                            progressINCREASE > 0 ? "+" : ""
+                          }${progressINCREASE}% de ${
+                            progressINCREASE > 0 ? "avanço" : "retrocesso"
+                          }`}
                     </span>
                   )}
                   <span className="text-gray-500">

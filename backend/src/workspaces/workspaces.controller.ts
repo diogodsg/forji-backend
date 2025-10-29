@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -430,6 +430,77 @@ export class WorkspacesController {
     @Body() inviteDto: InviteToWorkspaceDto,
   ) {
     return this.workspacesService.inviteToWorkspace(workspaceId, user.id, inviteDto);
+  }
+
+  /**
+   * Atualizar role de membro do workspace
+   *
+   * Atualiza a role de um membro do workspace (OWNER, ADMIN, MEMBER).
+   * Apenas usuários com role OWNER ou ADMIN podem executar esta operação.
+   */
+  @Patch(':id/members/:userId/role')
+  @ApiOperation({
+    summary: 'Atualizar role de membro',
+    description:
+      'Atualiza a role (permissão) de um membro do workspace. Apenas OWNER e ADMIN podem executar.',
+    operationId: 'updateMemberRole',
+  })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    format: 'uuid',
+    description: 'ID único do workspace',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @ApiParam({
+    name: 'userId',
+    type: 'string',
+    format: 'uuid',
+    description: 'ID único do usuário',
+    example: '456e7890-e89b-12d3-a456-426614174001',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['role'],
+      properties: {
+        role: {
+          type: 'string',
+          enum: ['OWNER', 'ADMIN', 'MEMBER'],
+          description: 'Nova role do membro',
+          example: 'ADMIN',
+        },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: 'Role atualizada com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Role atualizada com sucesso' },
+        member: {
+          type: 'object',
+          properties: {
+            userId: { type: 'string', format: 'uuid' },
+            workspaceId: { type: 'string', format: 'uuid' },
+            role: { type: 'string', enum: ['OWNER', 'ADMIN', 'MEMBER'] },
+          },
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({ description: 'Role inválida fornecida' })
+  @ApiUnauthorizedResponse({ description: 'Token de autenticação inválido ou ausente' })
+  @ApiForbiddenResponse({ description: 'Usuário não tem permissões para alterar roles' })
+  @ApiNotFoundResponse({ description: 'Workspace ou membro não encontrado' })
+  updateMemberRole(
+    @Param('id') workspaceId: string,
+    @Param('userId') memberUserId: string,
+    @Body() body: { role: 'OWNER' | 'ADMIN' | 'MEMBER' },
+    @CurrentUser() user: any,
+  ) {
+    return this.workspacesService.updateMemberRole(workspaceId, memberUserId, body.role);
   }
 
   /**

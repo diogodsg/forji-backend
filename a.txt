@@ -1,0 +1,15 @@
+curl --request POST \
+--url https://test.services.driva.io/engagement/v1/workflow/trigger-webhook/88b5fb84-093a-4199-8811-c3d4fca6fde5 \
+--header 'Content-Type: application/json' \
+--header 'x-api-key: aa1f24f7-3a0b-4d07-87d2-70a31547b892' \
+--data '{
+  "lead": {
+    "name": "Name",
+    "phone": "5541999999999",
+    "email": "example@email.com",
+    "linkedin": "www.linkedin.com/in/example/",
+    "role": "",
+    "company": "",
+    "cnpj": ""
+  }
+}'

@@ -62,12 +62,16 @@ export const adminApi = {
   },
 
   /**
-   * Toggle admin status (usa nova API /users/:id)
+   * Toggle admin status (usa nova API /workspaces/:id/members/:userId/role)
    */
-  // async toggleAdmin(userId: string, isAdmin: boolean): Promise<void> {
-  //   // UUID
-  //   // await usersApi.update(userId, {  });
-  // },
+  async toggleAdmin(
+    workspaceId: string,
+    userId: string,
+    isAdmin: boolean
+  ): Promise<void> {
+    const role = isAdmin ? "ADMIN" : "MEMBER";
+    await workspacesApi.updateMemberRole(workspaceId, userId, role);
+  },
 
   /**
    * Remove usuário do workspace atual (usa nova API /workspaces/:id/members/:userId)

@@ -4,29 +4,36 @@ import type { OneOnOneData } from "./types";
 import TagInput from "./TagInput";
 import XPBreakdown from "../shared/XPBreakdown";
 import { calculateBonuses } from "./utils";
-import { useMyReports } from "@/features/admin";
+import { useWorkspaceUsers } from "@/features/admin/hooks/useWorkspaceUsers";
+import SearchableUserSelect from "./SearchableUserSelect";
 
 interface Step1BasicInfoProps {
   data: OneOnOneData;
   onChange: (updates: Partial<OneOnOneData>) => void;
+  hasRecentOneOnOne?: boolean;
+  nextEligibleDate?: Date | null;
+  daysUntilEligible?: number;
 }
 
 export default function Step1BasicInfo({
   data,
   onChange,
+  hasRecentOneOnOne = false,
+  nextEligibleDate = null,
+  daysUntilEligible = 0,
 }: Step1BasicInfoProps) {
-  const { reports = [], loading: loadingReports } = useMyReports();
+  const { users = [], loading: loadingUsers } = useWorkspaceUsers();
 
   const bonuses = calculateBonuses(data);
   const totalXP = bonuses.reduce((sum, b) => sum + b.value, 0);
 
-  // Pre-select first participant automatically when reports are loaded
+  // Pre-select first user automatically when users are loaded
   useEffect(() => {
-    if (!loadingReports && reports.length > 0 && !data.participant) {
-      onChange({ participant: reports[0].name });
+    if (!loadingUsers && users.length > 0 && !data.participant) {
+      onChange({ participant: users[0].name });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingReports, reports.length]);
+  }, [loadingUsers, users.length]);
 
   const handleWorkingOnAdd = (item: string) => {
     onChange({
@@ -55,27 +62,19 @@ export default function Step1BasicInfo({
               <User className="w-3.5 h-3.5 text-blue-500" />
               Participante
             </label>
-            <select
+            <SearchableUserSelect
+              users={users}
               value={data.participant}
-              onChange={(e) => onChange({ participant: e.target.value })}
-              disabled={loadingReports || reports.length === 0}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              {loadingReports ? (
-                <option value="">Carregando reportados...</option>
-              ) : reports.length === 0 ? (
-                <option value="">Nenhum reportado encontrado</option>
-              ) : (
-                <>
-                  <option value="">Selecione o participante</option>
-                  {reports.map((user) => (
-                    <option key={user.id} value={user.name}>
-                      {user.name}
-                    </option>
-                  ))}
-                </>
-              )}
-            </select>
+              onChange={(value) => onChange({ participant: value })}
+              disabled={loadingUsers || users.length === 0}
+              placeholder={
+                loadingUsers
+                  ? "Carregando usuários..."
+                  : users.length === 0
+                  ? "Nenhum usuário encontrado"
+                  : "Selecione o participante"
+              }
+            />
           </div>
 
           {/* Date */}
@@ -128,7 +127,13 @@ export default function Step1BasicInfo({
       {/* Right Column - XP Breakdown (Sticky) */}
       <div className="lg:col-span-1">
         <div className="lg:sticky lg:top-0">
-          <XPBreakdown bonuses={bonuses} total={totalXP} />
+          <XPBreakdown
+            bonuses={bonuses}
+            total={totalXP}
+            hasRecentOneOnOne={hasRecentOneOnOne}
+            nextEligibleDate={nextEligibleDate}
+            daysUntilEligible={daysUntilEligible}
+          />
         </div>
       </div>
     </div>

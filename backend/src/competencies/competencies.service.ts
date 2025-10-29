@@ -314,6 +314,18 @@ export class CompetenciesService {
     // Verifica permissão (agora que temos o workspaceId do ciclo)
     await this.checkPermission(currentUserId, userId, cycle.workspaceId);
 
+    // Valida limite de competências por ciclo (máximo 5)
+    const competenciesCount = await this.prisma.competency.count({
+      where: {
+        cycleId,
+        deletedAt: null,
+      },
+    });
+
+    if (competenciesCount >= 5) {
+      throw new BadRequestException('O ciclo já atingiu o limite máximo de 5 competências');
+    }
+
     // Calcula XP a ser dado pela criação
     const xpReward = this.calculateCompetencyCreationXP(currentLevel, targetLevel);
 

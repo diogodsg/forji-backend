@@ -7,6 +7,10 @@ import { useGoalMutations } from "@/features/cycles";
 import { deleteCompetency } from "@/lib/api/endpoints/cycles";
 import type { UsePDIEditDataReturn } from "./usePDIEditData";
 
+// Limites por ciclo
+const MAX_GOALS_PER_CYCLE = 5;
+const MAX_COMPETENCIES_PER_CYCLE = 5;
+
 export interface UsePDIEditActionsReturn {
   // Goal handlers
   handleGoalCreate: () => void;
@@ -66,9 +70,17 @@ export function usePDIEditActions(
 
   // Goal handlers
   const handleGoalCreate = useCallback(() => {
+    if (goals.length >= MAX_GOALS_PER_CYCLE) {
+      toast({
+        type: "warning",
+        title: "Limite Atingido",
+        message: `O ciclo já possui o máximo de ${MAX_GOALS_PER_CYCLE} metas permitidas.`,
+      });
+      return;
+    }
     console.log("➕ Gestor criando nova meta para subordinado");
     openModal("goalCreator");
-  }, [openModal]);
+  }, [goals.length, openModal, toast]);
 
   const handleGoalEdit = useCallback(
     (goalId: string) => {
@@ -386,9 +398,17 @@ export function usePDIEditActions(
 
   // Competency handlers
   const handleCompetencyCreate = useCallback(() => {
+    if (competencies.length >= MAX_COMPETENCIES_PER_CYCLE) {
+      toast({
+        type: "warning",
+        title: "Limite Atingido",
+        message: `O ciclo já possui o máximo de ${MAX_COMPETENCIES_PER_CYCLE} competências permitidas.`,
+      });
+      return;
+    }
     console.log("➕ Gestor criando nova competência para subordinado");
     openModal("competence");
-  }, [openModal]);
+  }, [competencies.length, openModal, toast]);
 
   const handleCompetencyView = useCallback(
     (competencyId: string) => {

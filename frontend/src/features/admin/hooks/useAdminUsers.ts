@@ -24,6 +24,7 @@ interface UseAdminUsersResult {
     userId: string, // UUID
     newPassword?: string
   ) => Promise<{ success: boolean; generatedPassword?: string }>;
+  toggleAdmin: (userId: string, isAdmin: boolean) => Promise<void>;
   busy: {
     creating: boolean;
     deleting: Set<string>; // UUID
@@ -199,6 +200,33 @@ export function useAdminUsers(): UseAdminUsersResult {
     [refresh, toast]
   );
 
+  const toggleAdmin = useCallback(
+    async (userId: string, isAdmin: boolean) => {
+      if (!currentUser?.workspaceId) {
+        toast.error("Workspace não identificado");
+        return;
+      }
+
+      mark(togglingAdmin, userId, true);
+      try {
+        await adminApi.toggleAdmin(currentUser.workspaceId, userId, isAdmin);
+        await refresh();
+        toast.success(
+          isAdmin
+            ? "Usuário promovido a administrador"
+            : "Permissões de admin removidas"
+        );
+      } catch (e) {
+        const message = extractErrorMessage(e);
+        toast.error(message);
+        throw e;
+      } finally {
+        mark(togglingAdmin, userId, false);
+      }
+    },
+    [currentUser, refresh, toast]
+  );
+
   const busy = useMemo(
     () => ({
       creating,
@@ -222,6 +250,7 @@ export function useAdminUsers(): UseAdminUsersResult {
     addManager,
     removeManager,
     changePassword,
+    toggleAdmin,
     busy,
   };
 }

@@ -9,6 +9,7 @@ interface ModernPersonCardProps {
   onHierarchy: () => void;
   onChangePassword: () => void;
   onRemove: () => void;
+  onToggleAdmin?: (isAdmin: boolean) => void;
 }
 
 export function ModernPersonCard({
@@ -18,6 +19,7 @@ export function ModernPersonCard({
   onHierarchy,
   onChangePassword,
   onRemove,
+  onToggleAdmin,
 }: ModernPersonCardProps) {
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -97,7 +99,7 @@ export function ModernPersonCard({
           </button>
 
           {showDropdown && (
-            <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
+            <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
               <button
                 onClick={() => {
                   onEdit();
@@ -146,6 +148,59 @@ export function ModernPersonCard({
                   Alterar Senha
                 </div>
               </button>
+
+              {/* Separator */}
+              <div className="border-t border-gray-200 my-1"></div>
+
+              {/* Toggle Admin */}
+              {onToggleAdmin && (
+                <button
+                  onClick={() => {
+                    onToggleAdmin(!user.isAdmin);
+                    setShowDropdown(false);
+                  }}
+                  className={`w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors ${
+                    user.isAdmin ? "text-amber-600" : "text-violet-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {user.isAdmin ? (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6z"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                        />
+                      </svg>
+                    )}
+                    {user.isAdmin ? "Remover Admin" : "Tornar Admin"}
+                  </div>
+                </button>
+              )}
+
+              {/* Separator */}
+              <div className="border-t border-gray-200 my-1"></div>
+
               <button
                 onClick={() => {
                   onRemove();

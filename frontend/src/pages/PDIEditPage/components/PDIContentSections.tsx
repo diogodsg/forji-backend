@@ -1,4 +1,4 @@
-import { Plus, Edit3, Activity } from "lucide-react";
+import { Plus, Edit3, Activity, AlertCircle } from "lucide-react";
 import {
   GoalsDashboard,
   CompetenciesSection,
@@ -13,6 +13,10 @@ import {
   DeleteActivityModal,
 } from "@/features/cycles";
 import { PDIHeroSection } from "./PDIHeroSection";
+
+// Limites por ciclo
+const MAX_GOALS_PER_CYCLE = 5;
+const MAX_COMPETENCIES_PER_CYCLE = 5;
 
 interface PDIContentSectionsProps {
   subordinate: any;
@@ -93,7 +97,7 @@ export function PDIContentSections({
       {/* Hero Section */}
       <PDIHeroSection subordinate={subordinate} cycle={cycle} goals={goals} />
 
-      {/* Goals Dashboard */}
+      {/* Goals Section */}
       <section>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-3">
@@ -102,13 +106,26 @@ export function PDIContentSections({
             </div>
             Objetivos de Desenvolvimento
           </h3>
-          <button
-            onClick={onGoalCreate}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all shadow-sm font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Nova Meta
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            <button
+              onClick={onGoalCreate}
+              disabled={goals.length >= MAX_GOALS_PER_CYCLE}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm font-medium ${
+                goals.length >= MAX_GOALS_PER_CYCLE
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:opacity-90"
+              }`}
+            >
+              <Plus className="w-4 h-4" />
+              Nova Meta
+            </button>
+            {goals.length >= MAX_GOALS_PER_CYCLE && (
+              <span className="text-xs text-amber-600 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Limite de {MAX_GOALS_PER_CYCLE} metas atingido
+              </span>
+            )}
+          </div>
         </div>
         <GoalsDashboard
           goals={goals}
@@ -128,13 +145,26 @@ export function PDIContentSections({
             </div>
             Competências Desenvolvidas
           </h3>
-          <button
-            onClick={onCompetencyCreate}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all shadow-sm font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Nova Competência
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            <button
+              onClick={onCompetencyCreate}
+              disabled={competencies.length >= MAX_COMPETENCIES_PER_CYCLE}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-sm font-medium ${
+                competencies.length >= MAX_COMPETENCIES_PER_CYCLE
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:opacity-90"
+              }`}
+            >
+              <Plus className="w-4 h-4" />
+              Nova Competência
+            </button>
+            {competencies.length >= MAX_COMPETENCIES_PER_CYCLE && (
+              <span className="text-xs text-amber-600 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Limite de {MAX_COMPETENCIES_PER_CYCLE} competências atingido
+              </span>
+            )}
+          </div>
         </div>
         <CompetenciesSection
           competencies={competencies}
@@ -263,6 +293,7 @@ export function PDIContentSections({
           onClose={onClose}
           onSave={onOneOnOneSave}
           prefillData={{ participant: subordinate.name }}
+          cycleId={cycle?.id}
         />
       )}
 

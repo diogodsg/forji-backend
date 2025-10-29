@@ -30,7 +30,7 @@ export default function SuccessCriterionForm({
               </label>
               <input
                 type="number"
-                value={successCriterion?.startValue || ""}
+                value={successCriterion?.startValue ?? ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -51,7 +51,7 @@ export default function SuccessCriterionForm({
               </label>
               <input
                 type="number"
-                value={successCriterion?.currentValue || ""}
+                value={successCriterion?.currentValue ?? ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -72,7 +72,7 @@ export default function SuccessCriterionForm({
               </label>
               <input
                 type="number"
-                value={successCriterion?.targetValue || ""}
+                value={successCriterion?.targetValue ?? ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -155,7 +155,7 @@ export default function SuccessCriterionForm({
               </label>
               <input
                 type="number"
-                value={successCriterion?.startValue || ""}
+                value={successCriterion?.startValue ?? ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -176,7 +176,7 @@ export default function SuccessCriterionForm({
               </label>
               <input
                 type="number"
-                value={successCriterion?.currentValue || ""}
+                value={successCriterion?.currentValue ?? ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -197,7 +197,7 @@ export default function SuccessCriterionForm({
               </label>
               <input
                 type="number"
-                value={successCriterion?.targetValue || ""}
+                value={successCriterion?.targetValue ?? ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -283,7 +283,7 @@ export default function SuccessCriterionForm({
                   type="number"
                   min="0"
                   max="100"
-                  value={successCriterion?.currentValue || ""}
+                  value={successCriterion?.currentValue ?? ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -311,7 +311,7 @@ export default function SuccessCriterionForm({
                   type="number"
                   min="0"
                   max="100"
-                  value={successCriterion?.targetValue || ""}
+                  value={successCriterion?.targetValue ?? ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,

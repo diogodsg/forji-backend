@@ -135,6 +135,21 @@ export const workspacesApi = {
   },
 
   /**
+   * PATCH /workspaces/:id/members/:userId/role - Atualiza role de membro
+   */
+  async updateMemberRole(
+    workspaceId: string,
+    userId: string,
+    role: "OWNER" | "ADMIN" | "MEMBER"
+  ): Promise<{ message: string }> {
+    const { data } = await apiClient.patch<{ message: string }>(
+      `/workspaces/${workspaceId}/members/${userId}/role`,
+      { role }
+    );
+    return data;
+  },
+
+  /**
    * DELETE /workspaces/:id/members/:userId - Remove membro do workspace
    */
   async removeMember(

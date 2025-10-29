@@ -5,6 +5,7 @@ interface WizardFooterProps {
   totalSteps: number;
   isStepValid: boolean;
   totalXP: number;
+  isSubmitting?: boolean;
   onPrevious: () => void;
   onNext: () => void;
   onSubmit: () => void;
@@ -15,6 +16,7 @@ export function WizardFooter({
   totalSteps,
   isStepValid,
   totalXP,
+  isSubmitting = false,
   onPrevious,
   onNext,
   onSubmit,
@@ -63,14 +65,21 @@ export function WizardFooter({
         ) : (
           <button
             onClick={onSubmit}
-            disabled={!isStepValid}
-            className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium ${
-              isStepValid
+            disabled={!isStepValid || isSubmitting}
+            className={`px-6 py-2 rounded-lg transition-all duration-200 font-medium flex items-center gap-2 ${
+              isStepValid && !isSubmitting
                 ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:opacity-90"
                 : "bg-surface-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            Concluir Competência (+{totalXP} XP)
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>Concluir Competência (+{totalXP} XP)</>
+            )}
           </button>
         )}
       </div>

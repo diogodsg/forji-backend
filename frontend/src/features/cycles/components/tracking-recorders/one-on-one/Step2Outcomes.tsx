@@ -7,9 +7,18 @@ import { calculateBonuses } from "./utils";
 interface Step2OutcomesProps {
   data: OneOnOneData;
   onChange: (updates: Partial<OneOnOneData>) => void;
+  hasRecentOneOnOne?: boolean;
+  nextEligibleDate?: Date | null;
+  daysUntilEligible?: number;
 }
 
-export default function Step2Outcomes({ data, onChange }: Step2OutcomesProps) {
+export default function Step2Outcomes({
+  data,
+  onChange,
+  hasRecentOneOnOne = false,
+  nextEligibleDate = null,
+  daysUntilEligible = 0,
+}: Step2OutcomesProps) {
   const bonuses = calculateBonuses(data);
   const totalXP = bonuses.reduce((sum, b) => sum + b.value, 0);
 
@@ -105,7 +114,13 @@ export default function Step2Outcomes({ data, onChange }: Step2OutcomesProps) {
       {/* Right Column - XP Breakdown (Sticky) */}
       <div className="lg:col-span-1">
         <div className="lg:sticky lg:top-0">
-          <XPBreakdown bonuses={bonuses} total={totalXP} />
+          <XPBreakdown
+            bonuses={bonuses}
+            total={totalXP}
+            hasRecentOneOnOne={hasRecentOneOnOne}
+            nextEligibleDate={nextEligibleDate}
+            daysUntilEligible={daysUntilEligible}
+          />
         </div>
       </div>
     </div>

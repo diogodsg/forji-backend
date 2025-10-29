@@ -3,16 +3,19 @@ import { useToast } from "../components/Toast";
 import { useGoalMutations } from "../features/cycles/hooks";
 import { useGamificationContext } from "../features/gamification/context/GamificationContext";
 
+// Limite de metas por ciclo
+const MAX_GOALS_PER_CYCLE = 5;
+
 interface Goal {
   id: string;
   title: string;
   description: string;
   type: string;
   progress: number;
-  currentValue: number;
-  targetValue: number;
-  startValue: number;
-  unit: string;
+  currentValue?: number;
+  targetValue?: number;
+  startValue?: number;
+  unit?: string;
   deadline?: string;
   updatedAt: string;
 }
@@ -32,6 +35,7 @@ interface EditModalState {
 export function useGoalHandlers(
   cycle: any,
   user: any,
+  goals: Goal[],
   refreshGoals: () => Promise<void>,
   refreshGamificationProfile: () => void,
   handleClose: () => void
@@ -61,6 +65,15 @@ export function useGoalHandlers(
   const handleGoalCreate = async (data: any) => {
     if (!cycle || !user) {
       toast.error("Nenhum ciclo ativo ou usuário encontrado");
+      return;
+    }
+
+    // Validar limite de metas
+    if (goals.length >= MAX_GOALS_PER_CYCLE) {
+      toast.warning(
+        `O ciclo já possui o máximo de ${MAX_GOALS_PER_CYCLE} metas permitidas.`,
+        "Limite Atingido"
+      );
       return;
     }
 

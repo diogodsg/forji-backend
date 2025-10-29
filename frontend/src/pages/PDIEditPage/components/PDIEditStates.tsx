@@ -88,17 +88,117 @@ interface LoadingPageProps {
 }
 
 /**
- * Página de carregamento
+ * Página de carregamento com skeleton
  */
-export function LoadingPage({
-  message = "Verificando permissões e carregando dados...",
-}: LoadingPageProps) {
+export function LoadingPage({}: LoadingPageProps = {}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-surface-50 to-surface-100">
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center">
-          <div className="w-8 h-8 bg-brand-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">{message}</p>
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Header Skeleton */}
+        <div className="animate-pulse mb-6">
+          <div className="bg-white rounded-2xl border border-surface-200/60 shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {/* Avatar skeleton */}
+                <div className="w-16 h-16 bg-surface-200 rounded-xl"></div>
+                <div className="space-y-2">
+                  {/* Name skeleton */}
+                  <div className="h-6 bg-surface-200 rounded w-48"></div>
+                  {/* Subtitle skeleton */}
+                  <div className="h-4 bg-surface-200 rounded w-64"></div>
+                </div>
+              </div>
+              {/* Back button skeleton */}
+              <div className="w-24 h-10 bg-surface-200 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="space-y-6">
+          {/* Goals Section Skeleton */}
+          <div className="animate-pulse">
+            <div className="bg-white rounded-2xl border border-surface-200/60 shadow-sm p-6">
+              {/* Section header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-6 bg-surface-200 rounded w-32"></div>
+                <div className="w-32 h-10 bg-surface-200 rounded-lg"></div>
+              </div>
+              {/* Goal cards */}
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="border border-surface-200 rounded-xl p-4"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="h-5 bg-surface-200 rounded w-3/4 mb-2"></div>
+                        <div className="h-4 bg-surface-200 rounded w-1/2"></div>
+                      </div>
+                      <div className="w-20 h-8 bg-surface-200 rounded-lg"></div>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="h-2 bg-surface-200 rounded-full"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Competencies Section Skeleton */}
+          <div className="animate-pulse">
+            <div className="bg-white rounded-2xl border border-surface-200/60 shadow-sm p-6">
+              {/* Section header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-6 bg-surface-200 rounded w-40"></div>
+                <div className="w-32 h-10 bg-surface-200 rounded-lg"></div>
+              </div>
+              {/* Competency cards grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="border border-surface-200 rounded-xl p-4"
+                  >
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 bg-surface-200 rounded-lg"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-surface-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-surface-200 rounded w-1/2"></div>
+                      </div>
+                    </div>
+                    {/* Progress */}
+                    <div className="h-2 bg-surface-200 rounded-full"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline Section Skeleton */}
+          <div className="animate-pulse">
+            <div className="bg-white rounded-2xl border border-surface-200/60 shadow-sm p-6">
+              {/* Section header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-6 bg-surface-200 rounded w-36"></div>
+                <div className="w-32 h-10 bg-surface-200 rounded-lg"></div>
+              </div>
+              {/* Timeline items */}
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="w-12 h-12 bg-surface-200 rounded-lg flex-shrink-0"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-5 bg-surface-200 rounded w-2/3"></div>
+                      <div className="h-4 bg-surface-200 rounded w-full"></div>
+                      <div className="h-3 bg-surface-200 rounded w-1/3"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

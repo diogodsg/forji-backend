@@ -1,5 +1,21 @@
-import { Controller, Get, Post, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Param,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { GamificationService } from './gamification.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -54,6 +70,44 @@ export class GamificationController {
   })
   async getProfile(@CurrentUser() user: any): Promise<GamificationProfileResponseDto> {
     return this.gamificationService.getProfile(user.id, user.workspaceId);
+  }
+
+  /**
+   * GET /api/gamification/profile/:userId
+   *
+   * Retorna o perfil de gamificação de qualquer usuário (para gestores visualizarem subordinados)
+   */
+  @Get('profile/:userId')
+  @ApiOperation({
+    summary: 'Buscar perfil de gamificação de outro usuário',
+    description:
+      'Retorna o perfil completo de gamificação de um usuário específico. Útil para gestores visualizarem dados de subordinados.',
+  })
+  @ApiParam({
+    name: 'userId',
+    type: String,
+    description: 'ID do usuário',
+    example: 'clp4k5n8d0001ld0fh4qm7x8k',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Perfil de gamificação retornado com sucesso',
+    type: GamificationProfileResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autenticado',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Perfil de gamificação não encontrado',
+  })
+  async getProfileByUserId(
+    @Param('userId') userId: string,
+    @CurrentUser() user: any,
+  ): Promise<GamificationProfileResponseDto> {
+    // Usar o workspace do usuário autenticado
+    return this.gamificationService.getProfile(userId, user.workspaceId);
   }
 
   /**

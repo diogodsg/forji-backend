@@ -70,6 +70,7 @@ export function CurrentCyclePageOptimized() {
   const goalHandlers = useGoalHandlers(
     cycle,
     user,
+    goals,
     refreshGoals,
     refreshGamificationProfile,
     handleClose
@@ -77,6 +78,7 @@ export function CurrentCyclePageOptimized() {
 
   const competencyHandlers = useCompetencyHandlers(
     cycle,
+    competencies,
     refreshCompetencies,
     handleClose
   );

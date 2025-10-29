@@ -250,6 +250,18 @@ export class GoalsService {
       throw new BadRequestException('Ciclo não encontrado ou não pertence a este usuário');
     }
 
+    // Valida limite de metas por ciclo (máximo 5)
+    const goalsCount = await this.prisma.goal.count({
+      where: {
+        cycleId,
+        deletedAt: null,
+      },
+    });
+
+    if (goalsCount >= 5) {
+      throw new BadRequestException('O ciclo já atingiu o limite máximo de 5 metas');
+    }
+
     // Valida valores baseado no tipo
     if (type === 'INCREASE' && targetValue <= startValue) {
       throw new BadRequestException(

@@ -80,10 +80,30 @@ export class FindAllUsersUseCase {
       workspaceId,
     );
 
+    // Get workspace roles for all users
+    const workspaceMembers = await this.prisma.workspaceMember.findMany({
+      where: {
+        userId: { in: users.map((u) => u.id) },
+        workspaceId,
+        deletedAt: null,
+      },
+      select: {
+        userId: true,
+        role: true,
+      },
+    });
+
+    // Create a map for quick role lookup
+    const roleMap = new Map<string, boolean>();
+    workspaceMembers.forEach((member) => {
+      // OWNER and ADMIN are considered admins
+      roleMap.set(member.userId, member.role === 'OWNER' || member.role === 'ADMIN');
+    });
+
     // Combine users with hierarchy
     const data = users.map((user) => ({
       ...user,
-      isAdmin: false, // TODO: Get from WorkspaceMember.role
+      isAdmin: roleMap.get(user.id) || false,
       managers: hierarchy.managersMap.get(user.id) || [],
       reports: hierarchy.subordinatesMap.get(user.id) || [],
       managedTeams: hierarchy.managedTeamsMap.get(user.id) || [],

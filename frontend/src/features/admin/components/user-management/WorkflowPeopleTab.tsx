@@ -13,10 +13,12 @@ import type { AdminUser } from "@/features/admin/types";
 export function WorkflowPeopleTab() {
   const {
     users,
+    loading,
     error,
     removeUser: deleteUser,
     changePassword,
     updateUser,
+    toggleAdmin,
     refresh,
   } = useAdminUsers();
 
@@ -88,8 +90,8 @@ export function WorkflowPeopleTab() {
 
     const matchesRole =
       roleFilter === "all" ||
-      (roleFilter === "admin" && user.isAdmin) ||
-      (roleFilter === "user" && !user.isAdmin);
+      (roleFilter === "admin" && user.isAdmin === true) ||
+      (roleFilter === "user" && user.isAdmin !== true);
 
     return matchesQuery && matchesRole;
   });
@@ -159,11 +161,49 @@ export function WorkflowPeopleTab() {
 
         {/* Cards de Pessoas - Grid de 3 colunas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {false ? ( // Temporariamente forçado como false para mostrar mock
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-              <p className="mt-2 text-gray-500">Carregando pessoas...</p>
-            </div>
+          {loading ? (
+            // Skeleton Loading State
+            <>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="animate-pulse rounded-2xl border border-surface-200/60 bg-gradient-to-r from-white to-surface-50/50 p-5 shadow-sm"
+                >
+                  {/* Header skeleton */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      {/* Avatar skeleton */}
+                      <div className="w-12 h-12 bg-surface-200 rounded-xl"></div>
+                      <div className="space-y-2">
+                        {/* Name skeleton */}
+                        <div className="h-4 bg-surface-200 rounded w-32"></div>
+                        {/* Position skeleton */}
+                        <div className="h-3 bg-surface-200 rounded w-24"></div>
+                      </div>
+                    </div>
+                    {/* Menu skeleton */}
+                    <div className="w-8 h-8 bg-surface-200 rounded-lg"></div>
+                  </div>
+
+                  {/* Email skeleton */}
+                  <div className="mb-4">
+                    <div className="h-3 bg-surface-200 rounded w-48"></div>
+                  </div>
+
+                  {/* Stats skeleton */}
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="h-12 bg-surface-200 rounded-lg"></div>
+                    <div className="h-12 bg-surface-200 rounded-lg"></div>
+                  </div>
+
+                  {/* Footer skeleton */}
+                  <div className="flex items-center justify-between pt-3 border-t border-surface-200">
+                    <div className="h-3 bg-surface-200 rounded w-20"></div>
+                    <div className="h-6 bg-surface-200 rounded w-16"></div>
+                  </div>
+                </div>
+              ))}
+            </>
           ) : error ? (
             <div className="text-center py-8 text-red-600">
               <p>Erro ao carregar pessoas: {error}</p>
@@ -182,6 +222,7 @@ export function WorkflowPeopleTab() {
                 onHierarchy={() => handleOpenHierarchyModal(user)}
                 onChangePassword={() => handleOpenPasswordModal(user)}
                 onRemove={() => deleteUser(user.id)}
+                onToggleAdmin={(isAdmin) => toggleAdmin(user.id, isAdmin)}
               />
             ))
           )}

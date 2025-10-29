@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import type { OneOnOneData, OneOnOneRecorderProps } from "./types";
 import { isFormValid } from "./utils";
@@ -6,6 +6,8 @@ import WizardHeader from "./WizardHeader";
 import WizardFooter from "./WizardFooter";
 import Step1BasicInfo from "./Step1BasicInfo";
 import Step2Outcomes from "./Step2Outcomes";
+import { useWorkspaceUsers } from "@/features/admin/hooks/useWorkspaceUsers";
+import { useLastOneOnOne } from "./useLastOneOnOne";
 
 const INITIAL_DATA: OneOnOneData = {
   participant: "",
@@ -41,6 +43,7 @@ export function OneOnOneRecorder({
   onClose,
   onSave,
   prefillData,
+  cycleId,
 }: OneOnOneRecorderProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<OneOnOneData>({
@@ -48,6 +51,19 @@ export function OneOnOneRecorder({
     ...prefillData,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Get all workspace users to find subordinateId by name
+  const { users = [] } = useWorkspaceUsers();
+
+  // Find the subordinate ID based on the selected participant name
+  const subordinateId = useMemo(() => {
+    if (!data.participant) return undefined;
+    const user = users.find((u) => u.name === data.participant);
+    return user?.id;
+  }, [data.participant, users]);
+
+  // Check if subordinate has a recent 1:1 (last 7 days)
+  const xpStatus = useLastOneOnOne(subordinateId, cycleId);
 
   if (!isOpen) return null;
 
@@ -116,14 +132,29 @@ export function OneOnOneRecorder({
           totalXP={totalXP}
           onClose={onClose}
           isEditMode={isEditMode}
+          hasRecentOneOnOne={xpStatus.hasRecentOneOnOne}
+          nextEligibleDate={xpStatus.nextEligibleDate}
+          daysUntilEligible={xpStatus.daysUntilEligible}
         />
 
         <div className="flex-1 px-6 py-6  overflow-hidden">
           {currentStep === 1 && (
-            <Step1BasicInfo data={data} onChange={handleChange} />
+            <Step1BasicInfo
+              data={data}
+              onChange={handleChange}
+              hasRecentOneOnOne={xpStatus.hasRecentOneOnOne}
+              nextEligibleDate={xpStatus.nextEligibleDate}
+              daysUntilEligible={xpStatus.daysUntilEligible}
+            />
           )}
           {currentStep === 2 && (
-            <Step2Outcomes data={data} onChange={handleChange} />
+            <Step2Outcomes
+              data={data}
+              onChange={handleChange}
+              hasRecentOneOnOne={xpStatus.hasRecentOneOnOne}
+              nextEligibleDate={xpStatus.nextEligibleDate}
+              daysUntilEligible={xpStatus.daysUntilEligible}
+            />
           )}
         </div>
 

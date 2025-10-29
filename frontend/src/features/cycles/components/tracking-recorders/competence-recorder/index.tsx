@@ -31,6 +31,7 @@ export function CompetenceRecorder({
   prefillData,
 }: CompetenceRecorderProps) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [data, setData] = useState<CompetenceData>({
     ...INITIAL_DATA,
     ...prefillData,
@@ -55,13 +56,16 @@ export function CompetenceRecorder({
   };
 
   const handleSubmit = async () => {
-    if (!isFormValid(data)) return;
+    if (!isFormValid(data) || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       await onSave(data);
       onClose();
     } catch (error) {
       console.error("Error saving competence:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -103,6 +107,7 @@ export function CompetenceRecorder({
           totalSteps={2}
           isStepValid={canProceed}
           totalXP={totalXP}
+          isSubmitting={isSubmitting}
           onPrevious={handlePrevious}
           onNext={handleNext}
           onSubmit={handleSubmit}

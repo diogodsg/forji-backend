@@ -3,7 +3,10 @@ import { useAuth } from "@/features/auth";
 import { usePlayerProfile } from "@/features/gamification";
 import { usersApi } from "@/lib/api/endpoints/users";
 import { managementApi } from "@/lib/api/endpoints/management";
-import { getGamificationProfile } from "@/lib/api/endpoints/gamification";
+import {
+  getGamificationProfile,
+  getGamificationProfileByUserId,
+} from "@/lib/api/endpoints/gamification";
 import { getDiceBearAvatarById } from "../data/dicebearAvatars";
 import type {
   ProfileData,
@@ -94,53 +97,15 @@ export function useProfile(userId?: string) {
               gamificationData
             );
           } else {
-            // Para outros usuários, tentar calcular dados baseados em metas/competências
+            // Para outros usuários, usar o novo endpoint com userId
             console.log(
-              "🔄 Calculando gamificação para outro usuário:",
+              "🔄 Buscando gamificação de outro usuário:",
               targetUserId
             );
-            try {
-              // Buscar dados de PDI para calcular XP
-              const [goals] = await Promise.all([
-                managementApi.getSubordinateGoals(targetUserId).catch(() => []),
-              ]);
-
-              // Calcular XP baseado nas metas concluídas
-              const completedGoals = goals.filter(
-                (goal: any) => goal.progress === 100
-              );
-              const totalXP = completedGoals.reduce(
-                (sum: number, goal: any) => sum + (goal.xpReward || 100),
-                0
-              );
-              const currentLevel = Math.floor(totalXP / 500) + 1; // 500 XP por nível
-              const currentXP = totalXP % 500;
-              const nextLevelXP = 500;
-
-              gamificationData = {
-                totalXP,
-                currentXP,
-                nextLevelXP,
-                level: currentLevel,
-                badges: [], // TODO: implementar badges baseadas em achievements
-              };
-
-              console.log("🎯 Gamification calculada (other user):", {
-                goals: goals.length,
-                completedGoals: completedGoals.length,
-                calculatedData: gamificationData,
-              });
-            } catch (pdiError) {
-              console.warn("Erro ao buscar dados de PDI:", pdiError);
-              // Fallback para dados padrão
-              gamificationData = {
-                totalXP: 0,
-                currentXP: 0,
-                nextLevelXP: 100,
-                level: 1,
-                badges: [],
-              };
-            }
+            gamificationData = await getGamificationProfileByUserId(
+              targetUserId
+            );
+            console.log("🎯 Gamification data (other user):", gamificationData);
           }
         } catch (gamError) {
           console.warn("Failed to fetch gamification data:", gamError);

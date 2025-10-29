@@ -13,4 +13,5 @@ export interface OneOnOneRecorderProps {
   onClose: () => void;
   onSave: (data: OneOnOneData) => void;
   prefillData?: Partial<OneOnOneData>;
+  cycleId?: string; // Current cycle ID to check XP eligibility
 }
