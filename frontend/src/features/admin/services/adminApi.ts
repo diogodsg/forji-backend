@@ -64,10 +64,10 @@ export const adminApi = {
   /**
    * Toggle admin status (usa nova API /users/:id)
    */
-  async toggleAdmin(userId: string, isAdmin: boolean): Promise<void> {
-    // UUID
-    await usersApi.update(userId, { isAdmin });
-  },
+  // async toggleAdmin(userId: string, isAdmin: boolean): Promise<void> {
+  //   // UUID
+  //   // await usersApi.update(userId, {  });
+  // },
 
   /**
    * Remove usuário do workspace atual (usa nova API /workspaces/:id/members/:userId)

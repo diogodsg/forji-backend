@@ -17,7 +17,6 @@ interface UseAdminUsersResult {
     userId: string,
     data: { name?: string; position?: string; bio?: string }
   ) => Promise<void>;
-  toggleAdmin: (id: string, next: boolean) => Promise<void>; // UUID
   removeUser: (id: string) => Promise<void>; // UUID
   addManager: (userId: string, managerId: string) => Promise<void>; // UUID
   removeManager: (userId: string, managerId: string) => Promise<void>; // UUID
@@ -28,7 +27,6 @@ interface UseAdminUsersResult {
   busy: {
     creating: boolean;
     deleting: Set<string>; // UUID
-    togglingAdmin: Set<string>; // UUID
     managerChange: Set<string>; // UUID
     changingPassword: Set<string>; // UUID
     updating: Set<string>; // UUID
@@ -94,29 +92,6 @@ export function useAdminUsers(): UseAdminUsersResult {
         throw e;
       } finally {
         setCreating(false);
-      }
-    },
-    [refresh, toast]
-  );
-
-  const toggleAdmin = useCallback(
-    async (id: string, next: boolean) => {
-      // UUID
-      mark(togglingAdmin, id, true);
-      try {
-        await adminApi.toggleAdmin(id, next);
-        await refresh();
-        toast.success(
-          next
-            ? "Permissões de admin concedidas"
-            : "Permissões de admin removidas"
-        );
-      } catch (e) {
-        const message = extractErrorMessage(e);
-        toast.error(message);
-        throw e;
-      } finally {
-        mark(togglingAdmin, id, false);
       }
     },
     [refresh, toast]
@@ -243,7 +218,6 @@ export function useAdminUsers(): UseAdminUsersResult {
     refresh,
     create,
     updateUser,
-    toggleAdmin,
     removeUser,
     addManager,
     removeManager,
