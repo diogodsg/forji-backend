@@ -87,16 +87,31 @@ export class ManagementService {
       userId,
       managers: hierarchy.managers,
       managersCount: hierarchy.managers?.length || 0,
+      ruleTypes:
+        hierarchy.managers?.map((m: any) => ({
+          type: m.ruleType,
+          managerId: m.manager?.id,
+          managerName: m.manager?.name,
+          teamId: m.team?.id,
+          teamName: m.team?.name,
+        })) || [],
     });
 
     // Check if managerId is in the user's managers list
-    // Note: hierarchy.managers contains objects with { id: ruleId, manager: { id: managerId, ... } }
+    // Verifica tanto regras INDIVIDUAL quanto TEAM
+    // Note: hierarchy.managers contém objetos com { id: ruleId, manager: { id: managerId, ... }, ruleType, team }
     const result = hierarchy.managers?.some((m: any) => m.manager?.id === managerId) || false;
 
     console.log('🔍 [ManagementService] Resultado da verificação:', {
       result,
       managerId,
-      managerIds: hierarchy.managers?.map((m: any) => m.manager?.id) || [],
+      searchingFor: managerId,
+      foundManagers:
+        hierarchy.managers?.map((m: any) => ({
+          id: m.manager?.id,
+          name: m.manager?.name,
+          type: m.ruleType,
+        })) || [],
     });
 
     return result;

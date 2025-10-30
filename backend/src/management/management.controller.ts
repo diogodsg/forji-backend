@@ -17,11 +17,14 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ManagementRuleType } from '@prisma/client';
 
-interface JwtPayload {
-  sub: string;
+// O request.user vem da JwtStrategy e tem esta estrutura
+interface RequestUser {
+  id: string;
+  userId: string; // Alias para id
   email: string;
   workspaceId: string;
   workspaceRole: string;
+  [key: string]: any;
 }
 
 @ApiTags('management')
@@ -58,7 +61,7 @@ export class ManagementController {
    * Get all managers for a specific user (both direct and through teams)
    */
   @Get('managers/:userId')
-  async getUserManagers(@CurrentUser() user: JwtPayload, @Param('userId') userId: string) {
+  async getUserManagers(@CurrentUser() user: any, @Param('userId') userId: string) {
     return this.managementService.getUserManagers(userId, user.workspaceId);
   }
 
@@ -68,7 +71,7 @@ export class ManagementController {
    */
   @Get('subordinates/:userId')
   async getUserSubordinates(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: any,
     @Param('userId') userId: string,
     @Query('includeTeamMembers', new ParseBoolPipe({ optional: true }))
     includeTeamMembers = false,
@@ -81,8 +84,9 @@ export class ManagementController {
    * Get all teams managed by the current user
    */
   @Get('teams')
-  async getMyTeams(@CurrentUser() user: JwtPayload) {
-    return this.managementService.getMyTeams(user.sub, user.workspaceId);
+  async getMyTeams(@CurrentUser() user: any) {
+    const userId = user.userId || user.id;
+    return this.managementService.getMyTeams(userId, user.workspaceId);
   }
 
   /**
@@ -91,7 +95,7 @@ export class ManagementController {
    */
   @Get('rules')
   async getAllRules(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: any,
     @Query('managerId') managerId?: string,
     @Query('type', new ParseEnumPipe(ManagementRuleType, { optional: true }))
     type?: ManagementRuleType,
@@ -109,7 +113,7 @@ export class ManagementController {
    * Create a new management rule (admin only)
    */
   @Post('rules')
-  async createRule(@CurrentUser() user: JwtPayload, @Body() createRuleDto: CreateRuleDto) {
+  async createRule(@CurrentUser() user: any, @Body() createRuleDto: CreateRuleDto) {
     return this.managementService.createRule(user.workspaceId, createRuleDto);
   }
 
@@ -118,7 +122,7 @@ export class ManagementController {
    * Delete a management rule
    */
   @Delete('rules/:id')
-  async deleteRule(@CurrentUser() user: JwtPayload, @Param('id') ruleId: string) {
+  async deleteRule(@CurrentUser() user: any, @Param('id') ruleId: string) {
     return this.managementService.deleteRule(ruleId);
   }
 
@@ -127,10 +131,20 @@ export class ManagementController {
    * Check if a user is managed by the current user
    */
   @Get('check/:userId')
-  async checkIfManaged(@CurrentUser() user: JwtPayload, @Param('userId') userId: string) {
+  async checkIfManaged(@CurrentUser() user: any, @Param('userId') userId: string) {
+    console.log('🔍 [ManagementController] checkIfManaged chamado:', {
+      userId,
+      currentUser: user,
+      userId_from_user: (user as any).userId || (user as any).id,
+      workspaceId: user.workspaceId,
+    });
+
+    // request.user tem userId ou id, não sub
+    const managerId = (user as any).userId || (user as any).id;
+
     const isManaged = await this.managementService.isUserManagedBy(
       userId,
-      user.sub,
+      managerId,
       user.workspaceId,
     );
     return { isManaged };

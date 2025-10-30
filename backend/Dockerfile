@@ -79,11 +79,11 @@ COPY --from=builder --chown=nestjs:nodejs /app/scripts ./scripts
 # Mudar para usuário não-root por segurança
 USER nestjs
 
-EXPOSE 3000
-
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD node --version || exit 1
 
 # Comando para iniciar a aplicação
 CMD ["node", "dist/main"]
+
+EXPOSE 8000
