@@ -106,13 +106,29 @@ export function HierarchyModal({
   };
 
   // Filtros
-  const filteredTeams = teams.filter((team) =>
-    team.name.toLowerCase().includes(state.teamSearch.toLowerCase())
+  // Extrair IDs de equipes e pessoas que já têm regras
+  const existingTeamIds = new Set(
+    rules
+      .filter((rule) => rule.ruleType === "TEAM" && rule.teamId)
+      .map((rule) => rule.teamId)
+  );
+
+  const existingPersonIds = new Set(
+    rules
+      .filter((rule) => rule.ruleType === "INDIVIDUAL" && rule.subordinateId)
+      .map((rule) => rule.subordinateId)
+  );
+
+  const filteredTeams = teams.filter(
+    (team) =>
+      !existingTeamIds.has(team.id) &&
+      team.name.toLowerCase().includes(state.teamSearch.toLowerCase())
   );
 
   const filteredUsersForAdd = users.filter(
     (user) =>
       user.id !== userId &&
+      !existingPersonIds.has(user.id) &&
       (user.name.toLowerCase().includes(state.personSearch.toLowerCase()) ||
         user.email.toLowerCase().includes(state.personSearch.toLowerCase()))
   );

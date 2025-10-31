@@ -2,6 +2,22 @@ import { useToast } from "../components/Toast";
 import { useActivityMutations } from "../features/cycles/hooks";
 import { useGamificationContext } from "../features/gamification/context/GamificationContext";
 
+/**
+ * Converte data do input date (YYYY-MM-DD) para ISO string preservando o timezone local
+ */
+function dateInputToISO(dateString: string): string {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const date = new Date(year, month - 1, day, 12, 0, 0);
+
+  const offset = -date.getTimezoneOffset();
+  const sign = offset >= 0 ? "+" : "-";
+  const absOffset = Math.abs(offset);
+  const hours = String(Math.floor(absOffset / 60)).padStart(2, "0");
+  const minutes = String(absOffset % 60).padStart(2, "0");
+
+  return `${dateString}T12:00:00${sign}${hours}:${minutes}`;
+}
+
 export function useActivityHandlers(
   cycle: any,
   user: any,
@@ -28,6 +44,12 @@ export function useActivityHandlers(
     }
 
     try {
+      console.log("🔍 Criando 1:1 - Debug participantId:", {
+        participantId: data.participantId,
+        participant: data.participant,
+        fullData: data,
+      });
+
       // 🚀 CORRIGIDO: Usar nova estrutura de dados do backend
       const activity = await createOneOnOne({
         cycleId: cycle.id,
@@ -36,7 +58,9 @@ export function useActivityHandlers(
         title: `1:1 com ${data.participant}`,
         description: `Reunião 1:1 em ${data.date}`,
         oneOnOneData: {
+          participantId: data.participantId || "",
           participantName: data.participant,
+          completedAt: data.date ? dateInputToISO(data.date) : undefined,
           workingOn: data.workingOn || [],
           generalNotes: data.generalNotes || "",
           positivePoints: data.positivePoints || [],

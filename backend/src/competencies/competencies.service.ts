@@ -9,6 +9,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { ActivitiesService } from '../activities/activities.service';
+import { ManagementService } from '../management/management.service';
 import { CreateCompetencyDto } from './dto/create-competency.dto';
 import { UpdateCompetencyDto } from './dto/update-competency.dto';
 import { UpdateCompetencyProgressDto } from './dto/update-competency-progress.dto';
@@ -140,6 +141,8 @@ export class CompetenciesService {
     private gamificationService: GamificationService,
     @Inject(forwardRef(() => ActivitiesService))
     private activitiesService: ActivitiesService,
+    @Inject(forwardRef(() => ManagementService))
+    private managementService: ManagementService,
   ) {}
 
   /**
@@ -231,45 +234,47 @@ export class CompetenciesService {
   }
 
   /**
-   * Verifica se usuário é gerente do dono da competência
-   */
-  private async isManager(
-    currentUserId: string,
-    targetUserId: string,
-    workspaceId: string,
-  ): Promise<boolean> {
-    const rule = await this.prisma.managementRule.findFirst({
-      where: {
-        subordinateId: targetUserId,
-        managerId: currentUserId,
-        workspaceId,
-        deletedAt: null,
-      },
-    });
-    return !!rule;
-  }
-
-  /**
    * Verifica permissão para criar/editar competência
-   * Regra: Própria pessoa OU seu gerente
+   * Regra: Própria pessoa OU seu gerente (INDIVIDUAL ou TEAM)
+   * Usa a mesma lógica do ManagerGuard
    */
   private async checkPermission(
     currentUserId: string,
     targetUserId: string,
     workspaceId: string,
   ): Promise<void> {
+    console.log('🔍 [CompetenciesService] Verificando permissão:', {
+      currentUserId,
+      targetUserId,
+      workspaceId,
+    });
+
+    // Se é a própria pessoa, permite
     if (currentUserId === targetUserId) {
+      console.log('✅ [CompetenciesService] Próprio usuário - permissão concedida');
       return;
     }
 
-    const isManagerOfUser = await this.isManager(currentUserId, targetUserId, workspaceId);
-    if (isManagerOfUser) {
-      return;
-    }
-
-    throw new ForbiddenException(
-      'Você não tem permissão para gerenciar competências deste usuário',
+    // Verifica se o usuário logado gerencia o targetUserId (INDIVIDUAL ou TEAM)
+    const isManaged = await this.managementService.isUserManagedBy(
+      targetUserId,
+      currentUserId,
+      workspaceId,
     );
+
+    console.log('🔍 [CompetenciesService] Resultado da verificação:', {
+      isManaged,
+      currentUserId,
+      targetUserId,
+    });
+
+    if (!isManaged) {
+      throw new ForbiddenException(
+        'Você não tem permissão para gerenciar competências deste usuário',
+      );
+    }
+
+    console.log('✅ [CompetenciesService] Gerente do usuário - permissão concedida');
   }
 
   /**

@@ -5,8 +5,14 @@ export class OneOnOneResponseDto {
   @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
   id: string;
 
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
+  participantId: string;
+
   @ApiProperty({ example: 'João Silva' })
   participantName: string;
+
+  @ApiProperty({ example: '2025-10-25T14:00:00Z', required: false })
+  completedAt: Date | null;
 
   @ApiProperty({
     example: ['Implementação de feature X', 'Code review do projeto Y'],

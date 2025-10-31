@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import type { OneOnOneData, OneOnOneRecorderProps } from "./types";
 import { isFormValid } from "./utils";
@@ -10,6 +10,7 @@ import { useWorkspaceUsers } from "@/features/admin/hooks/useWorkspaceUsers";
 import { useLastOneOnOne } from "./useLastOneOnOne";
 
 const INITIAL_DATA: OneOnOneData = {
+  participantId: "",
   participant: "",
   date: new Date().toISOString().split("T")[0],
   workingOn: [],
@@ -65,6 +66,13 @@ export function OneOnOneRecorder({
   // Check if subordinate has a recent 1:1 (last 7 days)
   const xpStatus = useLastOneOnOne(subordinateId, cycleId);
 
+  // Update participantId when participant name changes
+  useEffect(() => {
+    if (subordinateId && subordinateId !== data.participantId) {
+      setData((prev) => ({ ...prev, participantId: subordinateId }));
+    }
+  }, [subordinateId, data.participantId]);
+
   if (!isOpen) return null;
 
   const handleChange = (updates: Partial<OneOnOneData>) => {
@@ -117,8 +125,15 @@ export function OneOnOneRecorder({
     (data.generalNotes.length > 50 ? 50 : 0);
   const totalXP = baseXP + bonusXP;
 
+  // Edit mode is true only if we have data from an existing activity
+  // (arrays with content, or specific fields like date with other content)
   const isEditMode = Boolean(
-    prefillData && Object.keys(prefillData).length > 0
+    prefillData &&
+      (prefillData.workingOn?.length ||
+        prefillData.positivePoints?.length ||
+        prefillData.improvementPoints?.length ||
+        prefillData.nextSteps?.length ||
+        (prefillData.generalNotes && prefillData.generalNotes.length > 0))
   );
 
   return createPortal(

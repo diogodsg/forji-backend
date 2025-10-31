@@ -24,6 +24,7 @@ export interface Activity {
   };
   xpEarned: number;
   timestamp: Date | string;
+  completedAt?: Date | string; // Data de realização do 1:1
   description?: string;
   duration?: number; // em minutos
   // Campos específicos de 1:1
@@ -85,6 +86,7 @@ export function useActivitiesTimeline(
             ...baseActivity,
             type: "oneOnOne" as const,
             person: oneOnOneData.participantName || "Participante desconhecido",
+            completedAt: oneOnOneData.completedAt || undefined, // Data de realização
             workingOn: oneOnOneData.workingOn || [],
             generalNotes:
               oneOnOneData.generalNotes || activity.description || undefined,

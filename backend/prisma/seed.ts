@@ -40,7 +40,7 @@ async function main() {
   await seedCompetencies(prisma, cycle, diego);
 
   // 10. Create activities
-  await seedActivities(prisma, cycle, diego);
+  await seedActivities(prisma, cycle, diego, carlos);
 
   console.log('\n🎉 Seed completed!');
   console.log('\n📧 Login credentials:');

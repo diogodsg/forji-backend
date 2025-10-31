@@ -212,6 +212,7 @@ export interface WorkingOnOption {
 export interface OneOnOneRecord {
   id: string;
   date: string; // ISO date
+  completedAt?: string; // ISO date - data de realização
   participantName: string;
   participantId: string; // User ID
   participantRole: OneOnOneParticipantRole;

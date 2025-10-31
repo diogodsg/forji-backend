@@ -1,6 +1,8 @@
 export interface OneOnOneData {
+  participantId: string;
   participant: string;
   date: string;
+  completedAt?: string;
   workingOn: string[];
   generalNotes: string;
   positivePoints: string[];

@@ -31,6 +31,14 @@ export default function ListEditor({
     }
   };
 
+  const handleBlur = () => {
+    // Adicionar automaticamente ao sair do input se houver texto
+    if (inputValue.trim()) {
+      onAdd(inputValue);
+      setInputValue("");
+    }
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
@@ -44,6 +52,7 @@ export default function ListEditor({
               handleAdd();
             }
           }}
+          onBlur={handleBlur}
           placeholder={placeholder}
           className="flex-1 px-3 py-2 rounded-lg border border-surface-300 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 text-sm"
         />

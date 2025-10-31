@@ -48,7 +48,7 @@ interface PDIContentSectionsProps {
   onActivityDeleteClick: (activityId: string) => void;
   onOneOnOneSave: (data: any) => void;
   onMentoringSave: (data: any) => void;
-  onOneOnOneEditSave: (data: any) => void;
+  onOneOnOneEditSave: (activityId: string, data: any) => void;
   onCancelActivityEdit: () => void;
   onConfirmDeleteActivity: () => void;
   onCancelDeleteActivity: () => void;
@@ -292,7 +292,9 @@ export function PDIContentSections({
           isOpen={true}
           onClose={onClose}
           onSave={onOneOnOneSave}
-          prefillData={{ participant: subordinate.name }}
+          prefillData={{
+            participant: subordinate.name,
+          }}
           cycleId={cycle?.id}
         />
       )}
@@ -386,7 +388,9 @@ export function PDIContentSections({
           <OneOnOneRecorder
             isOpen={true}
             onClose={onCancelActivityEdit}
-            onSave={onOneOnOneEditSave}
+            onSave={(data) =>
+              onOneOnOneEditSave(editActivityModalState.activity.id, data)
+            }
             prefillData={editActivityModalState.activity.prefillData}
           />
         )}

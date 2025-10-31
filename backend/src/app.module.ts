@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -12,9 +14,22 @@ import { CyclesModule } from './cycles/cycles.module';
 import { GoalsModule } from './goals/goals.module';
 import { CompetenciesModule } from './competencies/competencies.module';
 import { ActivitiesModule } from './activities/activities.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
+    // Config module - carrega .env
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    // Bull/Redis para filas de email
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
+        password: process.env.REDIS_PASSWORD || undefined,
+      },
+    }),
     // Rate limiting: 10 requests per 10 seconds
     ThrottlerModule.forRoot([
       {
@@ -33,6 +48,7 @@ import { ActivitiesModule } from './activities/activities.module';
     GoalsModule,
     CompetenciesModule,
     ActivitiesModule,
+    EmailModule,
   ],
   controllers: [],
   providers: [

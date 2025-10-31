@@ -12,44 +12,44 @@ datasource db {
 // ============================================
 
 model Workspace {
-  id            String          @id @default(uuid()) @db.Uuid
-  name          String
-  slug          String          @unique
-  description   String?
-  avatarUrl     String?         @map("avatar_url")
-  status        WorkspaceStatus @default(ACTIVE)
-  
+  id          String          @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String          @unique
+  description String?
+  avatarUrl   String?         @map("avatar_url")
+  status      WorkspaceStatus @default(ACTIVE)
+
   // Timestamps
-  createdAt     DateTime        @default(now()) @map("created_at")
-  updatedAt     DateTime        @updatedAt @map("updated_at")
-  deletedAt     DateTime?       @map("deleted_at")
-  
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
   // Relations
-  members               WorkspaceMember[]
-  teams                 Team[]
-  managementRules       ManagementRule[]
-  cycles                Cycle[]
-  gamificationProfiles  GamificationProfile[]
-  
+  members              WorkspaceMember[]
+  teams                Team[]
+  managementRules      ManagementRule[]
+  cycles               Cycle[]
+  gamificationProfiles GamificationProfile[]
+
   @@index([slug])
   @@index([status])
   @@map("workspaces")
 }
 
 model WorkspaceMember {
-  id            String        @id @default(uuid()) @db.Uuid
-  userId        String        @map("user_id") @db.Uuid
-  workspaceId   String        @map("workspace_id") @db.Uuid
-  role          WorkspaceRole @default(MEMBER)
-  
+  id          String        @id @default(uuid()) @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  workspaceId String        @map("workspace_id") @db.Uuid
+  role        WorkspaceRole @default(MEMBER)
+
   // Timestamps
-  joinedAt      DateTime      @default(now()) @map("joined_at")
-  deletedAt     DateTime?     @map("deleted_at")
-  
+  joinedAt  DateTime  @default(now()) @map("joined_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
   // Relations
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   // Constraints
   @@unique([userId, workspaceId], name: "unique_user_workspace")
   @@index([userId])
@@ -65,9 +65,9 @@ enum WorkspaceStatus {
 }
 
 enum WorkspaceRole {
-  OWNER      // Criador do workspace, full access
-  ADMIN      // Admin do workspace
-  MEMBER     // Membro regular
+  OWNER // Criador do workspace, full access
+  ADMIN // Admin do workspace
+  MEMBER // Membro regular
 }
 
 // ============================================
@@ -75,36 +75,41 @@ enum WorkspaceRole {
 // ============================================
 
 model User {
-  id            String      @id @default(uuid()) @db.Uuid
-  email         String      @unique
-  password      String
-  name          String
-  position      String?
-  bio           String?
-  avatarId      String?     @map("avatar_id")
-  
+  id       String  @id @default(uuid()) @db.Uuid
+  email    String  @unique
+  password String
+  name     String
+  position String?
+  bio      String?
+  avatarId String? @map("avatar_id")
+
   // Timestamps
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
-  deletedAt     DateTime?   @map("deleted_at")
-  
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
   // Relations - Workspaces
-  workspaceMemberships                  WorkspaceMember[]
-  
+  workspaceMemberships WorkspaceMember[]
+
   // Relations - Teams
-  teamMemberships                       TeamMember[]
-  
+  teamMemberships TeamMember[]
+
   // Relations - Management
-  managementRulesAsManager              ManagementRule[] @relation("ManagerRules")
-  managementRulesAsSubordinate          ManagementRule[] @relation("SubordinateRules")
-  
+  managementRulesAsManager     ManagementRule[] @relation("ManagerRules")
+  managementRulesAsSubordinate ManagementRule[] @relation("SubordinateRules")
+
   // Relations - PDI & Gamification
-  gamificationProfiles                  GamificationProfile[] // One-to-many: um user pode ter múltiplos profiles (um por workspace)
-  cycles                                Cycle[]          @relation("UserCycles")
-  goals                                 Goal[]
-  competencies                          Competency[]
-  activities                            Activity[]
-  
+  gamificationProfiles GamificationProfile[] // One-to-many: um user pode ter múltiplos profiles (um por workspace)
+  cycles               Cycle[]               @relation("UserCycles")
+  goals                Goal[]
+  competencies         Competency[]
+  activities           Activity[]
+  oneOnOneActivitiesAsParticipant OneOnOneActivity[] @relation("OneOnOneParticipant")
+
+  // Relations - Notifications
+  notificationPreference NotificationPreference?
+  emailLogs              EmailLog[]
+
   @@map("users")
 }
 
@@ -113,22 +118,22 @@ model User {
 // ============================================
 
 model Team {
-  id              String      @id @default(uuid()) @db.Uuid
-  workspaceId     String      @map("workspace_id") @db.Uuid
-  name            String
-  description     String?
-  status          TeamStatus  @default(ACTIVE)
-  
+  id          String     @id @default(uuid()) @db.Uuid
+  workspaceId String     @map("workspace_id") @db.Uuid
+  name        String
+  description String?
+  status      TeamStatus @default(ACTIVE)
+
   // Timestamps
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
-  deletedAt       DateTime?   @map("deleted_at")
-  
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
   // Relations
-  workspace         Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  members           TeamMember[]
-  managementRules   ManagementRule[]
-  
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members         TeamMember[]
+  managementRules ManagementRule[]
+
   // Constraints
   @@unique([workspaceId, name], name: "unique_workspace_team_name")
   @@index([workspaceId])
@@ -136,19 +141,19 @@ model Team {
 }
 
 model TeamMember {
-  id          String      @id @default(uuid()) @db.Uuid
-  userId      String      @map("user_id") @db.Uuid
-  teamId      String      @map("team_id") @db.Uuid
-  role        TeamRole    @default(MEMBER)
-  
+  id     String   @id @default(uuid()) @db.Uuid
+  userId String   @map("user_id") @db.Uuid
+  teamId String   @map("team_id") @db.Uuid
+  role   TeamRole @default(MEMBER)
+
   // Timestamps
-  joinedAt    DateTime    @default(now()) @map("joined_at")
-  deletedAt   DateTime?   @map("deleted_at")
-  
+  joinedAt  DateTime  @default(now()) @map("joined_at")
+  deletedAt DateTime? @map("deleted_at")
+
   // Relations
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team        Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
   // Constraints
   @@unique([userId, teamId], name: "unique_user_team")
   @@index([teamId])
@@ -172,24 +177,24 @@ enum TeamRole {
 // ============================================
 
 model ManagementRule {
-  id                String              @id @default(uuid()) @db.Uuid
-  workspaceId       String              @map("workspace_id") @db.Uuid
-  ruleType          ManagementRuleType  @map("rule_type")
-  managerId         String              @map("manager_id") @db.Uuid
-  teamId            String?             @map("team_id") @db.Uuid
-  subordinateId     String?             @map("subordinate_id") @db.Uuid
-  
+  id            String             @id @default(uuid()) @db.Uuid
+  workspaceId   String             @map("workspace_id") @db.Uuid
+  ruleType      ManagementRuleType @map("rule_type")
+  managerId     String             @map("manager_id") @db.Uuid
+  teamId        String?            @map("team_id") @db.Uuid
+  subordinateId String?            @map("subordinate_id") @db.Uuid
+
   // Timestamps
-  createdAt         DateTime            @default(now()) @map("created_at")
-  updatedAt         DateTime            @updatedAt @map("updated_at")
-  deletedAt         DateTime?           @map("deleted_at")
-  
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
   // Relations
-  workspace         Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  manager           User                @relation("ManagerRules", fields: [managerId], references: [id], onDelete: Cascade)
-  subordinate       User?               @relation("SubordinateRules", fields: [subordinateId], references: [id], onDelete: Cascade)
-  team              Team?               @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  manager     User      @relation("ManagerRules", fields: [managerId], references: [id], onDelete: Cascade)
+  subordinate User?     @relation("SubordinateRules", fields: [subordinateId], references: [id], onDelete: Cascade)
+  team        Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
   // Constraints
   @@unique([workspaceId, managerId, subordinateId, ruleType], name: "unique_workspace_manager_subordinate_rule")
   @@unique([workspaceId, managerId, teamId, ruleType], name: "unique_workspace_manager_team_rule")
@@ -215,23 +220,23 @@ enum ManagementRuleType {
 // ============================================
 
 model GamificationProfile {
-  id            String   @id @default(uuid()) @db.Uuid
-  userId        String   @map("user_id") @db.Uuid
-  workspaceId   String   @map("workspace_id") @db.Uuid
-  level         Int      @default(1)
-  currentXP     Int      @default(0) @map("current_xp")
-  totalXP       Int      @default(0) @map("total_xp")
-  streak        Int      @default(0) // Dias consecutivos ativos
-  lastActiveAt  DateTime @default(now()) @map("last_active_at")
-  
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  workspaceId  String   @map("workspace_id") @db.Uuid
+  level        Int      @default(1)
+  currentXP    Int      @default(0) @map("current_xp")
+  totalXP      Int      @default(0) @map("total_xp")
+  streak       Int      @default(0) // Dias consecutivos ativos
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+
   // Timestamps
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace     Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  badges        Badge[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  badges         Badge[]
   xpTransactions XpTransaction[] // Histórico de todas as transações de XP
 
   // Constraints: Um usuário só pode ter um perfil por workspace
@@ -243,15 +248,15 @@ model GamificationProfile {
 }
 
 model Badge {
-  id                     String   @id @default(uuid()) @db.Uuid
-  gamificationProfileId  String   @map("gamification_profile_id") @db.Uuid
-  type                   BadgeType
-  name                   String
-  description            String?
-  earnedAt               DateTime @default(now()) @map("earned_at")
+  id                    String    @id @default(uuid()) @db.Uuid
+  gamificationProfileId String    @map("gamification_profile_id") @db.Uuid
+  type                  BadgeType
+  name                  String
+  description           String?
+  earnedAt              DateTime  @default(now()) @map("earned_at")
 
   // Relations
-  gamificationProfile    GamificationProfile @relation(fields: [gamificationProfileId], references: [id], onDelete: Cascade)
+  gamificationProfile GamificationProfile @relation(fields: [gamificationProfileId], references: [id], onDelete: Cascade)
 
   @@index([gamificationProfileId])
   @@index([type])
@@ -259,38 +264,38 @@ model Badge {
 }
 
 enum BadgeType {
-  STREAK_7         // 7 dias de streak
-  STREAK_30        // 30 dias de streak
-  STREAK_100       // 100 dias de streak
-  GOAL_MASTER      // Completou 10 metas
-  MENTOR           // Realizou 5 mentorias
-  CERTIFIED        // Obteve 3 certificações
-  TEAM_PLAYER      // Realizou 10 1:1s
-  FAST_LEARNER     // Subiu 3 níveis em uma competência
-  CONSISTENT       // Atualizou metas por 30 dias seguidos
+  STREAK_7 // 7 dias de streak
+  STREAK_30 // 30 dias de streak
+  STREAK_100 // 100 dias de streak
+  GOAL_MASTER // Completou 10 metas
+  MENTOR // Realizou 5 mentorias
+  CERTIFIED // Obteve 3 certificações
+  TEAM_PLAYER // Realizou 10 1:1s
+  FAST_LEARNER // Subiu 3 níveis em uma competência
+  CONSISTENT // Atualizou metas por 30 dias seguidos
 }
 
 // Histórico de XP - Trackeia todas as transações de XP
 model XpTransaction {
-  id                     String   @id @default(uuid()) @db.Uuid
-  gamificationProfileId  String   @map("gamification_profile_id") @db.Uuid
-  amount                 Int      // Quantidade de XP (sempre positivo)
-  source                 XpSource // Origem do XP
-  sourceId               String?  @map("source_id") @db.Uuid // ID da atividade/goal/competency
-  reason                 String   // Descrição legível (ex: "1:1 com Maria Santos")
-  
+  id                    String   @id @default(uuid()) @db.Uuid
+  gamificationProfileId String   @map("gamification_profile_id") @db.Uuid
+  amount                Int // Quantidade de XP (sempre positivo)
+  source                XpSource // Origem do XP
+  sourceId              String?  @map("source_id") @db.Uuid // ID da atividade/goal/competency
+  reason                String // Descrição legível (ex: "1:1 com Maria Santos")
+
   // Snapshot do estado após transação
-  previousXP             Int      @map("previous_xp")
-  newXP                  Int      @map("new_xp")
-  previousLevel          Int      @map("previous_level")
-  newLevel               Int      @map("new_level")
-  leveledUp              Boolean  @default(false) @map("leveled_up") // Se subiu de nível nesta transação
-  
+  previousXP    Int     @map("previous_xp")
+  newXP         Int     @map("new_xp")
+  previousLevel Int     @map("previous_level")
+  newLevel      Int     @map("new_level")
+  leveledUp     Boolean @default(false) @map("leveled_up") // Se subiu de nível nesta transação
+
   // Timestamps
-  createdAt              DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  gamificationProfile    GamificationProfile @relation(fields: [gamificationProfileId], references: [id], onDelete: Cascade)
+  gamificationProfile GamificationProfile @relation(fields: [gamificationProfileId], references: [id], onDelete: Cascade)
 
   @@index([gamificationProfileId])
   @@index([source])
@@ -299,15 +304,15 @@ model XpTransaction {
 }
 
 enum XpSource {
-  ACTIVITY_ONE_ON_ONE       // +50 XP por 1:1
-  ACTIVITY_MENTORING        // +75 XP por mentoria
-  ACTIVITY_CERTIFICATION    // +100 XP por certificação
-  GOAL_UPDATE               // +25 XP por atualização de meta
-  COMPETENCY_UPDATE         // +30 XP por atualização de competência
-  GOAL_COMPLETED            // +100 XP bônus ao completar meta
-  COMPETENCY_LEVEL_UP       // +50 XP bônus ao subir nível de competência
-  STREAK_BONUS              // +10 XP por manter streak
-  MANUAL                    // XP manual (admin)
+  ACTIVITY_ONE_ON_ONE // +50 XP por 1:1
+  ACTIVITY_MENTORING // +75 XP por mentoria
+  ACTIVITY_CERTIFICATION // +100 XP por certificação
+  GOAL_UPDATE // +25 XP por atualização de meta
+  COMPETENCY_UPDATE // +30 XP por atualização de competência
+  GOAL_COMPLETED // +100 XP bônus ao completar meta
+  COMPETENCY_LEVEL_UP // +50 XP bônus ao subir nível de competência
+  STREAK_BONUS // +10 XP por manter streak
+  MANUAL // XP manual (admin)
 }
 
 // ============================================
@@ -315,23 +320,23 @@ enum XpSource {
 // ============================================
 
 model Cycle {
-  id           String      @id @default(uuid()) @db.Uuid
-  userId       String      @map("user_id") @db.Uuid
-  workspaceId  String      @map("workspace_id") @db.Uuid
-  name         String
-  description  String?
-  startDate    DateTime    @map("start_date")
-  endDate      DateTime    @map("end_date")
-  status       CycleStatus @default(ACTIVE)
-  
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @map("user_id") @db.Uuid
+  workspaceId String      @map("workspace_id") @db.Uuid
+  name        String
+  description String?
+  startDate   DateTime    @map("start_date")
+  endDate     DateTime    @map("end_date")
+  status      CycleStatus @default(ACTIVE)
+
   // Timestamps
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
-  deletedAt    DateTime?   @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   // Relations
-  user         User        @relation("UserCycles", fields: [userId], references: [id], onDelete: Cascade)
-  workspace    Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user         User         @relation("UserCycles", fields: [userId], references: [id], onDelete: Cascade)
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   goals        Goal[]
   competencies Competency[]
   activities   Activity[]
@@ -345,10 +350,10 @@ model Cycle {
 }
 
 enum CycleStatus {
-  DRAFT      // Rascunho, ainda não iniciado
-  ACTIVE     // Ciclo ativo
-  COMPLETED  // Ciclo finalizado
-  ARCHIVED   // Arquivado
+  DRAFT // Rascunho, ainda não iniciado
+  ACTIVE // Ciclo ativo
+  COMPLETED // Ciclo finalizado
+  ARCHIVED // Arquivado
 }
 
 // ============================================
@@ -356,30 +361,30 @@ enum CycleStatus {
 // ============================================
 
 model Goal {
-  id           String     @id @default(uuid()) @db.Uuid
-  cycleId      String     @map("cycle_id") @db.Uuid
-  userId       String     @map("user_id") @db.Uuid
-  title        String
-  description  String?
-  type         GoalType
-  status       GoalStatus @default(ACTIVE)
-  
+  id          String     @id @default(uuid()) @db.Uuid
+  cycleId     String     @map("cycle_id") @db.Uuid
+  userId      String     @map("user_id") @db.Uuid
+  title       String
+  description String?
+  type        GoalType
+  status      GoalStatus @default(ACTIVE)
+
   // Valores para metas quantitativas
-  currentValue Float?     @map("current_value")
-  targetValue  Float?     @map("target_value")
-  startValue   Float?     @map("start_value")
-  unit         String?    // Ex: "PRs", "bugs", "%"
-  
+  currentValue Float?  @map("current_value")
+  targetValue  Float?  @map("target_value")
+  startValue   Float?  @map("start_value")
+  unit         String? // Ex: "PRs", "bugs", "%"
+
   // Timestamps
-  lastUpdateAt DateTime?  @map("last_update_at")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  deletedAt    DateTime?  @map("deleted_at")
+  lastUpdateAt DateTime? @map("last_update_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
   // Relations
-  cycle        Cycle      @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  updates      GoalUpdate[]
+  cycle   Cycle        @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updates GoalUpdate[]
 
   @@index([cycleId])
   @@index([userId])
@@ -389,32 +394,32 @@ model Goal {
 }
 
 enum GoalType {
-  INCREASE      // Aumentar valor (ex: PRs de 0 para 15)
-  DECREASE      // Diminuir valor (ex: bugs de 20 para 10)
-  PERCENTAGE    // Atingir % (ex: cobertura de testes 90%)
-  BINARY        // Sim/Não (ex: obter certificação)
+  INCREASE // Aumentar valor (ex: PRs de 0 para 15)
+  DECREASE // Diminuir valor (ex: bugs de 20 para 10)
+  PERCENTAGE // Atingir % (ex: cobertura de testes 90%)
+  BINARY // Sim/Não (ex: obter certificação)
 }
 
 enum GoalStatus {
-  ACTIVE        // Meta ativa
-  COMPLETED     // Meta completada
-  BLOCKED       // Meta bloqueada
-  CANCELLED     // Meta cancelada
+  ACTIVE // Meta ativa
+  COMPLETED // Meta completada
+  BLOCKED // Meta bloqueada
+  CANCELLED // Meta cancelada
 }
 
 model GoalUpdate {
-  id            String   @id @default(uuid()) @db.Uuid
-  goalId        String   @map("goal_id") @db.Uuid
-  previousValue Float?   @map("previous_value")
-  newValue      Float?   @map("new_value")
-  notes         String?  @db.Text
-  xpEarned      Int      @default(0) @map("xp_earned")
-  
+  id            String  @id @default(uuid()) @db.Uuid
+  goalId        String  @map("goal_id") @db.Uuid
+  previousValue Float?  @map("previous_value")
+  newValue      Float?  @map("new_value")
+  notes         String? @db.Text
+  xpEarned      Int     @default(0) @map("xp_earned")
+
   // Timestamps
-  createdAt     DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  goal          Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
   @@index([goalId])
   @@index([createdAt])
@@ -426,25 +431,25 @@ model GoalUpdate {
 // ============================================
 
 model Competency {
-  id              String            @id @default(uuid()) @db.Uuid
-  cycleId         String            @map("cycle_id") @db.Uuid
-  userId          String            @map("user_id") @db.Uuid
+  id              String             @id @default(uuid()) @db.Uuid
+  cycleId         String             @map("cycle_id") @db.Uuid
+  userId          String             @map("user_id") @db.Uuid
   name            String
   category        CompetencyCategory
-  currentLevel    Int               @default(1) @map("current_level")
-  targetLevel     Int               @map("target_level")
-  currentProgress Int               @default(0) @map("current_progress") // 0-100
-  totalXP         Int               @default(0) @map("total_xp")
-  
+  currentLevel    Int                @default(1) @map("current_level")
+  targetLevel     Int                @map("target_level")
+  currentProgress Int                @default(0) @map("current_progress") // 0-100
+  totalXP         Int                @default(0) @map("total_xp")
+
   // Timestamps
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-  deletedAt       DateTime?         @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   // Relations
-  cycle           Cycle             @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  updates         CompetencyUpdate[]
+  cycle   Cycle              @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updates CompetencyUpdate[]
 
   @@index([cycleId])
   @@index([userId])
@@ -453,25 +458,25 @@ model Competency {
 }
 
 enum CompetencyCategory {
-  TECHNICAL   // Competências técnicas
-  LEADERSHIP  // Liderança
-  BEHAVIORAL  // Comportamentais
+  TECHNICAL // Competências técnicas
+  LEADERSHIP // Liderança
+  BEHAVIORAL // Comportamentais
 }
 
 model CompetencyUpdate {
-  id                String      @id @default(uuid()) @db.Uuid
-  competencyId      String      @map("competency_id") @db.Uuid
-  previousProgress  Int         @map("previous_progress")
-  newProgress       Int         @map("new_progress")
-  notes             String?     @db.Text
-  evidenceUrl       String?     @map("evidence_url")
-  xpEarned          Int         @default(0) @map("xp_earned")
-  
+  id               String  @id @default(uuid()) @db.Uuid
+  competencyId     String  @map("competency_id") @db.Uuid
+  previousProgress Int     @map("previous_progress")
+  newProgress      Int     @map("new_progress")
+  notes            String? @db.Text
+  evidenceUrl      String? @map("evidence_url")
+  xpEarned         Int     @default(0) @map("xp_earned")
+
   // Timestamps
-  createdAt         DateTime    @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
-  competency        Competency  @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
 
   @@index([competencyId])
   @@index([createdAt])
@@ -483,23 +488,23 @@ model CompetencyUpdate {
 // ============================================
 
 model Activity {
-  id           String       @id @default(uuid()) @db.Uuid
-  cycleId      String       @map("cycle_id") @db.Uuid
-  userId       String       @map("user_id") @db.Uuid
-  type         ActivityType
-  title        String
-  description  String?      @db.Text
-  xpEarned     Int          @default(0) @map("xp_earned")
-  duration     Int?         // Duração em minutos
-  
+  id          String       @id @default(uuid()) @db.Uuid
+  cycleId     String       @map("cycle_id") @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  type        ActivityType
+  title       String
+  description String?      @db.Text
+  xpEarned    Int          @default(0) @map("xp_earned")
+  duration    Int? // Duração em minutos
+
   // Timestamps
-  createdAt    DateTime     @default(now()) @map("created_at")
-  deletedAt    DateTime?    @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
 
   // Relations
-  cycle        Cycle        @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Relacionamentos polimórficos (um activity pode ser um dos tipos)
   oneOnOne      OneOnOneActivity?
   mentoring     MentoringActivity?
@@ -513,11 +518,11 @@ model Activity {
 }
 
 enum ActivityType {
-  ONE_ON_ONE          // Reunião 1:1
-  MENTORING           // Sessão de mentoria
-  CERTIFICATION       // Certificação/Curso
-  GOAL_UPDATE         // Atualização de meta
-  COMPETENCY_UPDATE   // Atualização de competência
+  ONE_ON_ONE // Reunião 1:1
+  MENTORING // Sessão de mentoria
+  CERTIFICATION // Certificação/Curso
+  GOAL_UPDATE // Atualização de meta
+  COMPETENCY_UPDATE // Atualização de competência
 }
 
 // ============================================
@@ -525,51 +530,120 @@ enum ActivityType {
 // ============================================
 
 model OneOnOneActivity {
-  id                String   @id @default(uuid()) @db.Uuid
-  activityId        String   @unique @map("activity_id") @db.Uuid
-  participantName   String   @map("participant_name")
-  workingOn         Json     // Array de strings: O que está trabalhando
-  generalNotes      String   @map("general_notes") @db.Text
-  positivePoints    Json     @map("positive_points") // Array de strings
-  improvementPoints Json     @map("improvement_points") // Array de strings
-  nextSteps         Json     @map("next_steps") // Array de strings
+  id                String    @id @default(uuid()) @db.Uuid
+  activityId        String    @unique @map("activity_id") @db.Uuid
+  participantId     String?   @map("participant_id") @db.Uuid
+  participantName   String    @map("participant_name")
+  workingOn         Json      // Array de strings: O que está trabalhando
+  generalNotes      String    @map("general_notes") @db.Text
+  positivePoints    Json      @map("positive_points") // Array de strings
+  improvementPoints Json      @map("improvement_points") // Array de strings
+  nextSteps         Json      @map("next_steps") // Array de strings
+  completedAt       DateTime? @map("completed_at")
 
   // Relations
-  activity          Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  participant User?    @relation("OneOnOneParticipant", fields: [participantId], references: [id])
 
   @@index([activityId])
+  @@index([participantId])
   @@map("one_on_one_activities")
 }
 
 model MentoringActivity {
-  id               String   @id @default(uuid()) @db.Uuid
-  activityId       String   @unique @map("activity_id") @db.Uuid
-  menteeName       String   @map("mentee_name")
-  topics           Json     // Array de strings: Tópicos discutidos
-  progressFrom     Int?     @map("progress_from") // Progresso inicial (%)
-  progressTo       Int?     @map("progress_to")   // Progresso final (%)
-  outcomes         String?  @db.Text
-  nextSteps        Json     @map("next_steps") // Array de strings
+  id           String  @id @default(uuid()) @db.Uuid
+  activityId   String  @unique @map("activity_id") @db.Uuid
+  menteeName   String  @map("mentee_name")
+  topics       Json // Array de strings: Tópicos discutidos
+  progressFrom Int?    @map("progress_from") // Progresso inicial (%)
+  progressTo   Int?    @map("progress_to") // Progresso final (%)
+  outcomes     String? @db.Text
+  nextSteps    Json    @map("next_steps") // Array de strings
 
   // Relations
-  activity         Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
 
   @@index([activityId])
   @@map("mentoring_activities")
 }
 
 model CertificationActivity {
-  id                String   @id @default(uuid()) @db.Uuid
-  activityId        String   @unique @map("activity_id") @db.Uuid
-  certificationName String   @map("certification_name")
-  topics            Json     // Array de strings: Tópicos cobertos
-  outcomes          String?  @db.Text
-  rating            Int?     // 1-5: Auto-avaliação da dificuldade/qualidade
-  nextSteps         Json     @map("next_steps") // Array de strings
+  id                String  @id @default(uuid()) @db.Uuid
+  activityId        String  @unique @map("activity_id") @db.Uuid
+  certificationName String  @map("certification_name")
+  topics            Json // Array de strings: Tópicos cobertos
+  outcomes          String? @db.Text
+  rating            Int? // 1-5: Auto-avaliação da dificuldade/qualidade
+  nextSteps         Json    @map("next_steps") // Array de strings
 
   // Relations
-  activity          Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
 
   @@index([activityId])
   @@map("certification_activities")
+}
+
+// ============================================
+// NOTIFICATIONS: Email System
+// ============================================
+
+model NotificationPreference {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @map("user_id") @db.Uuid
+
+  // Categorias de notificação
+  onboarding   Boolean @default(true)
+  gamification Boolean @default(true)
+  pdi          Boolean @default(true)
+  management   Boolean @default(true)
+  weeklyReport Boolean @default(true) @map("weekly_report")
+
+  // Frequência de digest
+  digestFrequency DigestFrequency @default(REALTIME) @map("digest_frequency")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model EmailLog {
+  id       String      @id @default(uuid()) @db.Uuid
+  userId   String?     @map("user_id") @db.Uuid
+  to       String
+  subject  String
+  template String
+  status   EmailStatus @default(QUEUED)
+  error    String?     @db.Text
+  sentAt   DateTime?   @map("sent_at")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_logs")
+}
+
+enum DigestFrequency {
+  REALTIME // Enviar imediatamente
+  DAILY // Digest diário
+  WEEKLY // Digest semanal
+  OFF // Desligado
+}
+
+enum EmailStatus {
+  QUEUED
+  SENDING
+  SENT
+  FAILED
+  BOUNCED
 }

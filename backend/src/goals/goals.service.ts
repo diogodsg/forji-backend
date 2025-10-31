@@ -9,6 +9,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { ActivitiesService } from '../activities/activities.service';
+import { ManagementService } from '../management/management.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { UpdateGoalDto } from './dto/update-goal.dto';
 import { UpdateGoalProgressDto } from './dto/update-goal-progress.dto';
@@ -22,6 +23,8 @@ export class GoalsService {
     private gamificationService: GamificationService,
     @Inject(forwardRef(() => ActivitiesService))
     private activitiesService: ActivitiesService,
+    @Inject(forwardRef(() => ManagementService))
+    private managementService: ManagementService,
   ) {}
 
   /**
@@ -113,43 +116,45 @@ export class GoalsService {
   }
 
   /**
-   * Verifica se usuário é gerente do dono da meta
-   */
-  private async isManager(
-    currentUserId: string,
-    targetUserId: string,
-    workspaceId: string,
-  ): Promise<boolean> {
-    const rule = await this.prisma.managementRule.findFirst({
-      where: {
-        subordinateId: targetUserId,
-        managerId: currentUserId,
-        workspaceId,
-        deletedAt: null,
-      },
-    });
-    return !!rule;
-  }
-
-  /**
    * Verifica permissão para criar/editar meta
-   * Regra: Própria pessoa OU seu gerente
+   * Regra: Própria pessoa OU seu gerente (INDIVIDUAL ou TEAM)
+   * Usa a mesma lógica do ManagerGuard
    */
   private async checkPermission(
     currentUserId: string,
     targetUserId: string,
     workspaceId: string,
   ): Promise<void> {
+    console.log('🔍 [GoalsService] Verificando permissão:', {
+      currentUserId,
+      targetUserId,
+      workspaceId,
+    });
+
+    // Se é a própria pessoa, permite
     if (currentUserId === targetUserId) {
+      console.log('✅ [GoalsService] Próprio usuário - permissão concedida');
       return;
     }
 
-    const isManagerOfUser = await this.isManager(currentUserId, targetUserId, workspaceId);
-    if (isManagerOfUser) {
-      return;
+    // Verifica se o usuário logado gerencia o targetUserId (INDIVIDUAL ou TEAM)
+    const isManaged = await this.managementService.isUserManagedBy(
+      targetUserId,
+      currentUserId,
+      workspaceId,
+    );
+
+    console.log('🔍 [GoalsService] Resultado da verificação:', {
+      isManaged,
+      currentUserId,
+      targetUserId,
+    });
+
+    if (!isManaged) {
+      throw new ForbiddenException('Você não tem permissão para gerenciar metas deste usuário');
     }
 
-    throw new ForbiddenException('Você não tem permissão para gerenciar metas deste usuário');
+    console.log('✅ [GoalsService] Gerente do usuário - permissão concedida');
   }
 
   /**

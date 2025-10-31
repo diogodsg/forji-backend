@@ -9,14 +9,30 @@ import {
   ValidateNested,
   IsArray,
   Max,
+  IsUUID,
+  IsDateString,
 } from 'class-validator';
 
 // DTOs específicos para atualização de cada tipo de atividade
 export class UpdateOneOnOneDto {
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000', required: false })
+  @IsUUID()
+  @IsOptional()
+  participantId?: string;
+
   @ApiProperty({ example: 'João Silva', required: false })
   @IsString()
   @IsOptional()
   participantName?: string;
+
+  @ApiProperty({
+    example: '2025-10-25T14:00:00Z',
+    description: 'Data de realização do 1:1',
+    required: false,
+  })
+  @IsDateString()
+  @IsOptional()
+  completedAt?: string;
 
   @ApiProperty({
     example: ['Implementação de feature X', 'Code review do projeto Y'],

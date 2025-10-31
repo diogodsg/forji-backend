@@ -9,8 +9,10 @@ import {
   AlertCircle,
   Trash2,
   Edit,
+  Calendar,
+  Target,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 /**
@@ -42,6 +44,7 @@ interface Activity {
   };
   xpEarned: number;
   timestamp: Date | string; // Pode vir como Date (mock) ou string ISO (backend)
+  completedAt?: Date | string; // Data de realização do 1:1
   // Campos específicos de 1:1
   workingOn?: string[];
   generalNotes?: string;
@@ -261,6 +264,13 @@ function ActivityCard({
 
   const Icon = config.icon;
 
+  // Formatação da data de realização do 1:1
+  const completedAtFormatted = activity.completedAt
+    ? format(safeConvertTimestamp(activity.completedAt), "dd/MM/yyyy", {
+        locale: ptBR,
+      })
+    : null;
+
   return (
     <div className="group bg-gradient-to-br from-white to-surface-50 rounded-xl p-5 border border-surface-200 hover:border-brand-300 hover:shadow-lg transition-all duration-300">
       <div className="flex items-start gap-4">
@@ -276,12 +286,19 @@ function ActivityCard({
           {/* Header */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <span
                   className={`inline-block ${config.bg} ${config.color} px-2 py-0.5 rounded-lg text-xs font-medium border ${config.border}`}
                 >
                   {config.label}
                 </span>
+                {/* Data de realização para 1:1 */}
+                {activity.type === "oneOnOne" && completedAtFormatted && (
+                  <div className="inline-flex items-center gap-1 bg-gradient-to-r from-indigo-50 to-blue-50 text-blue-700 px-2.5 py-1 rounded-lg text-xs font-medium border border-blue-200">
+                    <Calendar className="w-3 h-3" />
+                    <span>Realizado em {completedAtFormatted}</span>
+                  </div>
+                )}
                 {activity.rating && (
                   <div className="flex items-center gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -306,11 +323,28 @@ function ActivityCard({
             </div>
 
             {/* XP Badge */}
-            <div className="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200 flex-shrink-0">
+            <div className="bg-gradient-to-br from-amber-50 to-yellow-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200 flex-shrink-0 shadow-sm">
               <div className="text-xs font-medium">XP ganho</div>
               <div className="text-lg font-bold">+{activity.xpEarned}</div>
             </div>
           </div>
+
+          {/* General Notes para 1:1 - Destaque especial */}
+          {activity.type === "oneOnOne" && activity.generalNotes && (
+            <div className="mb-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
+              <div className="flex items-start gap-2">
+                <MessageSquare className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-semibold text-blue-700 mb-1">
+                    Anotações Gerais
+                  </div>
+                  <p className="text-sm text-blue-900 leading-relaxed line-clamp-3">
+                    {activity.generalNotes}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Topics / Working On */}
           {activity.topics &&
@@ -338,47 +372,93 @@ function ActivityCard({
               <div className="text-xs font-medium text-gray-500 mb-2">
                 No que está trabalhando:
               </div>
-              <div className="space-y-1">
-                {activity.workingOn.slice(0, 2).map((item, index) => (
-                  <div
+              <div className="flex flex-wrap gap-2">
+                {activity.workingOn.map((item, index) => (
+                  <span
                     key={index}
-                    className="text-xs text-gray-600 flex items-start gap-1"
+                    className="bg-gradient-to-br from-indigo-50 to-blue-50 text-indigo-700 px-2.5 py-1 rounded-lg text-xs font-medium border border-indigo-200"
                   >
-                    <span className="text-brand-600 mt-0.5">•</span>
-                    <span>{item}</span>
-                  </div>
+                    {item}
+                  </span>
                 ))}
-                {activity.workingOn.length > 2 && (
-                  <div className="text-xs text-gray-500 italic">
-                    +{activity.workingOn.length - 2} mais...
-                  </div>
-                )}
               </div>
             </div>
           )}
 
           {/* Positive/Improvement Points Summary (1:1 specific) */}
-          {(activity.positivePoints?.length ||
-            activity.improvementPoints?.length) && (
-            <div className="mb-3 grid grid-cols-2 gap-2">
-              {activity.positivePoints &&
-                activity.positivePoints.length > 0 && (
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2">
-                    <div className="text-xs font-medium text-emerald-700 mb-1">
-                      ✓ {activity.positivePoints.length} pontos positivos
+          {activity.type === "oneOnOne" &&
+            (activity.positivePoints?.length ||
+              activity.improvementPoints?.length) && (
+              <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {activity.positivePoints &&
+                  activity.positivePoints.length > 0 && (
+                    <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-3 hover:shadow-sm transition-shadow">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-sm font-bold">
+                            ✓
+                          </span>
+                        </div>
+                        <div className="text-xs font-semibold text-emerald-700">
+                          Pontos Positivos
+                        </div>
+                      </div>
+                      <div className="text-sm font-bold text-emerald-800">
+                        {activity.positivePoints.length}{" "}
+                        {activity.positivePoints.length === 1
+                          ? "destaque"
+                          : "destaques"}
+                      </div>
                     </div>
-                  </div>
-                )}
-              {activity.improvementPoints &&
-                activity.improvementPoints.length > 0 && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
-                    <div className="text-xs font-medium text-amber-700 mb-1">
-                      ⚡ {activity.improvementPoints.length} melhorias
+                  )}
+                {activity.improvementPoints &&
+                  activity.improvementPoints.length > 0 && (
+                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3 hover:shadow-sm transition-shadow">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Target className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <div className="text-xs font-semibold text-amber-700">
+                          Pontos de Melhoria
+                        </div>
+                      </div>
+                      <div className="text-sm font-bold text-amber-800">
+                        {activity.improvementPoints.length}{" "}
+                        {activity.improvementPoints.length === 1
+                          ? "área"
+                          : "áreas"}
+                      </div>
                     </div>
+                  )}
+              </div>
+            )}
+
+          {/* Next Steps para 1:1 */}
+          {activity.type === "oneOnOne" &&
+            activity.nextSteps &&
+            activity.nextSteps.length > 0 && (
+              <div className="mb-3 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 bg-violet-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-3.5 h-3.5 text-white" />
                   </div>
-                )}
-            </div>
-          )}
+                  <div className="text-xs font-semibold text-violet-700">
+                    Próximos Passos
+                  </div>
+                </div>
+                <ul className="space-y-1.5">
+                  {activity.nextSteps.map((step, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start gap-2 text-sm text-violet-800"
+                    >
+                      <span className="text-violet-500 mt-0.5">→</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
           {/* Outcomes */}
           {activity.outcomes && (

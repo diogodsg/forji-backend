@@ -109,6 +109,18 @@ export class FindAllUsersUseCase {
       managedTeams: hierarchy.managedTeamsMap.get(user.id) || [],
     }));
 
+    // Sort: Admins first, then by number of subordinates (descending)
+    data.sort((a, b) => {
+      // 1. Admins come first
+      if (a.isAdmin && !b.isAdmin) return -1;
+      if (!a.isAdmin && b.isAdmin) return 1;
+
+      // 2. Then sort by number of subordinates (reports)
+      const aSubordinatesCount = a.reports.length;
+      const bSubordinatesCount = b.reports.length;
+      return bSubordinatesCount - aSubordinatesCount;
+    });
+
     return {
       data,
       total,

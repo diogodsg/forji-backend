@@ -200,7 +200,7 @@ export function GamifiedNavbar({ showAdmin }: GamifiedNavbarProps) {
             <div className="w-6 h-6 bg-brand-500 rounded-lg flex items-center justify-center">
               <FiStar className="w-3 h-3 text-white" />
             </div>
-            <span className="text-sm font-semibold text-gray-700">v2.0.0</span>
+            <span className="text-sm font-semibold text-gray-700">v0.0.1</span>
           </div>
           <p className="text-xs font-medium text-gray-500 tracking-wide">
             Construindo o futuro juntos

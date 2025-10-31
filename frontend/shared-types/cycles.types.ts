@@ -263,7 +263,9 @@ export interface ActivityResponseDto {
 
 // Activity DTOs alinhados com backend
 export interface CreateOneOnOneDataDto {
+  participantId: string;
   participantName: string;
+  completedAt?: string;
   workingOn?: string[];
   generalNotes: string;
   positivePoints?: string[];
@@ -288,7 +290,9 @@ export interface CreateOneOnOneDto {
   cycleId: string;
   title: string;
   description?: string;
-  participantId: string; // Manager/Mentor user ID
+  participantId: string;
+  participantName: string;
+  completedAt?: string;
   meetingDate: string; // ISO 8601
   topics: string[];
   actionItems?: string[];
@@ -297,9 +301,13 @@ export interface CreateOneOnOneDto {
 export interface OneOnOneActivityResponseDto extends ActivityResponseDto {
   type: "ONE_ON_ONE";
   participantId: string;
-  meetingDate: string;
-  topics: string[];
-  actionItems: string[];
+  participantName: string;
+  completedAt: string | null;
+  workingOn: string[];
+  generalNotes: string;
+  positivePoints: string[];
+  improvementPoints: string[];
+  nextSteps: string[];
 }
 
 // Mentoring Activity

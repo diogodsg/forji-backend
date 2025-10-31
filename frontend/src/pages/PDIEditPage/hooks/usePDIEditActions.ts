@@ -11,6 +11,30 @@ import type { UsePDIEditDataReturn } from "./usePDIEditData";
 const MAX_GOALS_PER_CYCLE = 5;
 const MAX_COMPETENCIES_PER_CYCLE = 5;
 
+/**
+ * Converte data do input date (YYYY-MM-DD) para ISO string preservando o timezone local
+ * Input date retorna apenas a data sem hora, precisamos adicionar hora e timezone local
+ */
+function dateInputToISO(dateString: string): string {
+  // dateString vem como "2025-10-31"
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  // Criar data às 12h no timezone local do usuário
+  const date = new Date(year, month - 1, day, 12, 0, 0);
+
+  // Obter offset do timezone local em minutos e converter para string +HH:MM ou -HH:MM
+  const offset = -date.getTimezoneOffset();
+  const sign = offset >= 0 ? "+" : "-";
+  const absOffset = Math.abs(offset);
+  const hours = String(Math.floor(absOffset / 60)).padStart(2, "0");
+  const minutes = String(absOffset % 60).padStart(2, "0");
+
+  // Formatar como ISO 8601 com timezone: "2025-10-31T12:00:00-03:00"
+  const isoDate = `${dateString}T12:00:00${sign}${hours}:${minutes}`;
+
+  return isoDate;
+}
+
 export interface UsePDIEditActionsReturn {
   // Goal handlers
   handleGoalCreate: () => void;
@@ -34,7 +58,7 @@ export interface UsePDIEditActionsReturn {
   handleActivityDeleteClick: (activityId: string) => void;
   handleOneOnOneSave: (data: any) => Promise<void>;
   handleMentoringSave: (data: any) => Promise<void>;
-  handleOneOnOneEditSave: (data: any) => Promise<void>;
+  handleOneOnOneEditSave: (activityId: string, data: any) => Promise<void>;
   handleSaveActivityEdit: (activityId: string, updates: any) => Promise<void>;
   handleConfirmDeleteActivity: () => Promise<void>;
 }
@@ -642,8 +666,11 @@ export function usePDIEditActions(
       if (activity.type === "ONE_ON_ONE") {
         const oneOnOneData = activity.oneOnOne;
         const prefillData = {
+          participantId: oneOnOneData?.participantId || "",
           participant: oneOnOneData?.participantName || "",
-          date: activity.timestamp
+          date: oneOnOneData?.completedAt
+            ? new Date(oneOnOneData.completedAt).toISOString().split("T")[0]
+            : activity.timestamp
             ? new Date(activity.timestamp).toISOString().split("T")[0]
             : new Date().toISOString().split("T")[0],
           workingOn: oneOnOneData?.workingOn || [],
@@ -729,11 +756,13 @@ export function usePDIEditActions(
           cycleId: cycle.id,
           userId: subordinate.id,
           type: "ONE_ON_ONE" as const,
-          title: `1:1 com ${currentUser?.name || "Gestor"}`,
+          title: `1:1 com ${data.participant || subordinate.name}`,
           description: `Reunião 1:1 em ${data.date}`,
           duration: 45,
           oneOnOneData: {
-            participantName: currentUser?.name || "Gestor",
+            participantId: data.participantId || subordinate.id,
+            participantName: data.participant || subordinate.name,
+            completedAt: data.date ? dateInputToISO(data.date) : undefined,
             workingOn: data.workingOn || [],
             generalNotes: data.generalNotes || "",
             positivePoints: data.positivePoints || [],
@@ -786,10 +815,68 @@ export function usePDIEditActions(
     [subordinate, refreshActivities, closeModal, toast]
   );
 
-  const handleOneOnOneEditSave = useCallback(async (data: any) => {
-    // Implementation será adicionada conforme necessário
-    console.log("💾 Salvando edição de 1:1:", data);
-  }, []);
+  const handleOneOnOneEditSave = useCallback(
+    async (activityId: string, data: any) => {
+      try {
+        if (!activityId) {
+          toast({
+            type: "error",
+            title: "Erro",
+            message: "Atividade não encontrada.",
+          });
+          return;
+        }
+
+        const updates = {
+          title: `1:1 com ${data.participant}`,
+          description: `Reunião 1:1 em ${data.date}`,
+          oneOnOneData: {
+            participantId: data.participantId || "",
+            participantName: data.participant,
+            completedAt: data.date ? dateInputToISO(data.date) : undefined,
+            workingOn: data.workingOn || [],
+            generalNotes: data.generalNotes || "",
+            positivePoints: data.positivePoints || [],
+            improvementPoints: data.improvementPoints || [],
+            nextSteps: data.nextSteps || [],
+          },
+        };
+
+        console.log("📤 Enviando updates para API:", updates);
+
+        const { apiClient } = await import("@/lib/api/client");
+        await apiClient.patch(`/activities/${activityId}`, updates);
+
+        toast({
+          type: "success",
+          title: "1:1 Atualizado",
+          message: "As alterações foram salvas com sucesso.",
+        });
+
+        setEditActivityModalState({
+          isOpen: false,
+          activity: null,
+        });
+
+        await refreshActivities();
+      } catch (err: any) {
+        console.error("❌ Erro ao editar 1:1:", err);
+
+        const errorMessage = err?.response?.data?.message
+          ? Array.isArray(err.response.data.message)
+            ? err.response.data.message.join(", ")
+            : err.response.data.message
+          : "Não foi possível editar o 1:1.";
+
+        toast({
+          type: "error",
+          title: "Erro ao Editar 1:1",
+          message: errorMessage,
+        });
+      }
+    },
+    [setEditActivityModalState, refreshActivities, toast]
+  );
 
   const handleSaveActivityEdit = useCallback(
     async (activityId: string, updates: any) => {

@@ -22,6 +22,6 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(50)
+  @MaxLength(1000)
   avatarId?: string;
 }

@@ -32,6 +32,14 @@ export default function TagInput({
     }
   };
 
+  const handleBlur = () => {
+    // Adicionar automaticamente ao sair do input se houver texto
+    if (inputValue.trim()) {
+      onAdd(inputValue.trim());
+      setInputValue("");
+    }
+  };
+
   return (
     <div>
       {/* Input */}
@@ -41,6 +49,7 @@ export default function TagInput({
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder={placeholder}
           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
         />

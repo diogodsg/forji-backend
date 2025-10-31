@@ -46,10 +46,11 @@ export function usePDIEditData(userId: string): UsePDIEditDataReturn {
         console.log("🔍 Verificando se é gestor do usuário:", userId);
         const isManager = await managementApi.checkIfManaged(userId);
 
-        if (!isManager) {
+        if (!isManager.isManaged) {
           console.warn("❌ Acesso negado - não é gestor do usuário:", userId);
           setPermissionChecked(true);
           setHasPermission(false);
+          setLoading(false); // Apenas desliga loading se não tem permissão
           return;
         }
 
@@ -65,6 +66,7 @@ export function usePDIEditData(userId: string): UsePDIEditDataReturn {
         setSubordinate(userData);
         setHasPermission(true);
         setPermissionChecked(true);
+        // NÃO desligar loading aqui - deixar para o segundo useEffect
       } catch (error) {
         console.error(
           "❌ Erro ao verificar permissões ou carregar dados:",
@@ -73,8 +75,7 @@ export function usePDIEditData(userId: string): UsePDIEditDataReturn {
         setPermissionChecked(true);
         setHasPermission(false);
         setError(error);
-      } finally {
-        setLoading(false);
+        setLoading(false); // Apenas desliga loading em caso de erro
       }
     };
 
@@ -89,7 +90,7 @@ export function usePDIEditData(userId: string): UsePDIEditDataReturn {
       if (!hasPermission || !userId) return;
 
       try {
-        setLoading(true);
+        // Não ligar loading novamente aqui - já está ligado do primeiro useEffect
         setError(null);
 
         console.log("🔄 Buscando dados de PDI do subordinado:", userId);
@@ -118,7 +119,7 @@ export function usePDIEditData(userId: string): UsePDIEditDataReturn {
         console.error("❌ Erro ao carregar dados do subordinado:", err);
         setError(err);
       } finally {
-        setLoading(false);
+        setLoading(false); // Agora sim desliga o loading
       }
     }
 

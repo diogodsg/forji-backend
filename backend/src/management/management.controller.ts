@@ -17,31 +17,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ManagementRuleType } from '@prisma/client';
 
-// O request.user vem da JwtStrategy e tem esta estrutura
-interface RequestUser {
-  id: string;
-  userId: string; // Alias para id
-  email: string;
-  workspaceId: string;
-  workspaceRole: string;
-  [key: string]: any;
-}
-
 @ApiTags('management')
 @Controller('management')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('JWT-auth')
 export class ManagementController {
   constructor(private readonly managementService: ManagementService) {}
-
-  /**
-   * GET /management/test
-   * Test endpoint
-   */
-  @Get('test')
-  async test() {
-    return { message: 'Management module is working!' };
-  }
 
   /**
    * GET /management/subordinates

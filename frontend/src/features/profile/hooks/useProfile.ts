@@ -33,6 +33,42 @@ function isCacheValid(timestamp: number): boolean {
 }
 
 /**
+ * Limpa o cache de management (útil para debug ou após mudanças de hierarquia)
+ */
+export function clearManagementCache() {
+  const size = managementCache.size;
+  managementCache.clear();
+  console.log("🗑️ Cache de management limpo:", {
+    entriesRemoved: size,
+    timestamp: new Date().toISOString(),
+  });
+  return { cleared: size };
+}
+
+/**
+ * Mostra o conteúdo do cache (debug)
+ */
+export function debugManagementCache() {
+  const entries = Array.from(managementCache.entries()).map(([key, value]) => ({
+    key,
+    isManaged: value.isManaged,
+    age: Math.round((Date.now() - value.timestamp) / 1000) + "s",
+    valid: isCacheValid(value.timestamp),
+  }));
+  console.table(entries);
+  return entries;
+}
+
+// Expor funções de debug no window para facilitar debug via console
+if (typeof window !== "undefined") {
+  (window as any).__clearManagementCache = clearManagementCache;
+  (window as any).__debugManagementCache = debugManagementCache;
+  console.log(
+    "🔧 Debug helpers disponíveis: __clearManagementCache(), __debugManagementCache()"
+  );
+}
+
+/**
  * Valida se o avatarId é um avatar DiceBear válido
  * @param avatarId - ID do avatar a ser validado
  * @returns avatarId válido ou fallback para "avatar-1"
@@ -40,6 +76,12 @@ function isCacheValid(timestamp: number): boolean {
 function validateAvatarId(avatarId: string | undefined): string {
   if (!avatarId) return "avatar-1";
 
+  // Aceita avatares customizados do Micah (formato: micah-{seed}-{bg}-{params})
+  if (avatarId.startsWith("micah-")) {
+    return avatarId;
+  }
+
+  // Valida avatares pré-definidos
   const avatar = getDiceBearAvatarById(avatarId);
   return avatar ? avatarId : "avatar-1";
 }
@@ -186,39 +228,52 @@ export function useProfile(userId?: string) {
           gamificationDataOriginal: gamificationData,
         });
 
-        // Verificar permissões - se é o próprio usuário, admin, ou gestor do subordinado
-        let canViewPrivateInfo = isCurrentUser || !!user.isAdmin;
+        // Verificar permissões - apenas gestor direto pode editar PDI
+        // Admin NÃO tem permissão automática, precisa ser manager do subordinado
+        let canViewPrivateInfo = false;
 
         console.log("🔍 Verificação de permissões inicial:", {
           isCurrentUser,
           isAdmin: !!user.isAdmin,
           isManager: !!user.isManager,
-          canViewPrivateInfo,
+          note: "Admin precisa ser manager para ter permissão",
           targetUserId,
           currentUserId: user.id.toString(),
         });
 
-        // Se não é o próprio usuário nem admin, SEMPRE verificar se é gestor
-        // Não confiar apenas no campo isManager pois ele pode estar incorreto
-        if (!canViewPrivateInfo) {
+        // Se não é o próprio usuário, verificar se é gestor
+        if (!isCurrentUser) {
           const cacheKey = getCacheKey(user.id.toString(), targetUserId);
           const cached = managementCache.get(cacheKey);
 
           // Verificar cache primeiro
           if (cached && isCacheValid(cached.timestamp)) {
-            console.log("🔍 Usando cache para management check:", {
+            console.log("✅ [Management Cache] Usando cache válido:", {
               cacheKey,
               isManaged: cached.isManaged,
+              age: Math.round((Date.now() - cached.timestamp) / 1000) + "s",
             });
             canViewPrivateInfo = cached.isManaged;
           } else {
             try {
-              console.log("🔍 Verificando se é gestor de:", targetUserId);
+              console.log(
+                "🔍 [Management API] Verificando relação de gestão:",
+                {
+                  managerId: user.id.toString(),
+                  subordinateId: targetUserId,
+                  workspaceId: user.workspaceId,
+                }
+              );
+
               const managementResult = await managementApi.checkIfManaged(
                 targetUserId
               );
 
-              console.log("🔍 Management API Response:", managementResult);
+              console.log("✅ [Management API] Resposta recebida:", {
+                isManaged: managementResult.isManaged,
+                managerId: user.id.toString(),
+                subordinateId: targetUserId,
+              });
 
               // Armazenar no cache
               managementCache.set(cacheKey, {
@@ -227,19 +282,26 @@ export function useProfile(userId?: string) {
               });
 
               canViewPrivateInfo = managementResult.isManaged;
-              console.log("🔍 Management check resultado FINAL:", {
+
+              console.log("🎯 [Management Final] Resultado da verificação:", {
                 targetUserId,
                 managerId: user.id,
                 isManaged: managementResult.isManaged,
                 canViewPrivateInfo,
                 cached: false,
+                showEditButton: managementResult.isManaged,
+                isAdmin: !!user.isAdmin,
+                note: "Mesmo admin precisa ser manager",
               });
             } catch (error) {
-              console.warn(
-                "❌ Failed to check management relationship:",
-                error
+              console.error(
+                "❌ [Management Error] Falha ao verificar relação:",
+                {
+                  error,
+                  managerId: user.id.toString(),
+                  subordinateId: targetUserId,
+                }
               );
-              console.error("❌ Error details:", error);
 
               // Em caso de erro, armazenar false no cache por um tempo menor
               managementCache.set(cacheKey, {
@@ -251,13 +313,10 @@ export function useProfile(userId?: string) {
             }
           }
         } else {
-          console.log("🔍 Pular verificação de management:", {
-            reason: canViewPrivateInfo
-              ? "Já tem permissão (próprio usuário ou admin)"
-              : "Motivo desconhecido",
-            canViewPrivateInfo,
+          console.log("⏭️ [Management Skip] É o próprio usuário:", {
             isCurrentUser,
-            isAdmin: !!user.isAdmin,
+            canViewPrivateInfo: false,
+            note: "Usuário não vê botão de editar PDI no próprio perfil",
           });
         }
 
@@ -396,6 +455,6 @@ export function useProfile(userId?: string) {
     updatePrivacySettings,
     updateAvatar,
     isCurrentUser: profileData?.profile.isCurrentUser || false,
-    canEdit: profileData?.canViewPrivateInfo || false,
+    canEdit: profileData?.profile.isCurrentUser || false, // Usuário pode editar o próprio perfil
   };
 }

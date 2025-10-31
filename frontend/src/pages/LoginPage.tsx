@@ -76,7 +76,7 @@ export default function LoginPage() {
             {/* Versão */}
             <div className="pt-2">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-50 text-brand-700">
-                v2.0.0
+                v0.0.1
               </span>
             </div>
           </div>

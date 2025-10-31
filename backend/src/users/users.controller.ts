@@ -18,12 +18,6 @@ import {
   ApiParam,
   ApiQuery,
   ApiBody,
-  ApiForbiddenResponse,
-  ApiNotFoundResponse,
-  ApiUnauthorizedResponse,
-  ApiBadRequestResponse,
-  ApiCreatedResponse,
-  ApiOkResponse,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';

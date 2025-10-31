@@ -1,6 +1,11 @@
 import { PrismaClient, User, Cycle } from '@prisma/client';
 
-export async function seedActivities(prisma: PrismaClient, cycle: Cycle, diego: User) {
+export async function seedActivities(
+  prisma: PrismaClient,
+  cycle: Cycle,
+  diego: User,
+  carlos: User,
+) {
   console.log('📋 Seeding activities...');
 
   // Create Activity entries
@@ -65,7 +70,9 @@ export async function seedActivities(prisma: PrismaClient, cycle: Cycle, diego: 
     create: {
       id: '550e8400-e29b-41d4-a716-44665544000b',
       activityId: oneOnOneActivity.id,
+      participantId: carlos.id,
       participantName: 'Carlos Oliveira',
+      completedAt: new Date('2025-10-25T14:00:00Z'),
       workingOn: ['Implementação de sistema de cache com Redis', 'Testes de integração'],
       generalNotes: 'Reunião produtiva, Carlos está progredindo bem',
       positivePoints: [

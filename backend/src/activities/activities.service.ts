@@ -3,9 +3,12 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GamificationService } from '../gamification/gamification.service';
+import { ManagementService } from '../management/management.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 import { ActivityResponseDto, TimelineResponseDto } from './dto/activity-response.dto';
@@ -16,6 +19,8 @@ export class ActivitiesService {
   constructor(
     private prisma: PrismaService,
     private gamificationService: GamificationService,
+    @Inject(forwardRef(() => ManagementService))
+    private managementService: ManagementService,
   ) {}
 
   /**
@@ -125,43 +130,47 @@ export class ActivitiesService {
   }
 
   /**
-   * Verifica se usuário é gerente do dono da atividade
-   */
-  private async isManager(
-    currentUserId: string,
-    targetUserId: string,
-    workspaceId: string,
-  ): Promise<boolean> {
-    const rule = await this.prisma.managementRule.findFirst({
-      where: {
-        subordinateId: targetUserId,
-        managerId: currentUserId,
-        workspaceId,
-        deletedAt: null,
-      },
-    });
-    return !!rule;
-  }
-
-  /**
    * Verifica permissão para criar/visualizar atividade
-   * Regra: Própria pessoa OU seu gerente
+   * Regra: Própria pessoa OU seu gerente (INDIVIDUAL ou TEAM)
+   * Usa a mesma lógica do ManagerGuard
    */
   private async checkPermission(
     currentUserId: string,
     targetUserId: string,
     workspaceId: string,
   ): Promise<void> {
+    console.log('🔍 [ActivitiesService] Verificando permissão:', {
+      currentUserId,
+      targetUserId,
+      workspaceId,
+    });
+
+    // Se é a própria pessoa, permite
     if (currentUserId === targetUserId) {
+      console.log('✅ [ActivitiesService] Próprio usuário - permissão concedida');
       return;
     }
 
-    const isManagerOfUser = await this.isManager(currentUserId, targetUserId, workspaceId);
-    if (isManagerOfUser) {
-      return;
+    // Verifica se o usuário logado gerencia o targetUserId (INDIVIDUAL ou TEAM)
+    const isManaged = await this.managementService.isUserManagedBy(
+      targetUserId,
+      currentUserId,
+      workspaceId,
+    );
+
+    console.log('🔍 [ActivitiesService] Resultado da verificação:', {
+      isManaged,
+      currentUserId,
+      targetUserId,
+    });
+
+    if (!isManaged) {
+      throw new ForbiddenException(
+        'Você não tem permissão para gerenciar atividades deste usuário',
+      );
     }
 
-    throw new ForbiddenException('Você não tem permissão para gerenciar atividades deste usuário');
+    console.log('✅ [ActivitiesService] Gerente do usuário - permissão concedida');
   }
 
   /**
@@ -249,7 +258,9 @@ export class ActivitiesService {
         await tx.oneOnOneActivity.create({
           data: {
             activityId: baseActivity.id,
+            participantId: oneOnOneData.participantId,
             participantName: oneOnOneData.participantName,
+            completedAt: oneOnOneData.completedAt ? new Date(oneOnOneData.completedAt) : null,
             workingOn: oneOnOneData.workingOn,
             generalNotes: oneOnOneData.generalNotes,
             positivePoints: oneOnOneData.positivePoints,
@@ -478,7 +489,14 @@ export class ActivitiesService {
       await this.prisma.oneOnOneActivity.update({
         where: { id: activity.oneOnOne.id },
         data: {
+          participantId: oneOnOneData.participantId ?? activity.oneOnOne.participantId,
           participantName: oneOnOneData.participantName ?? activity.oneOnOne.participantName,
+          completedAt:
+            oneOnOneData.completedAt !== undefined
+              ? oneOnOneData.completedAt
+                ? new Date(oneOnOneData.completedAt)
+                : null
+              : activity.oneOnOne.completedAt,
           workingOn:
             oneOnOneData.workingOn !== undefined
               ? oneOnOneData.workingOn

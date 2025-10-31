@@ -35,7 +35,46 @@ export function Avatar({
   className = "",
   showName = false,
 }: AvatarProps) {
-  // Procura o avatar DiceBear ou usa o primeiro como fallback
+  // Verifica se é um avatar customizado do Micah
+  if (avatarId?.startsWith("micah-")) {
+    // Formato: micah-{seed}-{bg}-{params}
+    const parts = avatarId.split("-");
+    if (parts.length >= 3) {
+      const seed = parts[1];
+      const bg = parts[2];
+      const params = parts.slice(3).join("-");
+
+      // Reconstrói a URL do DiceBear com todos os parâmetros
+      const avatarUrl = `https://api.dicebear.com/7.x/micah/svg?seed=${seed}&backgroundColor=${bg}&${params}&size=${sizePixels[size]}`;
+
+      return (
+        <div className={`flex items-center gap-3 ${className}`}>
+          <div
+            className={`
+            ${sizeClasses[size]} 
+            rounded-full bg-surface-100
+            overflow-hidden
+            shadow-soft hover:shadow-glow transition-shadow duration-200
+          `}
+          >
+            <img
+              src={avatarUrl}
+              alt="Avatar customizado"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {showName && (
+            <span className="text-sm font-medium text-surface-700">
+              Avatar Personalizado
+            </span>
+          )}
+        </div>
+      );
+    }
+  }
+
+  // Procura o avatar DiceBear pré-definido ou usa o primeiro como fallback
   const avatar = avatarId
     ? getDiceBearAvatarById(avatarId)
     : dicebearAvatarOptions[0];

@@ -15,17 +15,27 @@ export function PDIHeroSection({
   cycle,
   goals,
 }: PDIHeroSectionProps) {
+  // Debug: verificar dados recebidos
+  console.log("🔍 PDIHeroSection - Dados recebidos:", {
+    subordinate,
+    cycle,
+    goals,
+  });
+
   // Calcular dados reais baseados no backend
-  const totalGoals = goals.length;
-  const completedGoals = goals.filter((goal) => goal.progress === 100).length;
+  const totalGoals = goals?.length || 0;
+  const completedGoals =
+    goals?.filter((goal) => goal.progress === 100).length || 0;
   const progressPercentage =
     totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
 
   // Calcular XP total das metas
-  const totalXP = goals.reduce((sum, goal) => sum + (goal.xpReward || 0), 0);
-  const earnedXP = goals
-    .filter((goal) => goal.progress === 100)
-    .reduce((sum, goal) => sum + (goal.xpReward || 0), 0);
+  const totalXP =
+    goals?.reduce((sum, goal) => sum + (goal.xpReward || 0), 0) || 0;
+  const earnedXP =
+    goals
+      ?.filter((goal) => goal.progress === 100)
+      .reduce((sum, goal) => sum + (goal.xpReward || 0), 0) || 0;
 
   // Calcular dias restantes do ciclo
   const today = new Date();

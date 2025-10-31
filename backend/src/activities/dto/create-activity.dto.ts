@@ -12,15 +12,30 @@ import {
   IsArray,
   ArrayMinSize,
   Max,
+  IsDateString,
 } from 'class-validator';
 import { ActivityType } from '@prisma/client';
 
 // DTOs específicos para cada tipo de atividade
 export class CreateOneOnOneDto {
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
+  @IsUUID()
+  @IsNotEmpty()
+  participantId: string;
+
   @ApiProperty({ example: 'João Silva' })
   @IsString()
   @IsNotEmpty()
   participantName: string;
+
+  @ApiProperty({
+    example: '2025-10-25T14:00:00Z',
+    description: 'Data de realização do 1:1',
+    required: false,
+  })
+  @IsDateString()
+  @IsOptional()
+  completedAt?: string;
 
   @ApiProperty({
     example: ['Implementação de feature X', 'Code review do projeto Y'],

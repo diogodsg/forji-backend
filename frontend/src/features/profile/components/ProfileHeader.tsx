@@ -10,7 +10,7 @@ import {
 } from "react-icons/fi";
 import type { UserProfile, ProfileStats } from "../types/profile";
 import { ClickableAvatar } from "./Avatar";
-import { UnifiedAvatarSelector } from "./UnifiedAvatarSelector";
+import { AvatarBuilder } from "./AvatarBuilder";
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -58,6 +58,14 @@ export function ProfileHeader({
 
   console.log("🎯 ProfileHeader - profile.avatarId:", profile.avatarId);
 
+  // Debug do avatar editável
+  console.log("🔍 ProfileHeader - Debug avatar editável:", {
+    "profile.avatarId": profile.avatarId,
+    canEdit,
+    "profile.isCurrentUser": profile.isCurrentUser,
+    shouldBeEditable: profile.avatarId && canEdit && profile.isCurrentUser,
+  });
+
   // Debug do botão de editar PDI
   console.log("🔍 ProfileHeader - Debug botão PDI:", {
     isCurrentUser: profile.isCurrentUser,
@@ -65,6 +73,7 @@ export function ProfileHeader({
     shouldShowButton: !profile.isCurrentUser && canViewPrivateInfo,
     userId,
     profileId: profile.id,
+    buttonWillShow: !profile.isCurrentUser && canViewPrivateInfo,
   });
 
   return (
@@ -79,16 +88,18 @@ export function ProfileHeader({
         <div className="relative z-10 flex flex-col lg:flex-row items-start gap-6">
           {/* Avatar Section */}
           <div className="relative group">
-            {profile.avatarId ? (
+            {profile.avatarId && canEdit && profile.isCurrentUser ? (
               <ClickableAvatar
                 avatarId={profile.avatarId}
                 size="2xl"
-                onClick={
-                  canEdit && profile.isCurrentUser
-                    ? () => setShowAvatarSelector(true)
-                    : undefined
-                }
-                isEditable={canEdit && profile.isCurrentUser}
+                onClick={() => setShowAvatarSelector(true)}
+                isEditable={true}
+              />
+            ) : profile.avatarId ? (
+              <ClickableAvatar
+                avatarId={profile.avatarId}
+                size="2xl"
+                isEditable={false}
               />
             ) : (
               <div className="relative">
@@ -233,10 +244,10 @@ export function ProfileHeader({
         </div>
       </div>
 
-      {/* Avatar Selector Modal */}
-      <UnifiedAvatarSelector
+      {/* Avatar Builder Modal */}
+      <AvatarBuilder
         currentAvatar={profile.avatarId}
-        onSelectAvatar={handleAvatarSelect}
+        onSave={handleAvatarSelect}
         onClose={() => setShowAvatarSelector(false)}
         isOpen={showAvatarSelector}
       />
