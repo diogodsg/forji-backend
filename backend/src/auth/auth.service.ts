@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginUseCase } from './use-cases/login.use-case';
 import { RegisterUseCase } from './use-cases/register.use-case';
 import { ValidateTokenUseCase } from './use-cases/validate-token.use-case';
+import { GoogleOAuthUseCase } from './use-cases/google-oauth.use-case';
 import { AuthRepository } from './repositories/auth.repository';
 import { RegisterDto, LoginDto } from './dto';
 import * as bcrypt from 'bcrypt';
@@ -17,6 +18,7 @@ export class AuthService {
     private readonly loginUseCase: LoginUseCase,
     private readonly registerUseCase: RegisterUseCase,
     private readonly validateTokenUseCase: ValidateTokenUseCase,
+    private readonly googleOAuthUseCase: GoogleOAuthUseCase,
     private readonly authRepository: AuthRepository,
     private readonly jwtService: JwtService,
   ) {}
@@ -98,5 +100,9 @@ export class AuthService {
         role: membership.role,
       },
     };
+  }
+
+  async googleLogin(user: any) {
+    return this.googleOAuthUseCase.execute(user);
   }
 }

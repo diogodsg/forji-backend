@@ -214,9 +214,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
+  /**
+   * Login with OAuth token (Google, etc)
+   */
+  const loginWithToken = useCallback(
+    async (accessToken: string) => {
+      try {
+        // Store token
+        localStorage.setItem(STORAGE_TOKEN_KEY, accessToken);
+        setToken(accessToken);
+
+        // Validate and get user
+        const response = await authApi.me();
+        const transformedUser = transformBackendUser(response.user);
+        setUser(transformedUser);
+
+        toast.success(`Bem-vindo, ${response.user.name}!`, "Login realizado");
+
+        // Redirect to home
+        navigate("/");
+      } catch (error) {
+        console.error("OAuth token validation failed:", error);
+        localStorage.removeItem(STORAGE_TOKEN_KEY);
+        setToken(null);
+        setUser(null);
+        toast.error(
+          "Falha ao validar credenciais. Tente novamente.",
+          "Erro no login"
+        );
+        // Don't navigate here - let the caller handle it
+        throw error;
+      }
+    },
+    [toast, navigate]
+  );
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, refreshUser }}
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        refreshUser,
+        loginWithToken,
+      }}
     >
       {children}
     </AuthContext.Provider>

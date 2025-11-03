@@ -24,4 +24,5 @@ export interface AuthContextValue {
   }) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  loginWithToken: (token: string) => Promise<void>;
 }

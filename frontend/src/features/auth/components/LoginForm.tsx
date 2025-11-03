@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { FcGoogle } from "react-icons/fc";
 
 export interface LoginFormProps {
   className?: string;
@@ -140,6 +141,29 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
           ? "Entrar"
           : "Registrar"}
       </button>
+
+      {/* Divider */}
+      <div className="relative flex items-center gap-3 py-2">
+        <div className="flex-1 h-px bg-surface-300" />
+        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+          ou
+        </span>
+        <div className="flex-1 h-px bg-surface-300" />
+      </div>
+
+      {/* Google Login Button */}
+      <button
+        type="button"
+        onClick={() => {
+          const apiUrl = "http://localhost:8000/api";
+          window.location.href = `${apiUrl}/auth/google`;
+        }}
+        className="relative inline-flex items-center justify-center gap-3 rounded-lg bg-white hover:bg-gray-50 border-2 border-surface-300 hover:border-surface-400 transition-all duration-150 text-gray-700 text-sm font-semibold h-11 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-400/40 focus:ring-offset-2"
+      >
+        <FcGoogle className="w-5 h-5" />
+        <span>Continuar com Google</span>
+      </button>
+
       {/* <div className="pt-3 text-center">
         <button
           type="button"

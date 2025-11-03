@@ -1,18 +1,22 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ConfigModule } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy, JwtStrategy } from './strategies';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { PrismaModule } from '../prisma/prisma.module';
 import { GamificationModule } from '../gamification/gamification.module';
 import { AuthRepository } from './repositories/auth.repository';
 import { LoginUseCase } from './use-cases/login.use-case';
 import { RegisterUseCase } from './use-cases/register.use-case';
 import { ValidateTokenUseCase } from './use-cases/validate-token.use-case';
+import { GoogleOAuthUseCase } from './use-cases/google-oauth.use-case';
 
 @Module({
   imports: [
+    ConfigModule,
     PrismaModule,
     GamificationModule,
     PassportModule,
@@ -30,8 +34,10 @@ import { ValidateTokenUseCase } from './use-cases/validate-token.use-case';
     LoginUseCase,
     RegisterUseCase,
     ValidateTokenUseCase,
+    GoogleOAuthUseCase,
     LocalStrategy,
     JwtStrategy,
+    GoogleStrategy,
   ],
   exports: [AuthService],
 })

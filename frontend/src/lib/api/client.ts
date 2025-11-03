@@ -28,7 +28,8 @@ apiClient.interceptors.request.use(
     // Log request em desenvolvimento
     if (import.meta.env.DEV) {
       console.log(
-        `🔵 API Request: ${config.method?.toUpperCase()} ${config.url}`
+        `🔵 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+        token ? `🔑 Token: ${token.substring(0, 20)}...` : "⚠️ No token"
       );
     }
 

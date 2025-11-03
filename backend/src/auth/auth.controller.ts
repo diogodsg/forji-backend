@@ -1,5 +1,7 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Req, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto';
 import { JwtAuthGuard } from './guards';
@@ -58,5 +60,36 @@ export class AuthController {
   @ApiResponse({ status: 404, description: 'Workspace not found' })
   async switchWorkspace(@CurrentUser() user: any, @Body('workspaceId') workspaceId: string) {
     return this.authService.switchWorkspace(user.id, workspaceId);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Initiate Google OAuth login' })
+  @ApiResponse({ status: 302, description: 'Redirect to Google' })
+  async googleAuth() {
+    // Guard redirects to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  @ApiResponse({ status: 302, description: 'Redirect to frontend with token' })
+  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+    try {
+      const result = await this.authService.googleLogin(req.user);
+
+      // Redirect to frontend with token in URL
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const redirectUrl = `${frontendUrl}/auth/callback?token=${result.accessToken}`;
+
+      res.redirect(redirectUrl);
+    } catch (error) {
+      // Redirect to frontend with error message
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const errorMessage = encodeURIComponent(error.message || 'Authentication failed');
+      const redirectUrl = `${frontendUrl}/auth/callback?error=${errorMessage}`;
+
+      res.redirect(redirectUrl);
+    }
   }
 }

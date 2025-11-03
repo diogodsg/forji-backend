@@ -28,6 +28,7 @@ const SettingsPage = lazy(() =>
   import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage }))
 );
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
 const AdminAccessPage = lazy(() => import("./pages/AdminAccessPage"));
 const CurrentCyclePageOptimized = lazy(() =>
   import("./pages/CurrentCyclePageOptimized").then((m) => ({
@@ -85,13 +86,31 @@ function InnerApp() {
   const { triggerSparkles, triggerLevelUp, triggerAchievement, triggerMega } =
     useCelebrations();
 
+  // Always show callback page if on that route (don't wait for auth loading)
+  const isCallbackRoute = window.location.pathname === "/auth/callback";
+
+  if (isCallbackRoute) {
+    return (
+      <Suspense
+        fallback={<LoginLoading label="Processing authentication..." />}
+      >
+        <Routes>
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
   // Loading splash while resolving /auth/me
   if (loading) return <ScreenLoading label="Loading..." />;
 
   if (!user) {
     return (
       <Suspense fallback={<LoginLoading label="Loading login..." />}>
-        <LoginPage />
+        <Routes>
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="*" element={<LoginPage />} />
+        </Routes>
       </Suspense>
     );
   }

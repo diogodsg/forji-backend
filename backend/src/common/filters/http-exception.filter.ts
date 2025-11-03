@@ -18,6 +18,30 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    // Special handling for OAuth callback errors - redirect instead of JSON
+    if (request.url.includes('/auth/google/callback')) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      let errorMessage = 'Authentication failed';
+
+      if (exception instanceof HttpException) {
+        const exceptionResponse = exception.getResponse();
+        if (typeof exceptionResponse === 'string') {
+          errorMessage = exceptionResponse;
+        } else if (typeof exceptionResponse === 'object') {
+          errorMessage = (exceptionResponse as any).message || errorMessage;
+        }
+      } else if (exception instanceof Error) {
+        errorMessage = exception.message;
+      }
+
+      const redirectUrl = `${frontendUrl}/auth/callback?error=${encodeURIComponent(errorMessage)}`;
+      this.logger.error(
+        `OAuth Error: ${errorMessage}`,
+        exception instanceof Error ? exception.stack : '',
+      );
+      return response.redirect(redirectUrl);
+    }
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | string[] = 'Internal server error';
     let error = 'Internal Server Error';
