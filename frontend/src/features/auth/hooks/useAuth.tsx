@@ -231,8 +231,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         toast.success(`Bem-vindo, ${response.user.name}!`, "Login realizado");
 
-        // Redirect to home
-        navigate("/");
+        // Redirect to development page
+        navigate("/development");
       } catch (error) {
         console.error("OAuth token validation failed:", error);
         localStorage.removeItem(STORAGE_TOKEN_KEY);

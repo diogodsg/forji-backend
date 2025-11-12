@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { FcGoogle } from "react-icons/fc";
+import { API_BASE_URL } from "@/lib/api/client";
 
 export interface LoginFormProps {
   className?: string;
@@ -155,8 +156,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ className = "" }) => {
       <button
         type="button"
         onClick={() => {
-          const apiUrl = "http://localhost:8000/api";
-          window.location.href = `${apiUrl}/auth/google`;
+          window.location.href = `${API_BASE_URL}/auth/google`;
         }}
         className="relative inline-flex items-center justify-center gap-3 rounded-lg bg-white hover:bg-gray-50 border-2 border-surface-300 hover:border-surface-400 transition-all duration-150 text-gray-700 text-sm font-semibold h-11 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-gray-400/40 focus:ring-offset-2"
       >

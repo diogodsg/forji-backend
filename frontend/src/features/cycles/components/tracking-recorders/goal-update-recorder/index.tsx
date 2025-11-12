@@ -63,6 +63,7 @@ export function GoalUpdateRecorder({
   const bonuses = calculateBonuses(data);
   const totalXP = bonuses.reduce((sum, b) => sum + b.value, 0);
   const canSave = isFormValid(data);
+  const isRegression = data.newProgress < data.currentProgress;
 
   if (!isOpen) return null;
 
@@ -102,7 +103,9 @@ export function GoalUpdateRecorder({
         <div className="flex items-center justify-between px-6 py-4 border-t border-surface-200 bg-surface-50 rounded-b-2xl">
           <div className="text-sm text-gray-600">
             <span className="font-medium text-brand-600">
-              Pronto para registrar seu progresso!
+              {isRegression
+                ? "Registrando um retrocesso na meta"
+                : "Pronto para registrar seu progresso!"}
             </span>
           </div>
 
@@ -123,7 +126,8 @@ export function GoalUpdateRecorder({
                   : "bg-surface-300 text-gray-500 cursor-not-allowed"
               }`}
             >
-              Salvar Update (+{totalXP} XP)
+              Salvar Update ({totalXP >= 0 ? "+" : ""}
+              {totalXP} XP)
             </button>
           </div>
         </div>

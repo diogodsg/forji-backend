@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as sgMail from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -16,9 +16,9 @@ export class EmailService {
     private prisma: PrismaService,
     @InjectQueue('email') private emailQueue: Queue,
   ) {
-    const apiKey = this.configService.get<string>('SENDGRID_API_KEY');
+    const apiKey = this.configService.get<string>('SENDGRID_TOKEN');
     if (!apiKey) {
-      this.logger.warn('SENDGRID_API_KEY not configured - emails will not be sent');
+      this.logger.warn('SENDGRID_TOKEN not configured - emails will not be sent');
     } else {
       sgMail.setApiKey(apiKey);
       this.logger.log('SendGrid configured successfully');
@@ -78,16 +78,46 @@ export class EmailService {
   }
 
   /**
+   * Adiciona email na fila para testes (sem verificação de usuário)
+   * Use apenas em desenvolvimento!
+   */
+  async queueTestEmail(emailDto: SendEmailDto, priority: number = 5): Promise<void> {
+    try {
+      const apiKey = this.configService.get<string>('SENDGRID_TOKEN');
+      if (!apiKey) {
+        this.logger.warn('SENDGRID_TOKEN not configured - email not sent');
+        throw new Error('SendGrid not configured. Please set SENDGRID_TOKEN in .env');
+      }
+
+      // Adicionar na fila
+      await this.emailQueue.add('send-email', emailDto, {
+        priority,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 5000,
+        },
+      });
+
+      this.logger.log(`Test email queued: ${emailDto.type} to ${emailDto.to}`);
+    } catch (error) {
+      this.logger.error(`Failed to queue test email: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
    * Envia email diretamente via SendGrid
    */
   async sendEmail(emailDto: SendEmailDto): Promise<void> {
-    const apiKey = this.configService.get<string>('SENDGRID_API_KEY');
+    const apiKey = this.configService.get<string>('SENDGRID_TOKEN');
     if (!apiKey) {
-      this.logger.warn('SENDGRID_API_KEY not configured - email not sent');
+      this.logger.warn('SENDGRID_TOKEN not configured - email not sent');
       return;
     }
 
-    const fromEmail = this.configService.get<string>('SENDGRID_FROM_EMAIL') || 'noreply@forji.com';
+    const fromEmail =
+      this.configService.get<string>('SENDGRID_FROM_EMAIL') || 'noreply@forji.com.br';
     const fromName = this.configService.get<string>('SENDGRID_FROM_NAME') || 'Forji';
 
     try {
@@ -102,8 +132,21 @@ export class EmailService {
         subject: emailDto.subject,
         html,
       };
+      const res = await sgMail.send(msg);
 
-      await sgMail.send(msg);
+      // Log detalhado da resposta do SendGrid
+      this.logger.log(
+        `SendGrid response for ${emailDto.to}:`,
+        JSON.stringify(
+          {
+            statusCode: res[0]?.statusCode,
+            messageId: res[0]?.headers?.['x-message-id'],
+            body: res[0]?.body,
+          },
+          null,
+          2,
+        ),
+      );
 
       // Atualizar log do email
       await this.prisma.emailLog.updateMany({
@@ -120,9 +163,23 @@ export class EmailService {
 
       this.logger.log(`Email sent successfully: ${emailDto.type} to ${emailDto.to}`);
     } catch (error) {
-      this.logger.error(`Failed to send email: ${error.message}`, error.stack);
+      // Log detalhado do erro do SendGrid
+      const sendgridError = error.response?.body?.errors || error.response?.body;
+      this.logger.error(
+        `SendGrid error for ${emailDto.to}:`,
+        JSON.stringify(
+          {
+            message: error.message,
+            statusCode: error.code,
+            sendgridErrors: sendgridError,
+            fullError: error.response?.body,
+          },
+          null,
+          2,
+        ),
+      );
 
-      // Atualizar log com erro
+      // Atualizar log com erro detalhado
       await this.prisma.emailLog.updateMany({
         where: {
           to: emailDto.to,
@@ -131,7 +188,11 @@ export class EmailService {
         },
         data: {
           status: 'FAILED',
-          error: error.message,
+          error: JSON.stringify({
+            message: error.message,
+            code: error.code,
+            sendgridError: sendgridError,
+          }),
         },
       });
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule } from '@nestjs/config';
 import { EmailService } from './email.service';
+import { EmailController } from './email.controller';
 import { EmailProcessor } from './email.processor';
 import { PrismaModule } from '../prisma/prisma.module';
 
@@ -22,6 +23,7 @@ import { PrismaModule } from '../prisma/prisma.module';
       },
     }),
   ],
+  controllers: [EmailController],
   providers: [EmailService, EmailProcessor],
   exports: [EmailService],
 })

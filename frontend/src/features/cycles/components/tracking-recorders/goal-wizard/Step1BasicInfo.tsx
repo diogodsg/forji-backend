@@ -81,8 +81,8 @@ export default function Step1BasicInfo({
         )}
       </div>
 
-      {/* Guia SMART - Largura completa - Oculto no modo de edição */}
-      {!isEditing && <SMARTGuide />}
+      {/* Guia SMART - Largura completa - Sempre visível */}
+      <SMARTGuide />
     </div>
   );
 }

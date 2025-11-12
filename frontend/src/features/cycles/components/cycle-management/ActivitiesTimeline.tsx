@@ -130,10 +130,6 @@ export function ActivitiesTimeline({
               <p className="text-sm text-amber-700 mb-3">
                 Registre algo agora e ganhe XP de volta!
               </p>
-              <button className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white font-medium text-sm h-9 px-4 rounded-lg hover:opacity-90 transition-all">
-                <Award className="w-4 h-4" />
-                Registrar Atividade +25 XP
-              </button>
             </div>
           </div>
         </div>

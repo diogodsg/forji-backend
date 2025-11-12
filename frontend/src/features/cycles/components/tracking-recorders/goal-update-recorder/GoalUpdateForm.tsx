@@ -5,7 +5,6 @@ import {
   ArrowDown,
   Percent,
   CheckCircle,
-  Check,
   Sparkles,
 } from "lucide-react";
 import type { GoalUpdateData } from "./types";
@@ -113,76 +112,119 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
         style={{ maxHeight: "calc(580px - 120px)" }}
       >
         <div className="space-y-6">
-          {/* Goal Info */}
-          <div
-            className={`rounded-lg p-4 border-2 ${
-              data.goalType === "INCREASE"
-                ? "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200"
-                : data.goalType === "DECREASE"
-                ? "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
-                : data.goalType === "PERCENTAGE"
-                ? "bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200"
-                : data.goalType === "BINARY"
-                ? "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200"
-                : "bg-gradient-to-br from-brand-50 to-indigo-50 border-brand-200"
-            }`}
-          >
-            <div className="flex items-start gap-3">
+          {data.goalType === "BINARY" ? (
+            /* Layout simplificado para metas binárias */
+            <div className="space-y-6">
+              {/* Card da Meta */}
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <CheckCircle className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {data.goalTitle}
+                    </h3>
+                    <p className="text-xs text-amber-700 font-medium">
+                      Meta de Conclusão
+                    </p>
+                  </div>
+                </div>
+
+                {/* Switch Central */}
+                <div className="bg-white rounded-xl p-6 border border-surface-300 shadow-sm">
+                  <div className="flex items-center justify-center">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={data.newProgress === 100}
+                      onClick={() =>
+                        onChange(
+                          "newProgress",
+                          data.newProgress === 100 ? 0 : 100
+                        )
+                      }
+                      className={`relative inline-flex h-10 w-20 items-center rounded-full transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-400 shadow-sm ${
+                        data.newProgress === 100
+                          ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
+                          : "bg-surface-400"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-7 w-7 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out flex items-center justify-center ${
+                          data.newProgress === 100
+                            ? "translate-x-[2.75rem]"
+                            : "translate-x-1.5"
+                        }`}
+                      >
+                        {data.newProgress === 100 ? (
+                          <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        ) : (
+                          <div className="w-3 h-3 rounded-full bg-surface-400"></div>
+                        )}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="text-center mt-4">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {data.newProgress === 100
+                        ? "Meta Concluída! 🎉"
+                        : "Toque para marcar como concluída"}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {data.newProgress === 100
+                        ? "Você completou esta meta com sucesso!"
+                        : "Ative o botão quando finalizar"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Feedback visual */}
+                {data.newProgress === 100 && (
+                  <div className="mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span className="text-sm font-semibold text-emerald-700">
+                      Parabéns! Você ganhou +15 XP
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Layout normal para outras metas */
+            <>
+              {/* Goal Info */}
               <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                className={`rounded-xl p-5 border shadow-sm ${
                   data.goalType === "INCREASE"
-                    ? "bg-gradient-to-br from-emerald-500 to-emerald-600"
+                    ? "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200"
                     : data.goalType === "DECREASE"
-                    ? "bg-gradient-to-br from-blue-500 to-blue-600"
+                    ? "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
                     : data.goalType === "PERCENTAGE"
-                    ? "bg-gradient-to-br from-purple-500 to-purple-600"
-                    : data.goalType === "BINARY"
-                    ? "bg-gradient-to-br from-amber-500 to-amber-600"
-                    : "bg-gradient-to-br from-brand-500 to-brand-600"
+                    ? "bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200"
+                    : "bg-gradient-to-br from-brand-50 to-indigo-50 border-brand-200"
                 }`}
               >
-                <Target className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold text-gray-800 mb-1">
-                  {data.goalTitle}
-                </h3>
-                <div className="flex items-center gap-3 flex-wrap">
-                  {/* BINARY: Mostrar status de conclusão */}
-                  {data.goalType === "BINARY" ? (
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-gray-600">Status:</span>
-                        <span
-                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            data.currentProgress === 100
-                              ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
-                              : "bg-gray-100 text-gray-600 border border-gray-300"
-                          }`}
-                        >
-                          {data.currentProgress === 100 ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              Concluída
-                            </>
-                          ) : (
-                            <>
-                              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                              Pendente
-                            </>
-                          )}
-                        </span>
-                      </div>
-                      {/* Badge do tipo */}
-                      <div
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium border ${getTypeBadgeClasses()}`}
-                      >
-                        <TypeIcon className="w-3 h-3" />
-                        {typeConfig.label}
-                      </div>
-                    </div>
-                  ) : (
-                    <>
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
+                      data.goalType === "INCREASE"
+                        ? "bg-gradient-to-br from-emerald-500 to-emerald-600"
+                        : data.goalType === "DECREASE"
+                        ? "bg-gradient-to-br from-blue-500 to-blue-600"
+                        : data.goalType === "PERCENTAGE"
+                        ? "bg-gradient-to-br from-purple-500 to-purple-600"
+                        : "bg-gradient-to-br from-brand-500 to-brand-600"
+                    }`}
+                  >
+                    <Target className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-gray-800 mb-2">
+                      {data.goalTitle}
+                    </h3>
+                    <div className="flex items-center gap-3 flex-wrap">
                       {/* Valores absolutos para INCREASE/DECREASE */}
                       {typeConfig.showAbsoluteValues &&
                         currentAbsoluteValue !== null &&
@@ -191,7 +233,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                           <div className="flex items-center gap-2 text-sm">
                             <span className="text-gray-600">Atual:</span>
                             <span
-                              className={`font-bold ${
+                              className={`font-semibold ${
                                 data.goalType === "INCREASE"
                                   ? "text-emerald-600"
                                   : data.goalType === "DECREASE"
@@ -203,7 +245,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                             </span>
                             <span className="text-gray-400">→</span>
                             <span className="text-gray-600">Meta:</span>
-                            <span className="font-bold text-gray-800">
+                            <span className="font-semibold text-gray-800">
                               {data.targetValue} {data.unit}
                             </span>
                           </div>
@@ -216,7 +258,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                             ? "Progresso:"
                             : "Progresso atual:"}
                         </span>
-                        <span className="font-bold text-brand-600">
+                        <span className="font-semibold text-brand-600">
                           {data.currentProgress}%
                         </span>
                       </div>
@@ -224,118 +266,48 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                       {/* Badge do tipo */}
                       {data.goalType && (
                         <div
-                          className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium border ${getTypeBadgeClasses()}`}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border ${getTypeBadgeClasses()}`}
                         >
                           <TypeIcon className="w-3 h-3" />
                           {typeConfig.label}
                         </div>
                       )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Slider */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  data.goalType === "INCREASE"
-                    ? "bg-emerald-100"
-                    : data.goalType === "DECREASE"
-                    ? "bg-blue-100"
-                    : data.goalType === "PERCENTAGE"
-                    ? "bg-purple-100"
-                    : data.goalType === "BINARY"
-                    ? "bg-amber-100"
-                    : "bg-brand-100"
-                }`}
-              >
-                <TypeIcon
-                  className={`w-5 h-5 ${
-                    data.goalType === "INCREASE"
-                      ? "text-emerald-600"
-                      : data.goalType === "DECREASE"
-                      ? "text-blue-600"
-                      : data.goalType === "PERCENTAGE"
-                      ? "text-purple-600"
-                      : data.goalType === "BINARY"
-                      ? "text-amber-600"
-                      : "text-brand-600"
-                  }`}
-                />
-              </div>
-              <label className="text-sm font-semibold text-gray-800">
-                {data.goalType === "BINARY"
-                  ? "Meta Concluída?"
-                  : "Novo Progresso"}{" "}
-                *
-              </label>
-            </div>
-
-            {data.goalType === "BINARY" ? (
-              /* BINARY: Switch para marcar como concluída */
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl border-2 border-surface-300 hover:border-brand-400 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-amber-600" />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="goal-complete-switch"
-                        className="text-base font-semibold text-gray-800 cursor-pointer"
-                      >
-                        Marcar como concluída
-                      </label>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Ative quando finalizar esta meta
-                      </p>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  {/* Switch Toggle */}
-                  <button
-                    id="goal-complete-switch"
-                    type="button"
-                    role="switch"
-                    aria-checked={data.newProgress === 100}
-                    onClick={() =>
-                      onChange(
-                        "newProgress",
-                        data.newProgress === 100 ? 0 : 100
-                      )
-                    }
-                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${
-                      data.newProgress === 100
-                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
-                        : "bg-gray-300"
+              {/* Progress Slider */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      data.goalType === "INCREASE"
+                        ? "bg-emerald-100"
+                        : data.goalType === "DECREASE"
+                        ? "bg-blue-100"
+                        : data.goalType === "PERCENTAGE"
+                        ? "bg-purple-100"
+                        : "bg-brand-100"
                     }`}
                   >
-                    <span
-                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${
-                        data.newProgress === 100
-                          ? "translate-x-8"
-                          : "translate-x-1"
+                    <TypeIcon
+                      className={`w-5 h-5 ${
+                        data.goalType === "INCREASE"
+                          ? "text-emerald-600"
+                          : data.goalType === "DECREASE"
+                          ? "text-blue-600"
+                          : data.goalType === "PERCENTAGE"
+                          ? "text-purple-600"
+                          : "text-brand-600"
                       }`}
                     />
-                  </button>
+                  </div>
+                  <label className="text-sm font-semibold text-gray-800">
+                    Novo Progresso *
+                  </label>
                 </div>
 
-                {data.newProgress === 100 && (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <Sparkles className="w-4 h-4 text-emerald-600" />
-                    <span className="text-sm font-medium text-emerald-700">
-                      Meta marcada como concluída!
-                    </span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* Outros tipos: Slider */
-              <div className="space-y-3">
                 {/* Visual Progress Bar */}
                 <div className="relative">
                   <div className="w-full bg-surface-200 rounded-full h-8 overflow-hidden">
@@ -352,10 +324,14 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                       style={{ width: `${data.newProgress}%` }}
                     >
                       {data.newProgress > 10 && (
-                        <span className="text-white text-sm font-bold">
-                          {typeConfig.showAbsoluteValues &&
+                        <span className="text-white text-sm font-semibold">
+                          {data.goalType === "DECREASE" &&
                           newAbsoluteValue !== null &&
                           data.unit
+                            ? `${newAbsoluteValue} ${data.unit}`
+                            : typeConfig.showAbsoluteValues &&
+                              newAbsoluteValue !== null &&
+                              data.unit
                             ? `${newAbsoluteValue} ${data.unit}`
                             : `${data.newProgress}%`}
                         </span>
@@ -363,10 +339,14 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                     </div>
                   </div>
                   {data.newProgress <= 10 && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-600">
-                      {typeConfig.showAbsoluteValues &&
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-600">
+                      {data.goalType === "DECREASE" &&
                       newAbsoluteValue !== null &&
                       data.unit
+                        ? `${newAbsoluteValue} ${data.unit}`
+                        : typeConfig.showAbsoluteValues &&
+                          newAbsoluteValue !== null &&
+                          data.unit
                         ? `${newAbsoluteValue} ${data.unit}`
                         : `${data.newProgress}%`}
                     </span>
@@ -382,22 +362,22 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                   onChange={(e) =>
                     onChange("newProgress", parseInt(e.target.value))
                   }
-                  className="w-full h-2 bg-surface-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                  className="w-full h-2 bg-surface-200 rounded-lg appearance-none cursor-pointer accent-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
 
                 {/* Progress Info */}
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Mínimo: 0%</span>
+                  <span className="text-gray-500 font-medium">Mínimo: 0%</span>
                   {progressINCREASE !== 0 && (
                     <span
-                      className={`font-medium flex items-center gap-1 ${
+                      className={`font-semibold flex items-center gap-1 ${
                         progressINCREASE > 0
                           ? data.goalType === "INCREASE"
                             ? "text-emerald-600"
                             : data.goalType === "DECREASE"
                             ? "text-blue-600"
                             : "text-emerald-600"
-                          : "text-red-600"
+                          : "text-orange-600"
                       }`}
                     >
                       {progressINCREASE > 0 ? (
@@ -405,10 +385,19 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                       ) : (
                         <ArrowDown className="w-3 h-3" />
                       )}
-                      {typeConfig.showAbsoluteValues &&
+                      {data.goalType === "DECREASE" &&
                       newAbsoluteValue !== null &&
                       currentAbsoluteValue !== null &&
                       data.unit
+                        ? `${progressINCREASE > 0 ? "" : "+"}${Math.abs(
+                            newAbsoluteValue - currentAbsoluteValue
+                          )} ${data.unit} ${
+                            progressINCREASE > 0 ? "reduzidos" : "aumentados"
+                          }`
+                        : typeConfig.showAbsoluteValues &&
+                          newAbsoluteValue !== null &&
+                          currentAbsoluteValue !== null &&
+                          data.unit
                         ? `${progressINCREASE > 0 ? "+" : ""}${
                             newAbsoluteValue - currentAbsoluteValue
                           } ${data.unit}`
@@ -419,7 +408,7 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
                           }`}
                     </span>
                   )}
-                  <span className="text-gray-500">
+                  <span className="text-gray-500 font-medium">
                     Máximo:{" "}
                     {typeConfig.showAbsoluteValues &&
                     data.targetValue &&
@@ -431,16 +420,27 @@ export function GoalUpdateForm({ data, onChange }: GoalUpdateFormProps) {
 
                 {/* Hint personalizado por tipo */}
                 {data.goalType && (
-                  <div className="mt-2 p-2 bg-brand-50 rounded-lg border border-brand-200">
-                    <p className="text-xs text-brand-700 flex items-center gap-1">
+                  <div className="p-3 bg-brand-50 rounded-lg border border-brand-200">
+                    <p className="text-xs text-brand-700 font-medium flex items-center gap-1.5">
                       <TypeIcon className="w-3 h-3" />
                       {typeConfig.hint}
                     </p>
                   </div>
                 )}
+
+                {/* Aviso de retrocesso */}
+                {progressINCREASE < 0 && (
+                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                    <p className="text-xs text-orange-700 font-medium flex items-center gap-1.5">
+                      <ArrowDown className="w-3 h-3" />
+                      Você está registrando um retrocesso. Isso pode acontecer e
+                      é importante manter o registro atualizado!
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
 

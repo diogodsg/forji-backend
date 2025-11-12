@@ -12,15 +12,38 @@ export const validateStep2 = (data: Partial<GoalData>): boolean => {
 
   switch (data.type) {
     case "increase":
-    case "decrease":
-    case "percentage":
+      // Para aumentar: valor atual deve ser menor que valor meta
       return !!(
         criterion.currentValue !== undefined &&
         criterion.targetValue !== undefined &&
-        criterion.unit?.trim()
+        criterion.unit?.trim() &&
+        criterion.currentValue < criterion.targetValue
       );
+
+    case "decrease":
+      // Para diminuir: valor atual deve ser maior que valor meta
+      return !!(
+        criterion.currentValue !== undefined &&
+        criterion.targetValue !== undefined &&
+        criterion.unit?.trim() &&
+        criterion.currentValue > criterion.targetValue
+      );
+
+    case "percentage":
+      // Para percentuais: valor meta deve estar entre 0 e 100
+      return !!(
+        criterion.currentValue !== undefined &&
+        criterion.targetValue !== undefined &&
+        criterion.unit?.trim() &&
+        criterion.targetValue >= 0 &&
+        criterion.targetValue <= 100 &&
+        criterion.currentValue >= 0 &&
+        criterion.currentValue <= 100
+      );
+
     case "binary":
       return true; // Binary não precisa validação extra
+
     default:
       return false;
   }
