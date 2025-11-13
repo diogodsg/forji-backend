@@ -1,0 +1,366 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resumo Semanal</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(to bottom right, #fafbfc, #f8fafc);
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow:
+          0 1px 2px 0 rgba(0, 0, 0, 0.04),
+          0 2px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+      }
+      .header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        padding: 40px 20px;
+        text-align: center;
+      }
+      .header h1 {
+        color: white;
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .header-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        margin: 0;
+      }
+      .icon-container {
+        width: 70px;
+        height: 70px;
+        margin: 20px auto;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .icon-svg {
+        width: 40px;
+        height: 40px;
+        stroke: white;
+        stroke-width: 2;
+        fill: none;
+      }
+      .content {
+        padding: 40px 30px;
+      }
+      .greeting {
+        font-size: 16px;
+        color: #4b5563;
+        text-align: center;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+      .streak-status {
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+        border-radius: 16px;
+        padding: 25px;
+        text-align: center;
+        margin: 30px 0;
+        border: 2px solid #c4b5fd;
+      }
+      .streak-status.lost {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-color: #fca5a5;
+      }
+      .streak-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #6d28d9;
+        margin-bottom: 12px;
+      }
+      .streak-status.lost .streak-title {
+        color: #991b1b;
+      }
+      .streak-value {
+        font-size: 48px;
+        font-weight: bold;
+        color: #7c3aed;
+        margin: 10px 0;
+      }
+      .streak-status.lost .streak-value {
+        color: #dc2626;
+      }
+      .streak-bonus {
+        background: #10b981;
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        display: inline-block;
+        font-weight: 600;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+      .streak-message {
+        color: #991b1b;
+        margin: 10px 0;
+        font-size: 14px;
+      }
+      .stats-section {
+        margin: 40px 0;
+      }
+      .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 16px;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 20px 0;
+      }
+      .stat-card {
+        background: #fafbfc;
+        border-radius: 12px;
+        padding: 20px 12px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+      }
+      .stat-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #7c3aed;
+        margin: 8px 0;
+      }
+      .stat-label {
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .goals-list {
+        margin: 20px 0;
+      }
+      .goal-item {
+        background: #fafbfc;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 12px 0;
+        border: 1px solid #e2e8f0;
+      }
+      .goal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .goal-title {
+        color: #1f2937;
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      .goal-progress-badge {
+        background: #7c3aed;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .progress-bar-container {
+        background: #e2e8f0;
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .progress-bar-fill {
+        background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s;
+      }
+      .suggestions-box {
+        background: #f5f3ff;
+        border-radius: 12px;
+        padding: 24px;
+        margin: 30px 0;
+        border: 1px solid #ddd6fe;
+      }
+      .suggestions-title {
+        color: #5b21b6;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      .suggestion-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 8px 0;
+        color: #4b5563;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .suggestion-bullet {
+        width: 6px;
+        height: 6px;
+        background: #7c3aed;
+        border-radius: 50%;
+        margin-right: 12px;
+        flex-shrink: 0;
+        margin-top: 6px;
+      }
+      .empty-state {
+        text-align: center;
+        color: #9ca3af;
+        font-size: 14px;
+        padding: 20px;
+      }
+      .button {
+        display: inline-block;
+        background: linear-gradient(to right, #8b5cf6, #7c3aed);
+        color: white;
+        padding: 16px 40px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 20px;
+        font-size: 16px;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+      }
+      .cta-section {
+        text-align: center;
+        margin: 30px 0;
+      }
+      .footer {
+        background: #fafbfc;
+        padding: 24px 20px;
+        text-align: center;
+        color: #6b7280;
+        font-size: 13px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer a {
+        color: #7c3aed;
+        text-decoration: none;
+      }
+      .footer a:hover {
+        text-decoration: underline;
+      }
+      .footer p {
+        margin: 0 0 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="icon-container">
+          <svg class="icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M18 17V9" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M13 17V5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M8 17v-3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h1>Resumo Semanal</h1>
+        <p class="header-subtitle">Semana de {{weekStart}} a {{weekEnd}}</p>
+      </div>
+
+      <div class="content">
+        <div class="greeting">Olá <strong>{{userName}}</strong>, veja como foi sua semana!</div>
+
+        <!-- Streak Status -->
+        <div class="streak-status{{#unless streakMaintained}} lost{{/unless}}">
+          <div class="streak-title">
+            {{#if streakMaintained}} Streak Mantida! {{else}} Streak Perdida {{/if}}
+          </div>
+          <div class="streak-value">{{currentStreak}} semanas</div>
+          {{#if streakMaintained}} {{#if xpBonus}}
+          <div class="streak-bonus">+{{xpBonus}} XP Bônus</div>
+          {{/if}} {{else}}
+          <p class="streak-message">Não se preocupe! Comece uma nova streak na próxima semana.</p>
+          {{/if}}
+        </div>
+
+        <!-- Weekly Stats -->
+        <div class="stats-section">
+          <div class="section-title">Estatísticas da Semana</div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">{{xpEarned}}</div>
+              <div class="stat-label">XP Ganho</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-value">{{activitiesCompleted}}</div>
+              <div class="stat-label">Atividades</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-value">{{goalsUpdated}}</div>
+              <div class="stat-label">Metas Atualizadas</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goals Progress -->
+        {{#if goals}}
+        <div class="stats-section">
+          <div class="section-title">Progresso das Metas</div>
+          <div class="goals-list">
+            {{#each goals}}
+            <div class="goal-item">
+              <div class="goal-header">
+                <div class="goal-title">{{title}}</div>
+                <div class="goal-progress-badge">{{progress}}%</div>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{progress}}%;"></div>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{else}}
+        <div class="stats-section">
+          <div class="section-title">Progresso das Metas</div>
+          <div class="empty-state">Nenhuma meta registrada esta semana.</div>
+        </div>
+        {{/if}}
+
+        <!-- Suggestions -->
+        <div class="suggestions-box">
+          <div class="suggestions-title">Planos para Próxima Semana</div>
+          <div class="suggestion-item">
+            <div class="suggestion-bullet"></div>
+            <span>Revisar metas que precisam de atenção</span>
+          </div>
+          <div class="suggestion-item">
+            <div class="suggestion-bullet"></div>
+            <span>Definir prioridades para os próximos 7 dias</span>
+          </div>
+          <div class="suggestion-item">
+            <div class="suggestion-bullet"></div>
+            <span>Explorar novas competências para desenvolver</span>
+          </div>
+        </div>
+
+        <div class="cta-section">
+          <a href="{{workspaceUrl}}" class="button">Planejar Próxima Semana</a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Forji - Plataforma Gamificada para Desenvolvimento de Times</p>
+        <p><a href="{{workspaceUrl}}/settings/notifications">Gerenciar preferências de email</a></p>
+      </div>
+    </div>
+  </body>
+</html>

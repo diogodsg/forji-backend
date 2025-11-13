@@ -1,5 +1,6 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { EmailService } from './email.service';
+import { EmailSchedulerService } from './email-scheduler.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -11,230 +12,160 @@ import { EmailType } from './interfaces/email.interface';
  */
 @Controller('email')
 export class EmailController {
-  constructor(private readonly emailService: EmailService) {}
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly emailScheduler: EmailSchedulerService,
+  ) {}
 
   /**
-   * Endpoint para teste de email de Badge Conquistado
-   * POST /email/test/badge-earned
+   * Endpoint para teste de email de Streak Monday Reminder
+   * POST /email/test/streak-monday
    */
-  @Post('test/badge-earned')
-  async testBadgeEarned(@Body() body: { email: string }) {
+  @Post('test/streak-monday')
+  async testStreakMonday(@Body() body: { email: string }) {
     await this.emailService.queueTestEmail({
       to: body.email,
-      subject: '🎉 Parabéns! Você conquistou um novo badge!',
-      type: EmailType.BADGE_EARNED,
+      subject: '🔥 Sua streak de 5 semanas está ativa! Mantenha o ritmo',
+      type: EmailType.STREAK_REMINDER_MONDAY,
       data: {
         userName: 'João Silva',
-        badgeName: 'First Steps',
-        badgeDescription: 'Complete sua primeira meta de desenvolvimento',
-        badgeIcon: '🏆',
-        totalBadges: 5,
+        currentStreak: 5,
+        longestStreak: 8,
+        xpBonus: 50,
+        nextMilestone: 10,
+        milestoneProgress: 50,
+        weeksToMilestone: 5,
+        hasGoalToUpdate: true,
+        needsOneOnOne: true,
         workspaceUrl: 'http://localhost:5173',
       },
     });
 
     return {
       success: true,
-      message: `Email de badge conquistado enviado para ${body.email}`,
+      message: `Email de streak monday reminder enviado para ${body.email}`,
     };
   }
 
   /**
-   * Endpoint para teste de email de Level Up
-   * POST /email/test/level-up
+   * Endpoint para teste de email de Streak Thursday Alert
+   * POST /email/test/streak-thursday
    */
-  @Post('test/level-up')
-  async testLevelUp(@Body() body: { email: string }) {
+  @Post('test/streak-thursday')
+  async testStreakThursday(@Body() body: { email: string }) {
     await this.emailService.queueTestEmail({
       to: body.email,
-      subject: '⭐ Level Up! Você subiu de nível!',
-      type: EmailType.LEVEL_UP,
+      subject: '⚠️ Não perca sua streak de 5 semanas!',
+      type: EmailType.STREAK_ALERT_THURSDAY,
       data: {
         userName: 'João Silva',
-        oldLevel: 2,
-        newLevel: 3,
-        totalXP: 900,
+        currentStreak: 5,
+        hoursRemaining: 56,
         workspaceUrl: 'http://localhost:5173',
       },
     });
 
     return {
       success: true,
-      message: `Email de level up enviado para ${body.email}`,
+      message: `Email de streak thursday alert enviado para ${body.email}`,
     };
   }
 
   /**
-   * Endpoint para teste de email de Lembrete de Meta
-   * POST /email/test/goal-reminder
+   * Endpoint para teste de email de Streak Sunday Summary
+   * POST /email/test/streak-sunday
    */
-  @Post('test/goal-reminder')
-  async testGoalReminder(@Body() body: { email: string }) {
+  @Post('test/streak-sunday')
+  async testStreakSunday(@Body() body: { email: string }) {
     await this.emailService.queueTestEmail({
       to: body.email,
-      subject: '⏰ Lembrete: Meta próxima do prazo final',
-      type: EmailType.GOAL_REMINDER,
+      subject: '📊 Seu resumo semanal + Planejamento da próxima semana',
+      type: EmailType.STREAK_SUMMARY_SUNDAY,
       data: {
         userName: 'João Silva',
-        goalTitle: 'Dominar React Hooks Avançados',
-        dueDate: '15/11/2025',
-        daysRemaining: 7,
-        currentProgress: 65,
-        workspaceUrl: 'http://localhost:5173',
-      },
-    });
-
-    return {
-      success: true,
-      message: `Email de lembrete de meta enviado para ${body.email}`,
-    };
-  }
-
-  /**
-   * Endpoint para teste de email de Boas-vindas
-   * POST /email/test/welcome
-   */
-  @Post('test/welcome')
-  async testWelcome(@Body() body: { email: string }) {
-    await this.emailService.queueTestEmail({
-      to: body.email,
-      subject: '🚀 Bem-vindo ao Forji!',
-      type: EmailType.WELCOME,
-      data: {
-        userName: 'João Silva',
-        workspaceName: 'Tech Corp',
-        managerName: 'Maria Santos',
-        workspaceUrl: 'http://localhost:5173',
-      },
-    });
-
-    return {
-      success: true,
-      message: `Email de boas-vindas enviado para ${body.email}`,
-    };
-  }
-
-  /**
-   * Endpoint para teste de email de Convite para Workspace
-   * POST /email/test/workspace-invite
-   */
-  @Post('test/workspace-invite')
-  async testWorkspaceInvite(@Body() body: { email: string }) {
-    await this.emailService.queueTestEmail({
-      to: body.email,
-      subject: '✉️ Você foi convidado para Tech Corp',
-      type: EmailType.WORKSPACE_INVITE,
-      data: {
-        invitedByName: 'Maria Santos',
-        workspaceName: 'Tech Corp',
-        inviteUrl: 'http://localhost:5173/invite/abc123',
-        expiresIn: '7 dias',
-      },
-    });
-
-    return {
-      success: true,
-      message: `Email de convite para workspace enviado para ${body.email}`,
-    };
-  }
-
-  /**
-   * Endpoint para teste de email de 1:1 Agendado
-   * POST /email/test/one-on-one
-   */
-  @Post('test/one-on-one')
-  async testOneOnOne(@Body() body: { email: string }) {
-    await this.emailService.queueTestEmail({
-      to: body.email,
-      subject: '📅 1:1 Agendado',
-      type: EmailType.ONE_ON_ONE_SCHEDULED,
-      data: {
-        participantName: 'João Silva',
-        managerName: 'Maria Santos',
-        scheduledDate: '15/11/2025',
-        scheduledTime: '14:00',
-        workspaceUrl: 'http://localhost:5173',
-      },
-    });
-
-    return {
-      success: true,
-      message: `Email de 1:1 agendado enviado para ${body.email}`,
-    };
-  }
-
-  /**
-   * Endpoint para teste de email de Relatório Semanal
-   * POST /email/test/weekly-report
-   */
-  @Post('test/weekly-report')
-  async testWeeklyReport(@Body() body: { email: string }) {
-    await this.emailService.queueTestEmail({
-      to: body.email,
-      subject: '📊 Relatório Semanal - Tech Corp',
-      type: EmailType.WEEKLY_REPORT,
-      data: {
-        userName: 'João Silva',
-        teamName: 'Tech Corp',
-        weekXP: 450,
-        activitiesCompleted: 12,
-        goalsCompleted: 3,
-        topContributors: [
-          { name: 'Ana Costa', xp: 250 },
-          { name: 'Pedro Lima', xp: 180 },
-          { name: 'João Silva', xp: 150 },
+        weekStart: '04/11/2025',
+        weekEnd: '10/11/2025',
+        currentStreak: 6,
+        streakMaintained: true,
+        xpBonus: 50,
+        xpEarned: 175,
+        activitiesCompleted: 8,
+        goalsUpdated: 3,
+        goals: [
+          { title: 'Dominar React Hooks Avançados', progress: 75 },
+          { title: 'Melhorar Soft Skills', progress: 45 },
+          { title: 'Aprender TypeScript', progress: 90 },
         ],
-        teamRank: 2,
+        hasAchievements: true,
+        newBadges: 1,
+        levelUp: true,
+        newLevel: 4,
+        completedGoals: 1,
+        nextWeekSuggestions: [
+          'Finalizar meta "Dominar React Hooks" (25% restante)',
+          'Agendar 1:1 com Maria Santos',
+          'Iniciar nova certificação em AWS',
+          'Atualizar competências técnicas',
+        ],
         workspaceUrl: 'http://localhost:5173',
       },
     });
 
     return {
       success: true,
-      message: `Email de relatório semanal enviado para ${body.email}`,
+      message: `Email de streak sunday summary enviado para ${body.email}`,
     };
   }
 
   /**
-   * Endpoint para testar todos os templates de uma vez
-   * POST /email/test/all
+   * ======================================
+   * ENDPOINTS DE TRIGGER MANUAL (CRON)
+   * ======================================
+   * Para testar as tarefas agendadas sem esperar pelo horário
    */
-  @Post('test/all')
-  async testAllEmails(@Body() body: { email: string }) {
-    const results = [];
 
-    // Badge Earned
-    await this.testBadgeEarned(body);
-    results.push('Badge Conquistado');
-
-    // Level Up
-    await this.testLevelUp(body);
-    results.push('Level Up');
-
-    // Goal Reminder
-    await this.testGoalReminder(body);
-    results.push('Lembrete de Meta');
-
-    // Welcome
-    await this.testWelcome(body);
-    results.push('Boas-vindas');
-
-    // Workspace Invite
-    await this.testWorkspaceInvite(body);
-    results.push('Convite para Workspace');
-
-    // One on One
-    await this.testOneOnOne(body);
-    results.push('1:1 Agendado');
-
-    // Weekly Report
-    await this.testWeeklyReport(body);
-    results.push('Relatório Semanal');
-
+  /**
+   * Dispara manualmente o envio de lembretes de segunda-feira
+   * Normalmente executado automaticamente às 9h da manhã de segunda
+   */
+  @Post('trigger/monday-reminder')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles('ADMIN')
+  async triggerMondayReminders() {
+    await this.emailScheduler.sendMondayStreakReminders();
     return {
       success: true,
-      message: `Todos os ${results.length} templates de email foram enviados para ${body.email}`,
-      templates: results,
+      message: 'Monday streak reminders triggered successfully',
+    };
+  }
+
+  /**
+   * Dispara manualmente o envio de alertas de quinta-feira
+   * Normalmente executado automaticamente às 16h de quinta
+   */
+  @Post('trigger/thursday-alert')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles('ADMIN')
+  async triggerThursdayAlerts() {
+    await this.emailScheduler.sendThursdayStreakAlerts();
+    return {
+      success: true,
+      message: 'Thursday streak alerts triggered successfully',
+    };
+  }
+
+  /**
+   * Dispara manualmente o envio de resumos de domingo
+   * Normalmente executado automaticamente às 19h de domingo
+   */
+  @Post('trigger/sunday-summary')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles('ADMIN')
+  async triggerSundaySummaries() {
+    await this.emailScheduler.sendSundayWeeklySummaries();
+    return {
+      success: true,
+      message: 'Sunday weekly summaries triggered successfully',
     };
   }
 }

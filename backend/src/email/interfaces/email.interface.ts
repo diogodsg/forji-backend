@@ -1,16 +1,7 @@
 export enum EmailType {
-  WORKSPACE_INVITE = 'workspace_invite',
-  WELCOME = 'welcome',
-  BADGE_EARNED = 'badge_earned',
-  LEVEL_UP = 'level_up',
-  GOAL_REMINDER = 'goal_reminder',
-  GOAL_ASSIGNED = 'goal_assigned',
-  ONE_ON_ONE_SCHEDULED = 'one_on_one_scheduled',
-  ONE_ON_ONE_FEEDBACK = 'one_on_one_feedback',
-  WEEKLY_REPORT = 'weekly_report',
-  MONTHLY_REPORT = 'monthly_report',
-  SUBORDINATE_NEEDS_ATTENTION = 'subordinate_needs_attention',
-  CYCLE_ENDING_SOON = 'cycle_ending_soon',
+  STREAK_REMINDER_MONDAY = 'streak_reminder_monday',
+  STREAK_ALERT_THURSDAY = 'streak_alert_thursday',
+  STREAK_SUMMARY_SUNDAY = 'streak_summary_sunday',
 }
 
 export interface EmailData {
