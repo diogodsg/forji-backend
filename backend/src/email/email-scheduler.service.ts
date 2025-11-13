@@ -294,59 +294,80 @@ export class EmailSchedulerService {
   /**
    * Calcula o streak atual do usuário baseado nas atividades semanais
    */
-  private async calculateUserStreak(userId: string, workspaceId: string) {
-    const activities = await this.prisma.activity.findMany({
-      where: {
-        userId,
-        cycle: {
-          workspaceId,
-        },
-        createdAt: {
-          gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // Último ano
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+  async calculateUserStreak(userId: string, workspaceId: string) {
+    // Query SQL para buscar semanas com atividades
+    const weeklyActivities = await this.prisma.$queryRaw<Array<{ week_num: number; year: number }>>`
+      SELECT DISTINCT
+        EXTRACT(WEEK FROM a.created_at)::int as week_num,
+        EXTRACT(YEAR FROM a.created_at)::int as year
+      FROM activities a
+      INNER JOIN cycles c ON c.id = a.cycle_id AND c.workspace_id::text = ${workspaceId}
+      WHERE a.user_id::text = ${userId}
+      ORDER BY year DESC, week_num DESC
+    `;
 
-    if (activities.length === 0) {
+    if (weeklyActivities.length === 0) {
       return { currentStreak: 0, longestStreak: 0 };
     }
 
-    // Agrupar atividades por semana
-    const weeklyActivities = new Map<string, boolean>();
-
-    for (const activity of activities) {
-      const weekKey = this.getWeekKey(activity.createdAt);
-      weeklyActivities.set(weekKey, true);
-    }
+    // Converter para Set de chaves "year-week"
+    const weekSet = new Set(weeklyActivities.map((w) => `${w.year}-${w.week_num}`));
 
     let currentStreak = 0;
     let longestStreak = 0;
     let tempStreak = 0;
 
-    // Calcular streak a partir da semana atual
-    const now = new Date();
-    let checkDate = new Date(now);
+    // Obter semana atual
+    const today = new Date();
+    const currentWeekNum = this.getWeekNumber(today);
+    const currentYear = today.getFullYear();
+
+    // Começar verificando da semana atual para trás
+    // Se tem atividade esta semana, conta. Se não, começa da semana passada
+    let checkDate = new Date(today);
     let foundGap = false;
+    let startedCounting = false;
 
     for (let i = 0; i < 52; i++) {
-      const weekKey = this.getWeekKey(checkDate);
+      const year = checkDate.getFullYear();
+      const weekNum = this.getWeekNumber(checkDate);
+      const weekKey = `${year}-${weekNum}`;
+      const isCurrentWeek = year === currentYear && weekNum === currentWeekNum;
 
-      if (weeklyActivities.has(weekKey)) {
+      // Pular semana atual (não conta para streak)
+      if (isCurrentWeek) {
+        checkDate.setDate(checkDate.getDate() - 7);
+        continue;
+      }
+
+      if (weekSet.has(weekKey)) {
+        startedCounting = true;
         if (!foundGap) currentStreak++;
         tempStreak++;
         longestStreak = Math.max(longestStreak, tempStreak);
       } else {
-        foundGap = true;
+        if (startedCounting) {
+          foundGap = true;
+        }
         tempStreak = 0;
       }
 
       checkDate.setDate(checkDate.getDate() - 7);
     }
 
+    console.log({ currentStreak, longestStreak });
     return { currentStreak, longestStreak };
+  }
+
+  /**
+   * Calcula o número da semana no ano (1-53)
+   */
+  private getWeekNumber(date: Date): number {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   }
 
   /**

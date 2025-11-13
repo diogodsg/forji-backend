@@ -84,6 +84,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD node --version || exit 1
 
 # Comando para iniciar a aplicação
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main.js"]
 
 EXPOSE 8000

@@ -154,6 +154,14 @@ export class EmailController {
     };
   }
 
+  @Post('test/trigger')
+  async testTrigger() {
+    const res = await this.emailScheduler.calculateUserStreak(
+      '3ee25df7-e65f-4e5a-9389-371eefedf800',
+      '53b89e7f-1c5e-473e-86d7-08062bb2c956',
+    );
+    return res;
+  }
   /**
    * Dispara manualmente o envio de resumos de domingo
    * Normalmente executado automaticamente às 19h de domingo
